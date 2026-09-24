@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: chatbot-wxn
+    runtime: docker
+    plan: free
+    rootDir: chatbot
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
