@@ -1,13 +1,121 @@
 # Chatbot WXN
 
-Backend em Java 21 e Spring Boot, com PostgreSQL no Neon e deploy no Render.
-O projeto está na estrutura inicial; a integração com Spring AI/LLM ainda não foi implementada.
+## Sobre o projeto
 
-## Arquitetura
+Este projeto tem como objetivo desenvolver um chatbot inteligente para atendimento,
+capaz de compreender solicitações dos usuários e integrar-se a sistemas externos,
+bancos de dados e APIs.
 
-```text
-Cliente -> Spring Boot (Render) -> PostgreSQL (Neon)
-```
+O backend da aplicação será desenvolvido utilizando Java com Spring Boot.
+
+## Tecnologias
+
+- Java
+- Spring Boot
+- Spring AI
+- PostgreSQL
+- Neon
+- Render
+- GitHub
+
+## Banco de Dados — PostgreSQL
+
+O PostgreSQL será utilizado como banco de dados da aplicação.
+
+O banco será hospedado no Neon, permitindo uma comunicação segura entre o
+PostgreSQL e o backend desenvolvido em Spring Boot, localmente ou no Render.
+
+Fluxo:
+
+Spring Boot → PostgreSQL (Neon)
+
+O banco será responsável pelo armazenamento das informações necessárias para
+o funcionamento da aplicação.
+
+As informações de conexão com o banco serão configuradas no ambiente da aplicação,
+evitando que dados sensíveis, como senhas e credenciais, sejam armazenados
+diretamente no código.
+
+## Integração com LLM
+
+O Spring AI será utilizado para realizar a integração entre o backend da aplicação
+e o modelo de linguagem (LLM).
+
+O modelo será responsável por auxiliar na compreensão das solicitações dos usuários
+e na geração das respostas do chatbot.
+
+Fluxo:
+
+Usuário → Chatbot → Spring Boot → Spring AI / LLM
+
+Quando necessário, o backend também poderá consultar o banco de dados ou serviços
+externos para obter informações utilizadas durante o atendimento.
+
+## Deploy — Render
+
+O Render será utilizado para realizar o deploy do backend desenvolvido em
+Spring Boot.
+
+A aplicação será conectada ao repositório do projeto no GitHub e executada
+em ambiente de nuvem.
+
+Fluxo:
+
+GitHub → Render → Aplicação Spring Boot
+
+As informações sensíveis necessárias para serviços externos, como chaves de API
+do modelo de linguagem, serão configuradas através de variáveis de ambiente
+no Render.
+
+O PostgreSQL será hospedado no Neon e conectado à aplicação no Render através
+de variáveis de ambiente. Neon e Render são serviços separados.
+
+## Arquitetura Inicial
+
+O fluxo principal da aplicação será:
+
+Usuário
+   ↓
+Interface / Chat
+   ↓
+Spring Boot
+   ├──→ Spring AI / LLM
+   ├──→ PostgreSQL (Neon)
+   └──→ Serviços externos / APIs / ERP
+
+O Spring Boot funcionará como a camada central da aplicação, sendo responsável
+pelas regras de negócio e pela comunicação entre o chatbot, o banco de dados,
+o modelo de linguagem e os serviços externos.
+
+## Ambiente de Desenvolvimento
+
+Durante o desenvolvimento, os principais componentes serão executados da
+seguinte forma:
+
+Spring Boot → Local
+PostgreSQL → Neon
+LLM → API externa
+Código-fonte → GitHub
+Deploy do backend → Render
+
+## Status do Projeto
+
+Projeto em desenvolvimento.
+
+Atualmente estão sendo definidos e configurados:
+
+- Repositório Git
+- Ambiente de desenvolvimento
+- Banco de dados PostgreSQL no Neon
+- Backend em Spring Boot
+- Integração com Spring AI / LLM
+- Ambiente de deploy com Render
+- Arquitetura e integrações da aplicação
+
+## Configuração atual
+
+O backend usa Java 21. A integração com Spring AI/LLM descrita acima está planejada.
+A página inicial está disponível em `/` e a verificação de saúde em `/actuator/health`.
 
 ## Configurar o Neon
 
@@ -41,11 +149,12 @@ O banco continua no Neon; nenhum banco é criado no Render.
 
 Caso crie um **Web Service** manualmente, selecione Docker, configure
 **Root Directory** como `chatbot`, **Dockerfile Path** como `./Dockerfile`, as mesmas
-três variáveis de ambiente e **Health Check Path** como `/actuator/health`.
+três variáveis de ambiente, **Docker Build Context Directory** como `.` e
+**Health Check Path** como `/actuator/health`.
 
 Depois do deploy, abra `https://<seu-servico>.onrender.com/actuator/health`.
 A resposta deve conter `"status":"UP"`; ela também verifica a conexão com o banco.
-A rota `/` ainda não possui uma página ou endpoint e pode retornar 404.
+A rota `/` exibe a página inicial com a mensagem **Hello World!**.
 
 ## Executar localmente (PowerShell)
 
@@ -60,7 +169,8 @@ $env:DB_PASSWORD = 'sua-senha'
 .\mvnw.cmd spring-boot:run
 ```
 
-Verifique `http://localhost:8080/actuator/health`.
+Abra `http://localhost:8080/` para ver a página inicial.
+Verifique `http://localhost:8080/actuator/health` para consultar a saúde da aplicação.
 `chatbot/.env.example` é uma referência: Spring Boot não carrega `.env`
 automaticamente. Configure as variáveis no terminal ou na sua IDE.
 
