@@ -197,3 +197,13 @@ integração com PostgreSQL real.
 - [Neon com Java](https://neon.com/docs/guides/java)
 - [Blueprints do Render](https://render.com/docs/blueprint-spec)
 - [Health checks do Render](https://render.com/docs/health-checks)
+
+## Grupo
+João Carlos Mafra
+Arthur Almeida
+Gabriel Malta
+Márcio Rodriguez
+Gabriel Mendes
+Pedro Martins
+Hélio de Moraes
+Guilherme Guimarães
