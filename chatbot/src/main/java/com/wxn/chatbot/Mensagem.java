@@ -16,18 +16,35 @@ public class Mensagem {
     private final String conteudo;
     private final Instant dataEnvio;
     private final TipoRemetente remetente;
+    private final Atendente atendente;
 
+    
     Mensagem(Long id, Conversa conversa, String conteudo, TipoRemetente remetente) {
+        this(id, conversa, conteudo, remetente, null);
+    }
+
+    Mensagem(Long id, Conversa conversa, String conteudo, TipoRemetente remetente, Atendente atendente) {
+
         this.id = Objects.requireNonNull(id, "O id da mensagem e obrigatorio.");
+
         if (id <= 0) {
             throw new IllegalArgumentException("O id da mensagem deve ser positivo.");
         }
+
         this.conversa = Objects.requireNonNull(conversa, "A conversa e obrigatoria.");
+
         this.conteudo = Objects.requireNonNull(conteudo, "O conteudo e obrigatorio.");
+
         if (conteudo.isBlank()) {
             throw new IllegalArgumentException("O conteudo da mensagem nao pode estar em branco.");
         }
+
         this.remetente = Objects.requireNonNull(remetente, "O remetente e obrigatorio.");
+
+        if (atendente != null && remetente != TipoRemetente.ATENDENTE) {
+            throw new IllegalArgumentException("Apenas mensagens de atendente podem possuir um atendente.");
+        }
+        this.atendente = atendente;
         this.dataEnvio = Instant.now();
     }
 
@@ -49,5 +66,9 @@ public class Mensagem {
 
     public TipoRemetente getRemetente() {
         return remetente;
+    }
+
+    public Atendente getAtendente() {
+        return atendente;
     }
 }
