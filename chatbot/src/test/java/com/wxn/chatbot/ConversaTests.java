@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class ConversaTests {
 
-    private final Cliente cliente = new Cliente("81999999999");
+    private final Cliente cliente = new Cliente(1L, "81999999999");
 
     @Test
     void iniciaConversaAbertaComClienteESemMensagens() {
