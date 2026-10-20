@@ -82,5 +82,30 @@ public class Chatbot {
         }
         this.ativo = true;
     }
-    
+
+    private void verificarAdministradorDaMesmaEmpresa(Atendente solicitante) {
+        Objects.requireNonNull(solicitante, "O solicitante é obrigatório.");
+        if (!solicitante.isAtivo() || !solicitante.possuiPerfil(Atendente.PerfilAcesso.ADMINISTRADOR)) {
+            throw new SecurityException("Apenas um administrador ativo pode configurar o chatbot.");
+        }
+        if (!solicitante.pertenceA(empresa)) {
+            throw new SecurityException("O administrador deve pertencer à mesma empresa do chatbot.");
+        }
+    }
+ 
+    private static String validarNome(String nome) {
+        Objects.requireNonNull(nome, "O nome do chatbot é obrigatório.");
+        if (nome.isBlank()) {
+            throw new IllegalArgumentException("O nome do chatbot não pode estar em branco.");
+        }
+        return nome.strip();
+    }
+ 
+    private static String validarMensagemBoasVindas(String mensagemBoasVindas) {
+        Objects.requireNonNull(mensagemBoasVindas, "A mensagem de boas-vindas é obrigatória.");
+        if (mensagemBoasVindas.isBlank()) {
+            throw new IllegalArgumentException("A mensagem de boas-vindas não pode estar em branco.");
+        }
+        return mensagemBoasVindas.strip();
+    }
 }
