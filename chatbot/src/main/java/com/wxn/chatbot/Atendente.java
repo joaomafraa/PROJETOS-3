@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
  
 public class Atendente {
 
-    public enum PerfilAcesso{
+    public enum PerfilAcesso {
         ADMINISTRADOR,
         COORDENADOR,
         ATENDENTE
@@ -21,14 +21,14 @@ public class Atendente {
     private boolean ativo;
 
     public Atendente(Long id, String nome, String email, Empresa empresa, PerfilAcesso perfil) {
-        this.id = Objects.requireNonNull(id, "O id do atendente e obrigatório.");
+        this.id = Objects.requireNonNull(id, "O id do atendente é obrigatório.");
         if (id <= 0) {
             throw new IllegalArgumentException("O id do atendente deve ser positivo.");
         }
         this.nome = validarNome(nome);
         this.email = validarEmail(email);
-        this.empresa = Objects.requireNonNull(empresa, "A empresa do atendente e obrigatória.");
-        this.perfil = Objects.requireNonNull(perfil, "O perfil de acesso e obrigatório.");
+        this.empresa = Objects.requireNonNull(empresa, "A empresa do atendente é obrigatória.");
+        this.perfil = Objects.requireNonNull(perfil, "O perfil de acesso é obrigatório.");
         this.ativo = true;
     }
  
@@ -65,12 +65,12 @@ public class Atendente {
     }
  
     public void verificarPodeAtender(Empresa empresaDoAtendimento) {
-        Objects.requireNonNull(empresaDoAtendimento, "A empresa do atendimento e obrigatória.");
+        Objects.requireNonNull(empresaDoAtendimento, "A empresa do atendimento é obrigatória.");
         if (!ativo) {
             throw new IllegalStateException("O atendente está inativo.");
         }
         if (!pertenceA(empresaDoAtendimento)) {
-            throw new IllegalArgumentException("O atendente não pertence a empresa do atendimento.");
+            throw new IllegalArgumentException("O atendente não pertence à empresa do atendimento.");
         }
     }
 
@@ -83,7 +83,7 @@ public class Atendente {
     }
  
     public void alterarPerfil(PerfilAcesso novoPerfil, Atendente solicitante) {
-        Objects.requireNonNull(novoPerfil, "O novo perfil de acesso e obrigatório.");
+        Objects.requireNonNull(novoPerfil, "O novo perfil de acesso é obrigatório.");
         verificarAdministradorDaMesmaEmpresa(solicitante);
         verificarNaoEhOProprioAtendente(solicitante, "Um administrador não pode alterar o próprio perfil.");
         this.perfil = novoPerfil;
@@ -93,7 +93,7 @@ public class Atendente {
         verificarAdministradorDaMesmaEmpresa(solicitante);
         verificarNaoEhOProprioAtendente(solicitante, "Um administrador não pode desativar a si mesmo.");
         if (!ativo) {
-            throw new IllegalStateException("O atendente ja está inativo.");
+            throw new IllegalStateException("O atendente já está inativo.");
         }
         this.ativo = false;
     }
@@ -101,8 +101,41 @@ public class Atendente {
     public void ativar(Atendente solicitante) {
         verificarAdministradorDaMesmaEmpresa(solicitante);
         if (ativo) {
-            throw new IllegalStateException("O atendente ja está ativo.");
+            throw new IllegalStateException("O atendente já está ativo.");
         }
         this.ativo = true;
+    }
+
+    private void verificarAdministradorDaMesmaEmpresa(Atendente solicitante) {
+        Objects.requireNonNull(solicitante, "O solicitante é obrigatório.");
+        if (!solicitante.isAtivo() || !solicitante.possuiPerfil(PerfilAcesso.ADMINISTRADOR)) {
+            throw new SecurityException("Apenas um administrador ativo pode realizar esta operação.");
+        }
+        if (!solicitante.pertenceA(empresa)) {
+            throw new SecurityException("O administrador deve pertencer a mesma empresa do atendente.");
+        }
+    }
+ 
+    private void verificarNaoEhOProprioAtendente(Atendente solicitante, String mensagem) {
+        if (solicitante.getId().equals(id)) {
+            throw new IllegalArgumentException(mensagem);
+        }
+    }
+ 
+    private static String validarNome(String nome) {
+        Objects.requireNonNull(nome, "O nome do atendente é obrigatório.");
+        if (nome.isBlank()) {
+            throw new IllegalArgumentException("O nome do atendente não pode estar em branco.");
+        }
+        return nome.strip();
+    }
+ 
+    private static String validarEmail(String email) {
+        Objects.requireNonNull(email, "O e-mail do atendente é obrigatório.");
+        String emailNormalizado = email.strip().toLowerCase();
+        if (!FORMATO_EMAIL.matcher(emailNormalizado).matches()) {
+            throw new IllegalArgumentException("O e-mail do atendente é inválido.");
+        }
+        return emailNormalizado;
     }
 }
