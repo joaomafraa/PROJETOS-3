@@ -60,8 +60,45 @@ class AtendenteTests {
         atendente.alterarNome("Bruno Lima");
         atendente.alterarEmail("bruno.lima@wxn.com");
         assertThrows(IllegalArgumentException.class, () -> atendente.alterarNome(""));
-        assertThrows(IllegalArgumentException.class, () -> atendente.alterarEmail("invalido"));
+        assertThrows(IllegalArgumentException.class, () -> atendente.alterarEmail("inválido"));
         assertEquals("Bruno Lima", atendente.getNome());
         assertEquals("bruno.lima@wxn.com", atendente.getEmail());
+    }
+
+    @Test
+    void identificaEmpresaPeloId() {
+        Atendente atendente = novoAtendente();
+ 
+        assertTrue(atendente.pertenceA(new Empresa(1L, "WXN (outra instância)")));
+        assertFalse(atendente.pertenceA(outraEmpresa));
+        assertFalse(atendente.pertenceA(null));
+    }
+ 
+    @Test
+    void verificaSePodeAtenderNaEmpresa() {
+        Atendente atendente = novoAtendente();
+ 
+        assertDoesNotThrow(() -> atendente.verificarPodeAtender(wxn));
+        assertThrows(IllegalArgumentException.class, () -> atendente.verificarPodeAtender(outraEmpresa));
+        assertThrows(NullPointerException.class, () -> atendente.verificarPodeAtender(null));
+ 
+        atendente.desativar(admin);
+        assertThrows(IllegalStateException.class, () -> atendente.verificarPodeAtender(wxn));
+    }
+ 
+    @Test
+    void administradorDaMesmaEmpresaAlteraPerfilEDesativaEAtiva() {
+        Atendente atendente = novoAtendente();
+ 
+        atendente.alterarPerfil(Atendente.PerfilAcesso.COORDENADOR, admin);
+        assertEquals(Atendente.PerfilAcesso.COORDENADOR, atendente.getPerfil());
+ 
+        atendente.desativar(admin);
+        assertFalse(atendente.isAtivo());
+        assertThrows(IllegalStateException.class, () -> atendente.desativar(admin));
+ 
+        atendente.ativar(admin);
+        assertTrue(atendente.isAtivo());
+        assertThrows(IllegalStateException.class, () -> atendente.ativar(admin));
     }
 }
