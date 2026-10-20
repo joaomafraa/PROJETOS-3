@@ -73,4 +73,36 @@ public class Atendente {
             throw new IllegalArgumentException("O atendente não pertence a empresa do atendimento.");
         }
     }
+
+    public void alterarNome(String nome) {
+        this.nome = validarNome(nome);
+    }
+ 
+    public void alterarEmail(String email) {
+        this.email = validarEmail(email);
+    }
+ 
+    public void alterarPerfil(PerfilAcesso novoPerfil, Atendente solicitante) {
+        Objects.requireNonNull(novoPerfil, "O novo perfil de acesso e obrigatório.");
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        verificarNaoEhOProprioAtendente(solicitante, "Um administrador não pode alterar o próprio perfil.");
+        this.perfil = novoPerfil;
+    }
+
+    public void desativar(Atendente solicitante) {
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        verificarNaoEhOProprioAtendente(solicitante, "Um administrador não pode desativar a si mesmo.");
+        if (!ativo) {
+            throw new IllegalStateException("O atendente ja está inativo.");
+        }
+        this.ativo = false;
+    }
+ 
+    public void ativar(Atendente solicitante) {
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        if (ativo) {
+            throw new IllegalStateException("O atendente ja está ativo.");
+        }
+        this.ativo = true;
+    }
 }
