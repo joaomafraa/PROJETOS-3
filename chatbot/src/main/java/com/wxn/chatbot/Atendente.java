@@ -19,4 +19,14 @@ public class Atendente {
     private String email;
     private PerfilAcesso perfil;
     private boolean ativo;
+
+    public Atendente(Long id, String nome, String email, Empresa empresa, PerfilAcesso perfil) {
+        this.id = Objects.requireNonNull(id, "O id do atendente e obrigatório.");
+        if (id <= 0) {
+            throw new IllegalArgumentException("O id do atendente deve ser positivo.");
+        }
+        this.nome = validarNome(nome);
+        this.email = validarEmail(email);
+        this.empresa = Objects.requireNonNull(empresa, "A empresa do atendente e obrigatória.");
+        this.perfil = Objects.requireNonNull(perfil, "O perfil de acesso e obrigatório.");
 }
