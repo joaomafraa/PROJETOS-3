@@ -4,7 +4,7 @@ public class Demonstracao {
 
     public static void main(String[] args) {
         Empresa empresa = new Empresa(1L, "WXN");
-        Cliente cliente = new Cliente(1L, "+44 20 7946-0123");
+        Cliente cliente = new Cliente(1L, "++55 81 4002-8922");
         cliente.alterarNome("Marina");
         cliente.atualizarEmail("marina@example.com");
         cliente.informarEmpresa("Empresa Exemplo");
@@ -17,11 +17,9 @@ public class Demonstracao {
         conversa.adicionarMensagem(2L, chatbot.getMensagemBoasVindas(), Mensagem.TipoRemetente.CHATBOT);
         conversa.solicitarAtendimentoHumano();
         conversa.iniciarAtendimentoHumano(atendente);
-        conversa.adicionarMensagem(3L, "Vou agendar sua demonstracao.",
-                Mensagem.TipoRemetente.ATENDENTE, atendente);
+        conversa.adicionarMensagem(3L, "Vou agendar sua demonstracao.",Mensagem.TipoRemetente.ATENDENTE, atendente);
 
-        Ticket ticket = new Ticket(1L, "WXN-001", "Agendar demonstracao",
-                Ticket.TipoSolicitacao.DEMONSTRACAO, conversa);
+        Ticket ticket = new Ticket(1L, "WXN-001", "Agendar demonstracao",Ticket.TipoSolicitacao.DEMONSTRACAO, conversa);
         try {
             ticket.iniciarAtendimento();
         } catch (IllegalStateException e) {
@@ -38,8 +36,14 @@ public class Demonstracao {
         System.out.println("Ticket " + ticket.getProtocolo() + ": " + ticket.getStatus());
         System.out.println("Responsavel pelo ticket: " + ticket.getResponsavel().getNome());
         for (Mensagem mensagem : conversa.getMensagens()) {
-            String autor = mensagem.getAtendente() == null
-                    ? mensagem.getRemetente().name() : mensagem.getAtendente().getNome();
+            String autor;
+
+            if (mensagem.getAtendente() != null) {
+                autor = mensagem.getAtendente().getNome();
+            } else {
+                autor = mensagem.getRemetente().name();
+            }
+
             System.out.println(autor + ": " + mensagem.getConteudo());
         }
     }
