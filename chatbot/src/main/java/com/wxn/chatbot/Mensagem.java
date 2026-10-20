@@ -41,9 +41,7 @@ public class Mensagem {
 
         this.remetente = Objects.requireNonNull(remetente, "O remetente e obrigatorio.");
 
-        if (atendente != null && remetente != TipoRemetente.ATENDENTE) {
-            throw new IllegalArgumentException("Apenas mensagens de atendente podem possuir um atendente.");
-        }
+        conversa.verificarEnvio(remetente, atendente);
         this.atendente = atendente;
         this.dataEnvio = Instant.now();
     }

@@ -58,14 +58,7 @@ public class Ticket {
 
         this.cliente = conversaOrigem.getCliente();
 
-        Empresa empresaDoCliente = cliente.getEmpresa();
-
-        if (empresaDoCliente == null) {
-            throw new IllegalStateException(
-                    "O cliente precisa estar vinculado a uma empresa.");
-        }
-
-        this.empresa = empresaDoCliente;
+        this.empresa = conversaOrigem.getEmpresa();
         this.dataAbertura = Instant.now();
         this.status = StatusTicket.PENDENTE;
     }

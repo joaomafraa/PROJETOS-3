@@ -1,6 +1,13 @@
 package com.wxn.chatbot;
 
+import java.util.Locale;
+import java.util.regex.Pattern;
+
 public class Cliente {
+
+    private static final Pattern FORMATO_EMAIL = Pattern.compile(
+            "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*"
+            + "@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$");
 
     private final Long id;
     private String nome;
@@ -8,6 +15,7 @@ public class Cliente {
     private String numeroTelefone;
     private boolean identidadeConfirmada;
     private Empresa empresa;
+    private String empresaInformada;
 
     public Cliente(Long id, String numeroTelefone) {
         if (id == null || id <= 0) {
@@ -42,6 +50,18 @@ public class Cliente {
         return empresa;
     }
 
+    public String getEmpresaInformada() {
+        return empresaInformada;
+    }
+
+    // Declaracao do interessado; nao concede acesso nem cria vinculo com um ambiente.
+    public void informarEmpresa(String nomeEmpresa) {
+        if (nomeEmpresa == null || nomeEmpresa.isBlank()) {
+            throw new IllegalArgumentException("O nome da empresa informada e obrigatorio.");
+        }
+        this.empresaInformada = nomeEmpresa.strip();
+    }
+
     public void alterarNome(String nome) {
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("O nome do cliente não pode estar vazio.");
@@ -50,10 +70,15 @@ public class Cliente {
     }
 
     public void atualizarEmail(String email) {
-        if (email == null || !email.contains("@") || !email.contains(".")) {
+        if (email == null) {
             throw new IllegalArgumentException("O e-mail do cliente é inválido.");
         }
-        this.email = email.trim().toLowerCase();
+        String emailNormalizado = email.strip().toLowerCase(Locale.ROOT);
+        if (emailNormalizado.length() > 254 || emailNormalizado.indexOf('@') > 64
+                || !FORMATO_EMAIL.matcher(emailNormalizado).matches()) {
+            throw new IllegalArgumentException("O e-mail do cliente é inválido.");
+        }
+        this.email = emailNormalizado;
         this.identidadeConfirmada = false;
     }
 
@@ -69,7 +94,7 @@ public class Cliente {
         this.identidadeConfirmada = true;
     }
 
-    // Primeiro vínculo, feito pelo chat no cadastro.
+    // Vinculo de dominio definido pelo cadastro confiavel, nunca pelo texto informado no chat.
     public void vincularEmpresa(Empresa empresa) {
         if (empresa == null) {
             throw new IllegalArgumentException("A empresa é obrigatória.");
@@ -104,8 +129,13 @@ public class Cliente {
         if (numeroTelefone == null) {
             throw new IllegalArgumentException("O telefone do cliente é obrigatório.");
         }
-        String telefone = numeroTelefone.replace(" ", "").replace("-", "");
-        if (telefone.length() < 10) {
+        String telefone = numeroTelefone.strip();
+        if (!telefone.matches("\\+?[0-9 ()-]+")) {
+            throw new IllegalArgumentException("O telefone do cliente é inválido.");
+        }
+        telefone = telefone.replaceAll("[ ()-]", "");
+        // Aceita numeros locais e internacionais sem presumir um codigo de pais.
+        if (!telefone.matches("(?:\\+[1-9][0-9]{6,14}|[0-9]{7,15})")) {
             throw new IllegalArgumentException("O telefone do cliente é inválido.");
         }
         return telefone;
