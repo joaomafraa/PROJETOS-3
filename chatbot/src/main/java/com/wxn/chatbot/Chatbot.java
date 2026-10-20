@@ -54,4 +54,33 @@ public class Chatbot {
             throw new IllegalArgumentException("O chatbot não pertence à empresa do atendimento.");
         }
     }
+
+    public void alterarNome(String nome, Atendente solicitante) {
+        String nomeValidado = validarNome(nome);
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        this.nome = nomeValidado;
+    }
+ 
+    public void alterarMensagemBoasVindas(String mensagemBoasVindas, Atendente solicitante) {
+        String mensagemValidada = validarMensagemBoasVindas(mensagemBoasVindas);
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        this.mensagemBoasVindas = mensagemValidada;
+    }
+ 
+    public void desativar(Atendente solicitante) {
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        if (!ativo) {
+            throw new IllegalStateException("O chatbot já está inativo.");
+        }
+        this.ativo = false;
+    }
+ 
+    public void ativar(Atendente solicitante) {
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        if (ativo) {
+            throw new IllegalStateException("O chatbot já está ativo.");
+        }
+        this.ativo = true;
+    }
+    
 }
