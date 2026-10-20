@@ -101,4 +101,38 @@ class AtendenteTests {
         assertTrue(atendente.isAtivo());
         assertThrows(IllegalStateException.class, () -> atendente.ativar(admin));
     }
+
+    @Test
+    void rejeitaSolicitanteSemPermissaoSemAlterarEstado() {
+        Atendente atendente = novoAtendente();
+        Atendente coordenador = new Atendente(2L, "Caio", "caio@wxn.com", wxn, Atendente.PerfilAcesso.COORDENADOR);
+        Atendente adminDeOutraEmpresa = new Atendente(3L, "Dora", "dora@outra.com", outraEmpresa,
+                Atendente.PerfilAcesso.ADMINISTRADOR);
+        Atendente adminInativo = new Atendente(4L, "Edu", "edu@wxn.com", wxn, Atendente.PerfilAcesso.ADMINISTRADOR);
+        adminInativo.desativar(admin);
+ 
+        for (Atendente solicitante : new Atendente[] { atendente, coordenador, adminDeOutraEmpresa, adminInativo }) {
+            assertThrows(SecurityException.class,
+                    () -> atendente.alterarPerfil(Atendente.PerfilAcesso.ADMINISTRADOR, solicitante));
+            assertThrows(SecurityException.class, () -> atendente.desativar(solicitante));
+        }
+        assertThrows(NullPointerException.class, () -> atendente.desativar(null));
+ 
+        assertEquals(Atendente.PerfilAcesso.ATENDENTE, atendente.getPerfil());
+        assertTrue(atendente.isAtivo());
+    }
+ 
+    @Test
+    void administradorNaoAlteraOProprioPerfilNemSeDesativa() {
+        assertThrows(IllegalArgumentException.class,
+                () -> admin.alterarPerfil(Atendente.PerfilAcesso.ATENDENTE, admin));
+        assertThrows(IllegalArgumentException.class, () -> admin.desativar(admin));
+ 
+        assertEquals(Atendente.PerfilAcesso.ADMINISTRADOR, admin.getPerfil());
+        assertTrue(admin.isAtivo());
+    }
+ 
+    private Atendente novoAtendente() {
+        return new Atendente(10L, "Bruno", "bruno@wxn.com", wxn, Atendente.PerfilAcesso.ATENDENTE);
+    }
 }
