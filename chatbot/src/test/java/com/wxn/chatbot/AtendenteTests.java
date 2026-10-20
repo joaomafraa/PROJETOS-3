@@ -21,11 +21,47 @@ class AtendenteTests {
         Atendente atendente = novoAtendente();
  
         assertAll(
-                () -> assertEquals(10L, atendente.getId()),
-                () -> assertEquals("Bruno", atendente.getNome()),
-                () -> assertEquals("bruno@wxn.com", atendente.getEmail()),
-                () -> assertSame(wxn, atendente.getEmpresa()),
-                () -> assertEquals(Atendente.PerfilAcesso.ATENDENTE, atendente.getPerfil()),
-                () -> assertTrue(atendente.isAtivo()));
+            () -> assertEquals(10L, atendente.getId()),
+            () -> assertEquals("Bruno", atendente.getNome()),
+            () -> assertEquals("bruno@wxn.com", atendente.getEmail()),
+            () -> assertSame(wxn, atendente.getEmpresa()),
+            () -> assertEquals(Atendente.PerfilAcesso.ATENDENTE, atendente.getPerfil()),
+            () -> assertTrue(atendente.isAtivo()));
+    }
+
+    @Test
+    void normalizaNomeEEmail() {
+        Atendente atendente = new Atendente(10L, "  Bruno  ", " Bruno@WXN.com ", wxn, Atendente.PerfilAcesso.ATENDENTE);
+ 
+        assertEquals("Bruno", atendente.getNome());
+        assertEquals("bruno@wxn.com", atendente.getEmail());
+    }
+
+    @Test
+    void rejeitaDadosInvalidosNaCriacao() {
+        var perfil = Atendente.PerfilAcesso.ATENDENTE;
+        assertAll(
+            () -> assertThrows(NullPointerException.class, () -> new Atendente(null, "Bruno", "b@wxn.com", wxn, perfil)),
+            () -> assertThrows(IllegalArgumentException.class, () -> new Atendente(0L, "Bruno", "b@wxn.com", wxn, perfil)),
+            () -> assertThrows(IllegalArgumentException.class, () -> new Atendente(-1L, "Bruno", "b@wxn.com", wxn, perfil)),
+            () -> assertThrows(NullPointerException.class, () -> new Atendente(10L, null, "b@wxn.com", wxn, perfil)),
+            () -> assertThrows(IllegalArgumentException.class, () -> new Atendente(10L, "  ", "b@wxn.com", wxn, perfil)),
+            () -> assertThrows(NullPointerException.class, () -> new Atendente(10L, "Bruno", null, wxn, perfil)),
+            () -> assertThrows(IllegalArgumentException.class, () -> new Atendente(10L, "Bruno", "bruno", wxn, perfil)),
+            () -> assertThrows(IllegalArgumentException.class, () -> new Atendente(10L, "Bruno", "b @wxn.com", wxn, perfil)),
+            () -> assertThrows(NullPointerException.class, () -> new Atendente(10L, "Bruno", "b@wxn.com", null, perfil)),
+            () -> assertThrows(NullPointerException.class, () -> new Atendente(10L, "Bruno", "b@wxn.com", wxn, null)));
+    }
+
+    @Test
+    void alteraNomeEEmailComValidacao() {
+        Atendente atendente = novoAtendente();
+ 
+        atendente.alterarNome("Bruno Lima");
+        atendente.alterarEmail("bruno.lima@wxn.com");
+        assertThrows(IllegalArgumentException.class, () -> atendente.alterarNome(""));
+        assertThrows(IllegalArgumentException.class, () -> atendente.alterarEmail("invalido"));
+        assertEquals("Bruno Lima", atendente.getNome());
+        assertEquals("bruno.lima@wxn.com", atendente.getEmail());
     }
 }
