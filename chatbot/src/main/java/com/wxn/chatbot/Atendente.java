@@ -29,4 +29,48 @@ public class Atendente {
         this.email = validarEmail(email);
         this.empresa = Objects.requireNonNull(empresa, "A empresa do atendente e obrigatória.");
         this.perfil = Objects.requireNonNull(perfil, "O perfil de acesso e obrigatório.");
+        this.ativo = true;
+    }
+ 
+    public Long getId() {
+        return id;
+    }
+ 
+    public String getNome() {
+        return nome;
+    }
+ 
+    public String getEmail() {
+        return email;
+    }
+ 
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+ 
+    public PerfilAcesso getPerfil() {
+        return perfil;
+    }
+ 
+    public boolean isAtivo() {
+        return ativo;
+    }
+ 
+    public boolean pertenceA(Empresa outraEmpresa) {
+        return outraEmpresa != null && empresa.getId().equals(outraEmpresa.getId());
+    }
+ 
+    public boolean possuiPerfil(PerfilAcesso perfilEsperado) {
+        return perfil == perfilEsperado;
+    }
+ 
+    public void verificarPodeAtender(Empresa empresaDoAtendimento) {
+        Objects.requireNonNull(empresaDoAtendimento, "A empresa do atendimento e obrigatória.");
+        if (!ativo) {
+            throw new IllegalStateException("O atendente está inativo.");
+        }
+        if (!pertenceA(empresaDoAtendimento)) {
+            throw new IllegalArgumentException("O atendente não pertence a empresa do atendimento.");
+        }
+    }
 }
