@@ -25,6 +25,11 @@ public class Empresa {
         return nome;
     }
 
+    public void alterarNome(String nome){
+        validarNome(nome);
+        this.nome = nome;
+    }
+
     public void validarNome(String nome){
         Objects.requireNonNull(nome, "O nome da empresa e obrigatorio.");
 
