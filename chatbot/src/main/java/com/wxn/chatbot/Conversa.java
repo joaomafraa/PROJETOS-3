@@ -5,6 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+@Entity
+@Table(name = "conversas")
 public class Conversa {
 
     public enum Status {
@@ -14,15 +27,42 @@ public class Conversa {
         ENCERRADA
     }
 
-    private final Long id;
-    private final Cliente cliente;
-    private final Empresa empresa;
-    private final Chatbot chatbot;
+    @Id
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empresa_id", nullable = false)
+    private Empresa empresa;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "chatbot_id", nullable = false)
+    private Chatbot chatbot;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsavel_id")
     private Atendente responsavel;
-    private final Instant dataInicio;
-    private final List<Mensagem> mensagens;
+    @Column(name = "data_inicio", nullable = false, updatable = false)
+    private Instant dataInicio;
+    @Transient
+    private List<Mensagem> mensagens = new ArrayList<>();
+    @Column(name = "data_encerramento")
     private Instant dataEncerramento;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(40)")
     private Status status;
+
+    protected Conversa() {
+    }
+
+    public Conversa(Long id, Cliente cliente) {
+        this.id = Objects.requireNonNull(id, "O id da conversa e obrigatorio.");
+        if (id <= 0) {
+            throw new IllegalArgumentException("O id da conversa deve ser positivo.");
+        }
+        this.cliente = Objects.requireNonNull(cliente, "O cliente e obrigatorio.");
+        this.dataInicio = Instant.now();
+        this.status = Status.EM_ATENDIMENTO_AUTOMATICO;
+    }
 
     public Conversa(Long id, Cliente cliente, Empresa empresa, Chatbot chatbot) {
         this.id = Objects.requireNonNull(id, "O id da conversa e obrigatorio.");
@@ -37,7 +77,6 @@ public class Conversa {
             throw new IllegalArgumentException("O cliente pertence a outra empresa.");
         }
         this.dataInicio = Instant.now();
-        this.mensagens = new ArrayList<>();
         this.status = Status.EM_ATENDIMENTO_AUTOMATICO;
     }
 
@@ -110,6 +149,16 @@ public class Conversa {
         status = Status.EM_ATENDIMENTO_HUMANO;
     }
 
+    public void iniciarAtendimentoHumano() {
+        if (empresa != null) {
+            throw new IllegalStateException("O atendente responsavel e obrigatorio.");
+        }
+        if (status != Status.AGUARDANDO_ATENDENTE) {
+            throw new IllegalStateException("A conversa deve estar aguardando um atendente.");
+        }
+        status = Status.EM_ATENDIMENTO_HUMANO;
+    }
+
     public void encerrar() {
         verificarAberta();
         dataEncerramento = Instant.now();
@@ -119,6 +168,12 @@ public class Conversa {
     void verificarEnvio(Mensagem.TipoRemetente remetente, Atendente atendente) {
         verificarAberta();
         Objects.requireNonNull(remetente, "O remetente e obrigatorio.");
+        if (empresa == null) {
+            if (remetente != Mensagem.TipoRemetente.ATENDENTE && atendente != null) {
+                throw new IllegalArgumentException("Apenas mensagens humanas podem possuir atendente.");
+            }
+            return;
+        }
         if (remetente == Mensagem.TipoRemetente.ATENDENTE) {
             Objects.requireNonNull(atendente, "O autor humano e obrigatorio.");
             if (status != Status.EM_ATENDIMENTO_HUMANO) {

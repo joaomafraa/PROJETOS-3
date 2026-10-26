@@ -1,14 +1,32 @@
 package com.wxn.chatbot;
  
 import java.util.Objects;
- 
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "chatbots")
 public class Chatbot {
  
-    private final Long id;
-    private final Empresa empresa;
+    @Id
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empresa_id", nullable = false)
+    private Empresa empresa;
+    @Column(nullable = false)
     private String nome;
+    @Column(name = "mensagem_boas_vindas", nullable = false)
     private String mensagemBoasVindas;
     private boolean ativo;
+
+    protected Chatbot() {
+    }
  
     public Chatbot(Long id, String nome, Empresa empresa, String mensagemBoasVindas) {
         this.id = Objects.requireNonNull(id, "O id do chatbot é obrigatório.");

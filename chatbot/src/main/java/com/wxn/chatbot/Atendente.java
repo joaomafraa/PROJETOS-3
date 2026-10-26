@@ -2,7 +2,19 @@ package com.wxn.chatbot;
  
 import java.util.Objects;
 import java.util.regex.Pattern;
- 
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "atendentes")
 public class Atendente {
 
     public enum PerfilAcesso {
@@ -13,12 +25,23 @@ public class Atendente {
 
     private static final Pattern FORMATO_EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
-    private final Long id;
-    private final Empresa empresa;
+    @Id
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empresa_id", nullable = false)
+    private Empresa empresa;
+    @Column(nullable = false)
     private String nome;
+    @Column(nullable = false)
     private String email;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(32)")
     private PerfilAcesso perfil;
+    @Column(nullable = false)
     private boolean ativo;
+
+    protected Atendente() {
+    }
 
     public Atendente(Long id, String nome, String email, Empresa empresa, PerfilAcesso perfil) {
         this.id = Objects.requireNonNull(id, "O id do atendente é obrigatório.");

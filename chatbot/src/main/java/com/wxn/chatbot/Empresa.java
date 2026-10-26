@@ -2,9 +2,21 @@ package com.wxn.chatbot;
 
 import java.util.Objects;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "empresas")
 public class Empresa {
-    private final Long id;
+    @Id
+    private Long id;
+    @Column(nullable = false)
     private String nome;
+
+    protected Empresa() {
+    }
 
     public Empresa(Long id, String nome){
         this.id = Objects.requireNonNull(id, "O id da mepresa e obrigatorio.");

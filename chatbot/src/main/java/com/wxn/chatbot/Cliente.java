@@ -3,19 +3,39 @@ package com.wxn.chatbot;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "clientes")
 public class Cliente {
 
     private static final Pattern FORMATO_EMAIL = Pattern.compile(
             "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*"
             + "@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$");
 
-    private final Long id;
+    @Id
+    private Long id;
     private String nome;
+    @Column(length = 254)
     private String email;
+    @Column(name = "numero_telefone", nullable = false, length = 32)
     private String numeroTelefone;
+    @Column(name = "identidade_confirmada", nullable = false)
     private boolean identidadeConfirmada;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
     private Empresa empresa;
+    @Column(name = "empresa_informada")
     private String empresaInformada;
+
+    protected Cliente() {
+    }
 
     public Cliente(Long id, String numeroTelefone) {
         if (id == null || id <= 0) {
