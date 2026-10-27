@@ -9,11 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 class MensagemTests {
+    private final Empresa empresa = new Empresa(1L, "WXN");
+    private final Chatbot chatbot = new Chatbot(1L, "Bot", empresa, "Ola");
 
     @Test
     void criaMensagemDeClienteComDadosValidos() {
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         Mensagem mensagem = new Mensagem(
                 1L,
@@ -32,7 +34,7 @@ class MensagemTests {
     @Test
     void criaMensagemDeChatbotSemAtendente() {
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         Mensagem mensagem = new Mensagem(
                 2L,
@@ -56,8 +58,10 @@ class MensagemTests {
                 Atendente.PerfilAcesso.ATENDENTE);
 
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
+        conversa.solicitarAtendimentoHumano();
+        conversa.iniciarAtendimentoHumano(atendente);
         Mensagem mensagem = new Mensagem(
                 3L,
                 conversa,
@@ -72,7 +76,7 @@ class MensagemTests {
     @Test
     void rejeitaIdNuloZeroOuNegativo() {
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         assertThrows(
                 NullPointerException.class,
@@ -113,7 +117,7 @@ class MensagemTests {
     @Test
     void rejeitaConteudoNuloOuEmBranco() {
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         assertThrows(
                 NullPointerException.class,
@@ -143,7 +147,7 @@ class MensagemTests {
     @Test
     void rejeitaRemetenteNulo() {
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         assertThrows(
                 NullPointerException.class,
@@ -166,7 +170,7 @@ class MensagemTests {
                 Atendente.PerfilAcesso.ATENDENTE);
 
         Cliente cliente = new Cliente(1L, "81999999999");
-        Conversa conversa = new Conversa(1L, cliente);
+        Conversa conversa = new Conversa(1L, cliente, empresa, chatbot);
 
         assertThrows(
                 IllegalArgumentException.class,

@@ -14,7 +14,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 @Entity
 @Table(name = "conversas")
@@ -43,7 +45,8 @@ public class Conversa {
     private Atendente responsavel;
     @Column(name = "data_inicio", nullable = false, updatable = false)
     private Instant dataInicio;
-    @Transient
+    @OneToMany(mappedBy = "conversa", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OrderBy("ordem ASC")
     private List<Mensagem> mensagens = new ArrayList<>();
     @Column(name = "data_encerramento")
     private Instant dataEncerramento;
@@ -52,16 +55,6 @@ public class Conversa {
     private Status status;
 
     protected Conversa() {
-    }
-
-    public Conversa(Long id, Cliente cliente) {
-        this.id = Objects.requireNonNull(id, "O id da conversa e obrigatorio.");
-        if (id <= 0) {
-            throw new IllegalArgumentException("O id da conversa deve ser positivo.");
-        }
-        this.cliente = Objects.requireNonNull(cliente, "O cliente e obrigatorio.");
-        this.dataInicio = Instant.now();
-        this.status = Status.EM_ATENDIMENTO_AUTOMATICO;
     }
 
     public Conversa(Long id, Cliente cliente, Empresa empresa, Chatbot chatbot) {
@@ -149,16 +142,6 @@ public class Conversa {
         status = Status.EM_ATENDIMENTO_HUMANO;
     }
 
-    public void iniciarAtendimentoHumano() {
-        if (empresa != null) {
-            throw new IllegalStateException("O atendente responsavel e obrigatorio.");
-        }
-        if (status != Status.AGUARDANDO_ATENDENTE) {
-            throw new IllegalStateException("A conversa deve estar aguardando um atendente.");
-        }
-        status = Status.EM_ATENDIMENTO_HUMANO;
-    }
-
     public void encerrar() {
         verificarAberta();
         dataEncerramento = Instant.now();
@@ -168,12 +151,6 @@ public class Conversa {
     void verificarEnvio(Mensagem.TipoRemetente remetente, Atendente atendente) {
         verificarAberta();
         Objects.requireNonNull(remetente, "O remetente e obrigatorio.");
-        if (empresa == null) {
-            if (remetente != Mensagem.TipoRemetente.ATENDENTE && atendente != null) {
-                throw new IllegalArgumentException("Apenas mensagens humanas podem possuir atendente.");
-            }
-            return;
-        }
         if (remetente == Mensagem.TipoRemetente.ATENDENTE) {
             Objects.requireNonNull(atendente, "O autor humano e obrigatorio.");
             if (status != Status.EM_ATENDIMENTO_HUMANO) {

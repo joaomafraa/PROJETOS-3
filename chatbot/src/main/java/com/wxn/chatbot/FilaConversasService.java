@@ -18,14 +18,18 @@ public class FilaConversasService {
     }
 
     @Transactional(readOnly = true)
-    public List<Conversa> visualizarFila(Atendente atendente) {
+    public List<ConversaResumo> visualizarFila(Atendente atendente) {
         Objects.requireNonNull(atendente, "O atendente e obrigatorio.");
         if (!atendente.isAtivo()) {
             throw new SecurityException("Um atendente inativo nao pode visualizar a fila.");
         }
 
-        return List.copyOf(conversaRepository.findByEmpresaIdAndStatusOrderByDataInicioAscIdAsc(
+        return conversaRepository.findByEmpresaIdAndStatusOrderByDataInicioAscIdAsc(
                 atendente.getEmpresa().getId(),
-                Conversa.Status.AGUARDANDO_ATENDENTE));
+                Conversa.Status.AGUARDANDO_ATENDENTE).stream()
+                .map(conversa -> new ConversaResumo(conversa.getId(), conversa.getCliente().getId(),
+                        conversa.getCliente().getNome(), conversa.getCliente().getNumeroTelefone(),
+                        conversa.getChatbot().getNome(), conversa.getDataInicio(), conversa.getStatus()))
+                .toList();
     }
 }

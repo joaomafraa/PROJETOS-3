@@ -4,7 +4,7 @@ public class Demonstracao {
 
     public static void main(String[] args) {
         Empresa empresa = new Empresa(1L, "WXN");
-        Cliente cliente = new Cliente(1L, "++55 81 4002-8922");
+        Cliente cliente = new Cliente(1L, "+55 81 4002-8922");
         cliente.alterarNome("Marina");
         cliente.atualizarEmail("marina@example.com");
         cliente.informarEmpresa("Empresa Exemplo");
