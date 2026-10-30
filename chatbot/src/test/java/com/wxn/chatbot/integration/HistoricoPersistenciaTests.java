@@ -78,6 +78,7 @@ class HistoricoPersistenciaTests {
         assertEquals(2L, fila.getFirst().id());
         assertEquals("Marina", fila.getFirst().clienteNome());
         assertEquals("Bot", fila.getFirst().chatbotNome());
+        assertEquals(1, painel.fila().size());
         assertThrows(UnsupportedOperationException.class, fila::clear);
         var historico = historicoService.visualizarHistorico(1L, admin);
         assertEquals(List.of(20L, 10L, 30L), historico.stream().map(MensagemResumo::id).toList());

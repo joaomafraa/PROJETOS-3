@@ -17,6 +17,7 @@ import com.wxn.chatbot.dto.MensagemResumo;
 import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.repository.ConversaRepository;
 import com.wxn.chatbot.service.HistoricoConversasService;
+import com.wxn.chatbot.service.FilaConversasService;
 
 // Modo de apresentacao local; nao substitui autenticacao em producao.
 @Profile("painel-local")
@@ -27,14 +28,22 @@ public class PainelHistoricoController {
     private final EntityManager entityManager;
     private final ConversaRepository conversas;
     private final HistoricoConversasService historico;
+    private final FilaConversasService fila;
     private final Long atendenteId;
 
     public PainelHistoricoController(EntityManager entityManager, ConversaRepository conversas,
-            HistoricoConversasService historico, @Value("${painel.atendente-id:1}") Long atendenteId) {
+            HistoricoConversasService historico, FilaConversasService fila,
+            @Value("${painel.atendente-id:1}") Long atendenteId) {
         this.entityManager = entityManager;
         this.conversas = conversas;
         this.historico = historico;
+        this.fila = fila;
         this.atendenteId = atendenteId;
+    }
+
+    @GetMapping("/fila")
+    public List<ConversaResumo> fila() {
+        return fila.visualizarFila(atendenteDoPainel());
     }
 
     @GetMapping

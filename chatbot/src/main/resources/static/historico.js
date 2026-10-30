@@ -56,7 +56,7 @@ async function carregar(selecionarId) {
   detalhes.textContent = 'Escolha uma conversa na lista.';
   informar('Carregando conversas…');
   try {
-    const conversas = await consultar('/api/historico');
+    const conversas = await consultar('/api/historico/fila');
     for (const conversa of conversas) {
       const botao = elemento('button', '', 'conversa');
       botao.type = 'button';
@@ -66,7 +66,7 @@ async function carregar(selecionarId) {
       lista.append(botao);
       if (conversa.id === selecionarId) botao.dataset.abrir = "true";
     }
-    informar(conversas.length ? 'Selecione uma conversa.' : 'Nenhuma conversa salva para esta empresa. A demonstração em memória não grava dados no banco.');
+    informar(conversas.length ? 'Selecione uma conversa.' : 'A fila está vazia. Novas conversas aguardando atendimento aparecerão aqui.');
   } catch (erro) { informar(erro.message, true); }
   finally { atualizar.disabled = false; }
   const selecionado = lista.querySelector('[data-abrir]');
