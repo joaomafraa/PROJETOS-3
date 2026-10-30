@@ -15,7 +15,7 @@ function elemento(tag, texto, classe) {
 function data(valor) { return new Date(valor).toLocaleString('pt-BR'); }
 function informar(texto, erro = false) {
   aviso.textContent = texto;
-  aviso.className = erro ? 'erro' : 'muted';
+  aviso.className = erro ? 'system-message erro' : 'system-message';
 }
 async function consultar(url) {
   let resposta;
@@ -37,6 +37,7 @@ async function abrir(conversa, botao) {
     if (atual !== requisicao) return;
     for (const mensagem of historico) {
       const item = elemento('li', '', 'mensagem');
+      if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
       if (mensagem.remetente === 'ATENDENTE') item.classList.add('humano');
       item.append(elemento('strong', `${mensagem.autor} · ${tipos[mensagem.remetente] || mensagem.remetente}`));
       const horario = elemento('time', data(mensagem.dataEnvio));
