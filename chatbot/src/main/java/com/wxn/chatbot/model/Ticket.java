@@ -2,7 +2,10 @@ package com.wxn.chatbot.model;
 
 import java.time.Instant;
 import java.util.Objects;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "tickets")
 public class Ticket {
 
     public enum TipoSolicitacao {
@@ -19,18 +22,38 @@ public class Ticket {
         CONCLUIDO
     }
 
-    private final Long id;
-    private final String protocolo;
-    private final String descricao;
-    private final TipoSolicitacao tipo;
-    private final Instant dataAbertura;
-    private final Empresa empresa;
-    private final Cliente cliente;
-    private final Conversa conversaOrigem;
+    @Id
+    private Long id;
+    @Column(nullable = false, updatable = false, columnDefinition = "text")
+    private String protocolo;
+    @Column(nullable = false, updatable = false, columnDefinition = "text")
+    private String descricao;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false, columnDefinition = "varchar(32)")
+    private TipoSolicitacao tipo;
+    @Column(name = "data_abertura", nullable = false, updatable = false)
+    private Instant dataAbertura;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empresa_id", nullable = false, updatable = false)
+    private Empresa empresa;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false, updatable = false)
+    private Cliente cliente;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "conversa_origem_id", nullable = false, updatable = false)
+    private Conversa conversaOrigem;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(32)")
     private StatusTicket status;
+    @Column(name = "data_conclusao")
     private Instant dataConclusao;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsavel_id")
     private Atendente responsavel;
+
+    protected Ticket() {
+    }
 
     public Ticket(
             Long id,

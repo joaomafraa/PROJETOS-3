@@ -1,209 +1,156 @@
 # Chatbot WXN
-https://projetos-3.onrender.com/
 
-## Sobre o projeto
+Projeto acadêmico de atendimento com Java e Spring Boot, organizado em entidades, acesso a dados, serviços de negócio e controladores HTTP.
 
-Este projeto tem como objetivo desenvolver um chatbot inteligente para atendimento,
-capaz de compreender solicitações dos usuários e integrar-se a sistemas externos,
-bancos de dados e APIs.
+Endereço de publicação do projeto: https://projetos-3.onrender.com/
 
-O backend da aplicação será desenvolvido utilizando Java com Spring Boot.
+## Funcionalidades implementadas
+
+- Entidades Cliente, Atendente, Chatbot, Conversa, Mensagem, Ticket e Empresa, com atributos encapsulados, relacionamentos e validações.
+- Persistência com JPA e migrações SQL com Flyway.
+- Consulta da fila pelo `FilaConversasService`: exige atendente ativo, filtra pela empresa e pelo status `AGUARDANDO_ATENDENTE`, ordenando pela data de início da conversa e pelo ID.
+- Histórico com conteúdo, autor e data das mensagens.
+- Página local de histórico, com atualização da lista e abertura de conversas.
+- Botão local para gravar um atendimento fictício no banco configurado.
+- Persistência de tickets e consultas por empresa com `TicketRepository`. O ticket mantém seu próprio ciclo: pendente, em atendimento e concluído.
+
+Veja o [modelo de classes e suas regras](docs/modelo-de-classes.md).
+
+## Situação das entregas
+
+| Etapa | Situação |
+| --- | --- |
+| Modelagem das entidades em POO | Classes e diagrama disponíveis |
+| Persistência e negócio da fila | Repositório, serviço e testes disponíveis |
+| Tela consumindo o negócio da fila | Próxima etapa: a página atual consulta o histórico geral |
+
+A lista do painel consulta diretamente o repositório; a consulta das mensagens passa pelo `HistoricoConversasService`. A tela ainda não chama o `FilaConversasService` e não possui filtros por tipo, status e responsável. O exemplo atual fica em atendimento humano, portanto não aparece na fila de espera.
+
+A persistência de Ticket é uma base para as próximas histórias. Ainda não há serviço de aplicação, API ou tela para abrir, assumir ou concluir tickets. Os IDs dos tickets são informados por quem os cria, seguindo o modelo atual; não há geração automática de protocolo nem regra de unicidade do protocolo.
+
+WhatsApp, Spring AI/LLM, documentos oficiais, CRM e demais sistemas externos são integrações planejadas. Autenticação de usuários também não está implementada.
 
 ## Tecnologias
 
-- Java
-- Spring Boot
-- Spring AI
-- PostgreSQL
-- Neon
-- Render
-- GitHub
+- Java 21 e Spring Boot.
+- Spring Web MVC e Spring Data JPA/Hibernate.
+- PostgreSQL (Neon) para o banco da aplicação.
+- Flyway para criar e evoluir as tabelas.
+- H2, JUnit e Mockito para os testes.
+- Maven Wrapper, Docker e configuração de publicação no Render.
 
-## Banco de Dados — PostgreSQL
-
-O PostgreSQL será utilizado como banco de dados da aplicação.
-
-O banco será hospedado no Neon, permitindo uma comunicação segura entre o
-PostgreSQL e o backend desenvolvido em Spring Boot, localmente ou no Render.
-
-Fluxo:
-
-Spring Boot → PostgreSQL (Neon)
-
-O banco será responsável pelo armazenamento das informações necessárias para
-o funcionamento da aplicação.
-
-As informações de conexão com o banco serão configuradas no ambiente da aplicação,
-evitando que dados sensíveis, como senhas e credenciais, sejam armazenados
-diretamente no código.
-
-## Integração com LLM
-
-O Spring AI será utilizado para realizar a integração entre o backend da aplicação
-e o modelo de linguagem (LLM).
-
-O modelo será responsável por auxiliar na compreensão das solicitações dos usuários
-e na geração das respostas do chatbot.
-
-Fluxo:
-
-Usuário → Chatbot → Spring Boot → Spring AI / LLM
-
-Quando necessário, o backend também poderá consultar o banco de dados ou serviços
-externos para obter informações utilizadas durante o atendimento.
-
-## Deploy — Render
-
-O Render será utilizado para realizar o deploy do backend desenvolvido em
-Spring Boot.
-
-A aplicação será conectada ao repositório do projeto no GitHub e executada
-em ambiente de nuvem.
-
-Fluxo:
-
-GitHub → Render → Aplicação Spring Boot
-
-As informações sensíveis necessárias para serviços externos, como chaves de API
-do modelo de linguagem, serão configuradas através de variáveis de ambiente
-no Render.
-
-O PostgreSQL será hospedado no Neon e conectado à aplicação no Render através
-de variáveis de ambiente. Neon e Render são serviços separados.
-
-## Arquitetura Inicial
-
-O fluxo principal da aplicação será:
-
-Usuário
-   ↓
-Interface / Chat
-   ↓
-Spring Boot
-   ├──→ Spring AI / LLM
-   ├──→ PostgreSQL (Neon)
-   └──→ Serviços externos / APIs / ERP
-
-O Spring Boot funcionará como a camada central da aplicação, sendo responsável
-pelas regras de negócio e pela comunicação entre o chatbot, o banco de dados,
-o modelo de linguagem e os serviços externos.
-
-## Ambiente de Desenvolvimento
-
-Durante o desenvolvimento, os principais componentes serão executados da
-seguinte forma:
-
-Spring Boot → Local
-PostgreSQL → Neon
-LLM → API externa
-Código-fonte → GitHub
-Deploy do backend → Render
-
-## Status do Projeto
-
-Projeto em desenvolvimento.
-
-Atualmente estão sendo definidos e configurados:
-
-- Repositório Git
-- Ambiente de desenvolvimento
-- Banco de dados PostgreSQL no Neon
-- Backend em Spring Boot
-- Integração com Spring AI / LLM
-- Ambiente de deploy com Render
-- Arquitetura e integrações da aplicação
-
-## Configuração atual
-
-O backend usa Java 21. A integração com Spring AI/LLM descrita acima está planejada.
-A página inicial está disponível em `/` e a verificação de saúde em `/actuator/health`.
-
-## Configurar o Neon
-
-1. Crie um projeto no Neon e selecione o banco e o usuário no painel **Connect**.
-2. Copie o host, o nome do banco, o usuário e a senha para as variáveis abaixo.
-3. Use a URL no formato JDBC, com TLS:
+## Organização do projeto
 
 ```text
-DB_URL=jdbc:postgresql://ep-seu-host.sua-regiao.aws.neon.tech/neondb?sslmode=require
-DB_USER=neondb_owner
-DB_PASSWORD=sua-senha
+PROJETOS-3/
+├── README.md
+├── docs/modelo-de-classes.md
+├── render.yaml
+└── chatbot/
+    ├── pom.xml
+    ├── Dockerfile
+    ├── .env.example
+    └── src/
+        ├── main/
+        │   ├── java/com/wxn/chatbot/
+        │   │   ├── ChatbotApplication.java
+        │   │   ├── model/        # Entidades e suas regras
+        │   │   ├── repository/   # Consultas e gravação no banco
+        │   │   ├── service/      # Casos de uso e transações
+        │   │   ├── dto/          # Dados devolvidos pelas consultas
+        │   │   ├── web/          # Rotas HTTP do painel local
+        │   │   └── demo/         # Demonstração de POO no terminal
+        │   └── resources/
+        │       ├── static/      # Página HTML e JavaScript
+        │       ├── db/migration/
+        │       └── application*.properties
+        └── test/                # Testes das entidades e integrações
 ```
 
-Substitua host, banco e usuário pelos valores reais do painel. Não coloque usuário
-ou senha dentro de `DB_URL`. A URI `postgresql://usuario:senha@host/banco` fornecida
-pelo Neon não pode ser colada diretamente como URL JDBC.
+## Executar o painel local (PowerShell)
 
-Para esta instância inicial, o host direto do Neon funciona com o pool Hikari
-limitado a 5 conexões. Nunca versione credenciais.
+É necessário Java 21 ou superior. A partir da raiz do repositório:
 
-## Deploy no Render
+1. Entre no módulo:
 
-1. Envie este projeto para seu repositório GitHub, incluindo `render.yaml`.
-2. No Render, escolha **New > Blueprint** e conecte o repositório.
-3. Informe `DB_URL`, `DB_USER` e `DB_PASSWORD` quando solicitado.
-4. Confirme a criação do serviço `chatbot-wxn`.
+   ```powershell
+   cd chatbot
+   ```
 
-O Blueprint usa o plano gratuito, compila e testa com Java 21 via Docker e inicia
-o backend na porta definida automaticamente pelo Render (`PORT`).
-O banco continua no Neon; nenhum banco é criado no Render.
+2. Se ainda não existir `.env`, copie `.env.example` para `.env` e preencha os dados do seu banco Neon. Preserve um `.env` que já esteja configurado.
 
-Caso crie um **Web Service** manualmente, selecione Docker, configure
-**Root Directory** como `chatbot`, **Dockerfile Path** como `./Dockerfile`, as mesmas
-três variáveis de ambiente, **Docker Build Context Directory** como `.` e
-**Health Check Path** como `/actuator/health`.
+   ```properties
+   DB_URL=jdbc:postgresql://ep-seu-host.sua-regiao.aws.neon.tech/neondb?sslmode=require
+   DB_USER=seu-usuario
+   DB_PASSWORD=sua-senha
+   ```
 
-Depois do deploy, abra `https://<seu-servico>.onrender.com/actuator/health`.
-A resposta deve conter `"status":"UP"`; ela também verifica a conexão com o banco.
-A rota `/` exibe a página inicial com a mensagem **Hello World!**.
+   Use uma URL JDBC, com apenas um prefixo `jdbc:` e sem credenciais dentro da URL. O arquivo `.env` é ignorado pelo Git.
 
-## Executar localmente (PowerShell)
+3. Carregue explicitamente o arquivo e habilite o painel:
 
-Instale Java 21 ou superior. O Maven Wrapper está incluído no projeto.
-Na raiz do repositório:
+   ```powershell
+   $env:SPRING_CONFIG_IMPORT = 'file:.env[.properties]'
+   $env:SPRING_PROFILES_ACTIVE = 'painel-local'
+   .\mvnw.cmd spring-boot:run
+   ```
+
+4. Abra http://localhost:8080/ para consultar o histórico.
+
+O perfil `painel-local` escuta apenas em `127.0.0.1` e usa o atendente de ID 1 por padrão. Para usar outro, configure `PAINEL_ATENDENTE_ID` com um ID ativo. Esse atendente fixo serve à apresentação local; não representa login.
+
+O botão **Criar atendimento de exemplo** grava dados fictícios no banco configurado (inclusive no Neon, se ele estiver configurado). Repetir o clique reutiliza o exemplo existente. O exemplo usa o ID `900000001` para empresa, cliente, chatbot e conversa quando necessário, e rejeita as colisões detectadas nos identificadores.
+
+Se a lista retornar erro de atendente inexistente, crie o exemplo ou configure um atendente ativo já cadastrado. Se as consultas retornarem 404, confira se o perfil `painel-local` está ativo. Spring Boot não carrega `.env` automaticamente.
+
+## Demonstração de POO no terminal
+
+Dentro de `chatbot`:
 
 ```powershell
-cd chatbot
-$env:DB_URL = 'jdbc:postgresql://ep-seu-host.sua-regiao.aws.neon.tech/neondb?sslmode=require'
-$env:DB_USER = 'neondb_owner'
-$env:DB_PASSWORD = 'sua-senha'
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd compile
+java -cp target/classes com.wxn.chatbot.demo.Demonstracao
 ```
 
-Abra `http://localhost:8080/` para ver a página inicial.
-Verifique `http://localhost:8080/actuator/health` para consultar a saúde da aplicação.
-`chatbot/.env.example` é uma referência: Spring Boot não carrega `.env`
-automaticamente. Configure as variáveis no terminal ou na sua IDE.
+Essa demonstração cria os objetos em memória e imprime as mensagens e o ciclo do ticket. Ela não grava no banco. Para persistir, o código precisa usar um repositório dentro do contexto da aplicação; as anotações JPA sozinhas não salvam objetos.
 
-## Schema e testes
+## Banco e migrações
 
-O Hibernate usa `validate` por padrão, sem alterar tabelas na inicialização.
-Atualmente não existem entidades ou migrações. Ao adicionar entidades, crie
-migrações SQL antes do deploy. Para protótipos em um banco de desenvolvimento,
-é possível definir `DB_DDL_AUTO=update`; não use isso como estratégia de migração
-de produção.
+| Migração | Conteúdo |
+| --- | --- |
+| V1 | Empresas, clientes, chatbots, atendentes, conversas e índice da fila |
+| V2 | Mensagens, identificação do autor e ordenação do histórico |
+| V3 | Tickets, relacionamentos e restrições de tipo e estado |
+
+Flyway aplica migrações pendentes ao iniciar a aplicação com acesso ao banco. O Hibernate usa `validate` por padrão para conferir o mapeamento; alterações futuras de estrutura devem ser feitas em novas migrações.
+
+Tickets referenciam empresa, cliente, conversa de origem e, quando atribuído, um atendente responsável. Salvar um ticket não cria nem remove automaticamente essas entidades relacionadas: elas devem existir no banco.
+
+## Testes
+
+Dentro de `chatbot`:
 
 ```powershell
-cd chatbot
-.\mvnw.cmd -B verify
+.\mvnw.cmd clean test
 ```
 
-Os testes usam H2 em memória, sem credenciais Neon. Eles verificam a inicialização
-do Spring e a resposta HTTP do endpoint de saúde, mas não substituem um teste de
-integração com PostgreSQL real.
+Os testes usam H2 em memória e aplicam as migrações, sem precisar de credenciais Neon. Verificam regras de domínio, consultas por empresa, fila, histórico, persistência de mensagens e tickets e comportamento do painel local. Eles não substituem uma validação no PostgreSQL real.
 
-## Referências
+## Publicação no Render
 
-- [Neon com Java](https://neon.com/docs/guides/java)
-- [Blueprints do Render](https://render.com/docs/blueprint-spec)
-- [Health checks do Render](https://render.com/docs/health-checks)
+O `render.yaml` configura o serviço Docker a partir da pasta `chatbot` e solicita `DB_URL`, `DB_USER` e `DB_PASSWORD` como variáveis do ambiente. O Dockerfile usa Java 21, executa os testes no build e inicia a aplicação na porta `PORT`.
+
+O endpoint `/actuator/health` verifica a saúde da aplicação, incluindo o banco. O HTML da página inicial é servido em `/`, mas suas rotas de consulta e criação de exemplo só existem com `painel-local`. Portanto, a publicação padrão ainda não disponibiliza um painel funcional de histórico ou fila.
+
+Não habilite o perfil local como solução de publicação: ele usa um atendente fixo e limita a escuta a `127.0.0.1`. O painel publicado será tratado em uma etapa própria, com configuração de acesso adequada.
 
 ## Grupo
-João Carlos Mafra
-Arthur Almeida
-Gabriel Malta
-Márcio Rodriguez
-Gabriel Mendes
-Pedro Martins
-Hélio de Moraes
-Guilherme Guimarães
+
+- João Carlos Mafra
+- Arthur Almeida
+- Gabriel Malta
+- Márcio Rodriguez
+- Gabriel Mendes
+- Pedro Martins
+- Hélio de Moraes
+- Guilherme Guimarães
