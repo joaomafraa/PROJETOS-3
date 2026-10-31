@@ -32,6 +32,7 @@ async function abrir(conversa, botao) {
   mensagens.replaceChildren();
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
   informar('Carregando mensagens…');
+  window.contextoAtendimento?.mostrar(conversa);
   try {
     const historico = await consultar(`/api/historico/${encodeURIComponent(conversa.id)}/mensagens`);
     if (atual !== requisicao) return;
@@ -54,6 +55,7 @@ async function carregar(selecionarId) {
   lista.replaceChildren();
   mensagens.replaceChildren();
   detalhes.textContent = 'Escolha uma conversa na lista.';
+  window.contextoAtendimento?.limpar();
   informar('Carregando conversas…');
   try {
     const conversas = await consultar('/api/historico/fila');
