@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=5"></script>
-  <link rel="stylesheet" href="/painel.css?v=5">
+  <link rel="stylesheet" href="/painel.css?v=6">
 </head>
 <body>
   <div class="app-shell">
@@ -90,22 +90,23 @@
           <div class="privacy-note"><span aria-hidden="true">●</span>Contexto da conversa</div>
           <div class="context-section">
             <h3>Resumo</h3>
-            <p>Selecione uma conversa para acompanhar as mensagens e os dados já registrados.</p>
+            <p id="contexto-resumo">Selecione uma conversa para acompanhar as mensagens e os dados já registrados.</p>
           </div>
-          <dl class="context-data">
-            <div><dt>Cliente</dt><dd>Aguardando seleção</dd></div>
-            <div><dt>Telefone</dt><dd>—</dd></div>
-            <div><dt>Chatbot</dt><dd>—</dd></div>
-            <div><dt>Status</dt><dd><span class="status-badge">Não selecionado</span></dd></div>
+          <dl id="contexto" class="context-data" aria-live="polite">
+            <div><dt>Cliente</dt><dd data-campo="cliente">Aguardando seleção</dd></div>
+            <div><dt>Telefone</dt><dd data-campo="telefone">—</dd></div>
+            <div><dt>Chatbot</dt><dd data-campo="chatbot">—</dd></div>
+            <div><dt>Status</dt><dd data-campo="status"><span class="status-badge">Não selecionado</span></dd></div>
           </dl>
           <div class="context-note">
             <strong>Informações já coletadas</strong>
-            <p>A integração destes dados será disponibilizada na próxima etapa.</p>
+            <p>E-mail, protocolo e responsável ainda não são enviados pela API e serão disponibilizados na próxima etapa.</p>
           </div>
         </aside>
       </div>
     </main>
   </div>
+  <script src="/contexto.js" defer></script>
   <script src="/historico.js" defer></script>
 </body>
 </html>
