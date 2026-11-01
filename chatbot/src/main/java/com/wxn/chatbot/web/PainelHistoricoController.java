@@ -43,7 +43,12 @@ public class PainelHistoricoController {
 
     @GetMapping("/fila")
     public List<ConversaResumo> fila() {
-        return fila.visualizarFila(atendenteDoPainel());
+        try {
+            return fila.visualizarFila(atendenteDoPainel());
+        } catch (SecurityException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "O atendente nao tem permissao para visualizar a fila.");
+        }
     }
 
     @GetMapping
