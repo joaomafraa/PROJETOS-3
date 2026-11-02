@@ -46,8 +46,15 @@ async function abrir(conversa, botao) {
       item.append(horario, elemento('p', mensagem.conteudo));
       mensagens.append(item);
     }
+    mensagens.scrollTop = mensagens.scrollHeight;
     informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
-  } catch (erro) { if (atual === requisicao) informar(erro.message, true); }
+  } catch (erro) {
+  if (atual !== requisicao) return;
+  const texto = erro.message.startsWith('Consulta indisponível')
+    ? 'Conversa não encontrada. Atualize a lista e tente novamente.'
+    : erro.message;
+  informar(texto, true);
+}
 }
 async function carregar(selecionarId) {
   ++requisicao;
