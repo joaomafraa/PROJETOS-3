@@ -10,7 +10,8 @@ Endereço de publicação do projeto: https://projetos-3.onrender.com/
 - Persistência com JPA e migrações SQL com Flyway.
 - Consulta da fila pelo `FilaConversasService`: exige atendente ativo, filtra pela empresa e pelo status `AGUARDANDO_ATENDENTE`, ordenando pela data de início da conversa e pelo ID.
 - Histórico com conteúdo, autor e data das mensagens.
-- Página local de histórico, com atualização da lista e abertura de conversas.
+- Tela local da fila (`GET /api/historico/fila`, que usa o `FilaConversasService`): lista as conversas aguardando atendimento da empresa do atendente, abre o histórico da conversa selecionada e mostra o contexto disponível.
+- Estados da tela: carregamento, fila vazia, erro com botão **Tentar novamente** e histórico sem mensagens. Navegação pelo teclado com Tab, setas, Home e End.
 - Botão local para gravar um atendimento fictício no banco configurado.
 - Persistência de tickets e consultas por empresa com `TicketRepository`. O ticket mantém seu próprio ciclo: pendente, em atendimento e concluído.
 
@@ -22,9 +23,9 @@ Veja o [modelo de classes e suas regras](docs/modelo-de-classes.md).
 | --- | --- |
 | Modelagem das entidades em POO | Classes e diagrama disponíveis |
 | Persistência e negócio da fila | Repositório, serviço e testes disponíveis |
-| Tela consumindo o negócio da fila | Próxima etapa: a página atual consulta o histórico geral |
+| Tela consumindo o negócio da fila | Disponível: a lista usa `/api/historico/fila` e o histórico usa o `HistoricoConversasService` |
 
-A lista do painel consulta diretamente o repositório; a consulta das mensagens passa pelo `HistoricoConversasService`. A tela ainda não chama o `FilaConversasService` e não possui filtros por tipo, status e responsável. O exemplo atual fica em atendimento humano, portanto não aparece na fila de espera.
+Ainda não existem busca, filtros por tipo, status e responsável, assumir conversa, envio de mensagens, **Meus chats**, login, CRM nem o painel completo de solicitações. Esses controles aparecem desativados na tela. O botão **Criar exemplo** grava uma conversa que fica em atendimento humano; portanto, ela não aparece na fila de espera. Para ver uma conversa na fila, é preciso que exista no banco uma conversa em `AGUARDANDO_ATENDENTE` da empresa do atendente (dados de demonstração em preparação pelo grupo).
 
 A persistência de Ticket é uma base para as próximas histórias. Ainda não há serviço de aplicação, API ou tela para abrir, assumir ou concluir tickets. Os IDs dos tickets são informados por quem os cria, seguindo o modelo atual; não há geração automática de protocolo nem regra de unicidade do protocolo.
 
@@ -95,13 +96,35 @@ PROJETOS-3/
    .\mvnw.cmd spring-boot:run
    ```
 
-4. Abra http://localhost:8080/ para consultar o histórico.
+4. Abra http://localhost:8080/ para ver a fila de conversas.
 
 O perfil `painel-local` escuta apenas em `127.0.0.1` e usa o atendente de ID 1 por padrão. Para usar outro, configure `PAINEL_ATENDENTE_ID` com um ID ativo. Esse atendente fixo serve à apresentação local; não representa login.
 
 O botão **Criar atendimento de exemplo** grava dados fictícios no banco configurado (inclusive no Neon, se ele estiver configurado). Repetir o clique reutiliza o exemplo existente. O exemplo usa o ID `900000001` para empresa, cliente, chatbot e conversa quando necessário, e rejeita as colisões detectadas nos identificadores.
 
 Se a lista retornar erro de atendente inexistente, crie o exemplo ou configure um atendente ativo já cadastrado. Se as consultas retornarem 404, confira se o perfil `painel-local` está ativo. Spring Boot não carrega `.env` automaticamente.
+
+## Estados da tela e teclado
+
+| Situação | O que a tela mostra | O que fazer |
+| --- | --- | --- |
+| Carregando | Indicador na lista (ou no histórico) e aviso “Carregando…” | Aguardar |
+| Fila vazia | “Nenhuma conversa aguardando” | **Atualizar lista** quando houver novas conversas |
+| Erro | Mensagem explicando a causa e botão **Tentar novamente** (o foco vai para ele) | Corrigir a causa, como app parada, atendente inativo ou perfil `painel-local` desligado, e tentar novamente |
+| Conversa sem mensagens | “Sem mensagens” | Escolher outra conversa |
+
+Teclado: `Tab` percorre os controles (o primeiro é o link “Ir para a lista de conversas”); na lista, `↑`/`↓` movem entre as conversas, `Home`/`End` vão à primeira e à última, e `Enter` ou `Espaço` abrem a conversa em foco. A área de mensagens recebe foco com `Tab` e rola com as setas.
+
+## Roteiro de execução e apresentação
+
+1. Na pasta `chatbot`, inicie com o perfil `painel-local` (comandos em [Executar o painel local](#executar-o-painel-local-powershell)).
+2. Abra http://localhost:8080/ e mostre a caixa de entrada e a troca de tema.
+3. Explique que a lista vem de `GET /api/historico/fila`: somente conversas `AGUARDANDO_ATENDENTE` da empresa do atendente ativo.
+4. Selecione uma conversa e mostre o histórico (autor, tipo e horário) e o painel de contexto. Campos que a API não envia aparecem como “Não disponível”.
+5. Percorra a lista com o teclado (`↑`/`↓`, `Enter`).
+6. Clique em **Atualizar lista** para mostrar o carregamento e a fila vazia ou uma nova conversa aguardando.
+7. Opcional: pare a aplicação e clique em **Atualizar lista** para mostrar a mensagem de erro e o botão **Tentar novamente**.
+8. Encerre informando que assumir conversa, envio de mensagens, **Meus chats**, busca e filtros, login, CRM e o painel de solicitações ficam para as próximas etapas e aparecem desativados.
 
 ## Demonstração de POO no terminal
 

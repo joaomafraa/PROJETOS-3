@@ -9,9 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=5"></script>
-  <link rel="stylesheet" href="/painel.css?v=6">
+  <link rel="stylesheet" href="/painel.css?v=7">
 </head>
 <body>
+  <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal">
       <a class="brand" href="/" aria-label="WXN, página inicial">
@@ -42,7 +43,10 @@
         </div>
       </header>
 
-      <p id="aviso" class="system-message" role="status" aria-live="polite"></p>
+      <div id="barra-aviso" class="status-bar">
+        <p id="aviso" class="system-message" role="status" aria-live="polite"></p>
+        <button id="tentar-novamente" class="button secondary" type="button" hidden>Tentar novamente</button>
+      </div>
 
       <div class="inbox-layout">
         <section class="conversation-list-panel" aria-labelledby="titulo-lista">
@@ -60,7 +64,7 @@
             <button class="tab active" type="button" disabled>Recentes</button>
             <button class="tab" type="button" disabled title="Disponível em uma próxima entrega">Meus chats</button>
           </div>
-          <div id="conversas" class="conversation-list"></div>
+          <div id="conversas" class="conversation-list" role="group" aria-label="Conversas aguardando atendimento" aria-busy="false"></div>
         </section>
 
         <section class="chat-panel" aria-labelledby="titulo-historico">
@@ -74,7 +78,7 @@
             <div><strong>Histórico de atendimento</strong><span>Consulte as mensagens registradas nesta conversa.</span></div>
           </div>
 
-          <ol id="mensagens" class="message-list"></ol>
+          <ol id="mensagens" class="message-list" tabindex="0" aria-label="Mensagens da conversa selecionada"></ol>
 
           <footer class="composer">
             <label for="mensagem-resposta" class="visually-hidden">Mensagem para o cliente</label>

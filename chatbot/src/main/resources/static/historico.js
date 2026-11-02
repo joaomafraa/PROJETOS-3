@@ -13,10 +13,25 @@ function elemento(tag, texto, classe) {
   return item;
 }
 function data(valor) { return new Date(valor).toLocaleString('pt-BR'); }
-function informar(texto, erro = false) {
+const barraAviso = document.querySelector('#barra-aviso');
+const tentarNovamente = document.querySelector('#tentar-novamente');
+let repetir = null;
+// Mostra o aviso; com `acao`, exibe o botão para repetir a consulta que falhou.
+function informar(texto, erro = false, acao = null) {
   aviso.textContent = texto;
   aviso.className = erro ? 'system-message erro' : 'system-message';
+  barraAviso.classList.toggle('ativa', Boolean(texto));
+  repetir = erro ? acao : null;
+  tentarNovamente.hidden = !repetir;
 }
+// Substitui o conteúdo de um contêiner por uma mensagem de estado (carregando, vazio ou erro).
+function mostrarEstado(destino, titulo, detalhe, tipo = '') {
+  const item = elemento(destino.tagName === 'OL' ? 'li' : 'p', '', `estado ${tipo}`.trim());
+  item.append(elemento('strong', titulo));
+  if (detalhe) item.append(elemento('span', detalhe));
+  destino.replaceChildren(item);
+}
+tentarNovamente.addEventListener('click', () => { if (repetir) repetir(); });
 async function consultar(url) {
   let resposta;
   try { resposta = await fetch(url, { cache: 'no-store' }); }
@@ -29,13 +44,15 @@ async function consultar(url) {
 async function abrir(conversa, botao) {
   const atual = ++requisicao;
   lista.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === botao)));
-  mensagens.replaceChildren();
+  mostrarEstado(mensagens, 'Carregando mensagens…', '', 'carregando');
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
   informar('Carregando mensagens…');
   window.contextoAtendimento?.mostrar(conversa);
   try {
     const historico = await consultar(`/api/historico/${encodeURIComponent(conversa.id)}/mensagens`);
     if (atual !== requisicao) return;
+    mensagens.replaceChildren();
+    if (!historico.length) mostrarEstado(mensagens, 'Sem mensagens', 'Esta conversa ainda não tem mensagens salvas.');
     for (const mensagem of historico) {
       const item = elemento('li', '', 'mensagem');
       if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
@@ -47,18 +64,26 @@ async function abrir(conversa, botao) {
       mensagens.append(item);
     }
     informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
-  } catch (erro) { if (atual === requisicao) informar(erro.message, true); }
+  } catch (erro) {
+    if (atual !== requisicao) return;
+    mostrarEstado(mensagens, 'Não foi possível carregar as mensagens', 'Use “Tentar novamente” para consultar de novo.', 'erro');
+    informar(erro.message, true, () => abrir(conversa, botao));
+    tentarNovamente.focus();
+  }
 }
 async function carregar(selecionarId) {
   ++requisicao;
   atualizar.disabled = true;
-  lista.replaceChildren();
+  lista.setAttribute('aria-busy', 'true');
+  mostrarEstado(lista, 'Carregando conversas…', '', 'carregando');
   mensagens.replaceChildren();
   detalhes.textContent = 'Escolha uma conversa na lista.';
   window.contextoAtendimento?.limpar();
   informar('Carregando conversas…');
   try {
     const conversas = await consultar('/api/historico/fila');
+    lista.replaceChildren();
+    if (!conversas.length) mostrarEstado(lista, 'Nenhuma conversa aguardando', 'Novas conversas aguardando atendimento aparecerão aqui. Use “Atualizar lista” para consultar de novo.');
     for (const conversa of conversas) {
       const botao = elemento('button', '', 'conversa');
       botao.type = 'button';
@@ -69,11 +94,25 @@ async function carregar(selecionarId) {
       if (conversa.id === selecionarId) botao.dataset.abrir = "true";
     }
     informar(conversas.length ? 'Selecione uma conversa.' : 'A fila está vazia. Novas conversas aguardando atendimento aparecerão aqui.');
-  } catch (erro) { informar(erro.message, true); }
-  finally { atualizar.disabled = false; }
+  } catch (erro) {
+    mostrarEstado(lista, 'Não foi possível carregar a fila', 'Confira a mensagem acima e tente novamente.', 'erro');
+    informar(erro.message, true, () => carregar(selecionarId));
+    tentarNovamente.focus();
+  }
+  finally { atualizar.disabled = false; lista.setAttribute('aria-busy', 'false'); }
   const selecionado = lista.querySelector('[data-abrir]');
   if (selecionado) selecionado.click();
 }
+// Setas, Home e End movem o foco entre as conversas; Enter ou Espaço abrem a conversa em foco.
+lista.addEventListener('keydown', evento => {
+  const itens = [...lista.querySelectorAll('button.conversa')];
+  const posicao = itens.indexOf(document.activeElement);
+  if (posicao < 0) return;
+  const alvo = { ArrowDown: itens[posicao + 1], ArrowUp: itens[posicao - 1], Home: itens[0], End: itens.at(-1) }[evento.key];
+  if (!alvo) return;
+  evento.preventDefault();
+  alvo.focus();
+});
 atualizar.addEventListener('click', () => carregar());
 carregar();
 const criarExemplo = document.querySelector('#exemplo');
