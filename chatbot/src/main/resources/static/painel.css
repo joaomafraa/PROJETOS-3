@@ -89,8 +89,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,.message-list:focus-vis
 .conversation-list { display:grid; align-content:start; gap:6px; max-height:65dvh; overflow:auto; padding:2px; }
 .conversa { display:block; width:100%; text-align:left; background:none; border:1px solid transparent; padding:14px 12px; border-radius:8px; transition:transform 140ms var(--ease),background-color 140ms ease; }
 .conversa[aria-pressed="true"] { border-color:var(--strong); background:var(--selected); }
-.conversa strong { display:block; font-size:13px; font-weight:600; }
-.conversa span { display:block; color:var(--muted); font-size:11px; margin-top:6px; }
+.conversa strong { display:block; font-size:13px; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.conversa-topo, .conversa-rodape { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.conversa-rodape { margin-top:8px; }
+.conversa-hora, .conversa-id { flex-shrink:0; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; }
+.conversa .status-badge[data-status="AGUARDANDO_ATENDENTE"] { color:var(--ink); border-color:var(--strong); }
+.search-field:focus-within { border-color:var(--strong); }
 .chat-panel { display:flex; flex-direction:column; min-width:0; background:var(--subtle); border-right:1px solid var(--line); }
 .chat-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:86px; padding:20px 24px; background:var(--surface); border-bottom:1px solid var(--line); }
 .chat-heading p { color:var(--muted); font-size:11px; margin-top:5px; overflow-wrap:anywhere; }
@@ -124,6 +128,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,.message-list:focus-vis
 .context-note p { font-size:11px; color:var(--muted); margin-top:7px; line-height:1.7; }
 .workspace,.inbox-layout { animation:panel-enter 280ms var(--ease) both; }
 .conversa,.mensagem { animation:item-enter 240ms var(--ease) both; }
+.sem-animacao .conversa { animation:none; }
 .mensagem:nth-child(2) { animation-delay:30ms; }
 .mensagem:nth-child(3) { animation-delay:60ms; }
 .mensagem:nth-child(4) { animation-delay:90ms; }
@@ -181,6 +186,3 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
   .chat-heading,.message-list { padding-inline:16px; }
   .waiting-banner { margin-inline:16px; }
 }
-
-
-
