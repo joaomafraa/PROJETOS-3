@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=6"></script>
-  <link rel="stylesheet" href="/painel.css?v=9">
+  <link rel="stylesheet" href="/painel.css?v=10">
 </head>
 <body>
   <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
@@ -50,13 +50,13 @@
       <div class="inbox-layout">
         <section class="conversation-list-panel" aria-labelledby="titulo-lista">
           <div class="panel-heading">
-            <div><h1 id="titulo-lista">Caixa de entrada</h1><p>Conversas recentes da empresa</p></div>
-            <span class="status-badge">Histórico</span>
+            <div><h1 id="titulo-lista">Caixa de entrada</h1><p>Conversas aguardando atendimento</p></div>
+            <span id="contador-fila" class="status-badge" aria-live="polite">Fila</span>
           </div>
 
           <label class="search-field">
             <span class="visually-hidden">Buscar conversa</span><span aria-hidden="true">⌕</span>
-            <input type="search" placeholder="Buscar conversa..." disabled title="A busca será adicionada na próxima etapa">
+            <input id="busca" type="search" placeholder="Buscar por nome do cliente..." autocomplete="off" aria-controls="conversas">
           </label>
 
           <div class="list-tabs" aria-label="Filtros da caixa de entrada">
@@ -117,6 +117,6 @@
     </main>
   </div>
   <script src="/contexto.js" defer></script>
-  <script src="/historico.js" defer></script>
+  <script src="/historico.js?v=2" defer></script>
 </body>
 </html>

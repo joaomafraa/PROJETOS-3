@@ -41,9 +41,77 @@ async function consultar(url) {
   if (!resposta.ok) throw new Error('Não foi possível consultar o histórico. Tente novamente.');
   return resposta.json();
 }
-async function abrir(conversa, botao) {
+// Estado da lista: itens vindos da API, conversa selecionada e termo de busca.
+const busca = document.querySelector('#busca');
+const contador = document.querySelector('#contador-fila');
+let conversasCarregadas = [];
+let selecionadaId = null;
+
+// Remove acentos e caixa para a busca achar "joao" em "João".
+function normalizar(texto) {
+  return String(texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+// Hoje: só o horário; outros dias: dia/mês e horário.
+function horario(valor) {
+  const quando = new Date(valor);
+  if (Number.isNaN(quando.getTime())) return '';
+  const hora = quando.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (quando.toDateString() === new Date().toDateString()) return hora;
+  return `${quando.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${hora}`;
+}
+function marcarSelecionada() {
+  lista.querySelectorAll('button.conversa').forEach(item =>
+    item.setAttribute('aria-pressed', String(Number(item.dataset.id) === selecionadaId)));
+}
+function criarItem(conversa) {
+  const botao = elemento('button', '', 'conversa');
+  botao.type = 'button';
+  botao.dataset.id = conversa.id;
+  const nome = conversa.clienteNome || 'Cliente sem nome';
+  const topo = elemento('div', '', 'conversa-topo');
+  const hora = elemento('time', horario(conversa.dataInicio), 'conversa-hora');
+  hora.dateTime = conversa.dataInicio;
+  hora.title = conversa.dataInicio ? data(conversa.dataInicio) : '';
+  topo.append(elemento('strong', nome), hora);
+  const rodape = elemento('div', '', 'conversa-rodape');
+  const selo = elemento('span', nomesStatus[conversa.status] || conversa.status || 'Sem status', 'status-badge');
+  if (conversa.status) selo.dataset.status = conversa.status;
+  rodape.append(selo, elemento('span', `#${conversa.id}`, 'conversa-id'));
+  botao.append(topo, rodape);
+  botao.setAttribute('aria-label', `${nome}, ${selo.textContent}, iniciada ${hora.title || 'em data desconhecida'}`);
+  botao.addEventListener('click', () => abrir(conversa));
+  return botao;
+}
+// Redesenha a lista a partir dos itens carregados, aplicando a busca por nome.
+function desenhar(animar = true) {
+  lista.classList.toggle('sem-animacao', !animar);
+  const termo = normalizar(busca.value);
+  const visiveis = termo
+    ? conversasCarregadas.filter(conversa => normalizar(conversa.clienteNome).includes(termo))
+    : conversasCarregadas;
+  if (!conversasCarregadas.length) {
+    mostrarEstado(lista, 'Nenhuma conversa aguardando', 'Novas conversas aguardando atendimento aparecerão aqui. Use “Atualizar lista” para consultar de novo.');
+  } else if (!visiveis.length) {
+    mostrarEstado(lista, 'Nenhuma conversa encontrada', `Nenhum cliente com “${busca.value.trim()}” no nome. Limpe a busca para ver toda a fila.`);
+  } else {
+    lista.replaceChildren(...visiveis.map(criarItem));
+    marcarSelecionada();
+  }
+  contador.textContent = termo
+    ? `${visiveis.length} de ${conversasCarregadas.length}`
+    : `${conversasCarregadas.length} na fila`;
+}
+function limparSelecao() {
+  selecionadaId = null;
+  mensagens.replaceChildren();
+  detalhes.textContent = 'Escolha uma conversa na caixa de entrada.';
+  window.contextoAtendimento?.limpar();
+  marcarSelecionada();
+}
+async function abrir(conversa) {
   const atual = ++requisicao;
-  lista.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === botao)));
+  selecionadaId = conversa.id;
+  marcarSelecionada();
   mostrarEstado(mensagens, 'Carregando mensagens…', '', 'carregando');
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
   informar('Carregando mensagens…');
@@ -58,9 +126,9 @@ async function abrir(conversa, botao) {
       if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
       if (mensagem.remetente === 'ATENDENTE') item.classList.add('humano');
       item.append(elemento('strong', `${mensagem.autor} · ${tipos[mensagem.remetente] || mensagem.remetente}`));
-      const horario = elemento('time', data(mensagem.dataEnvio));
-      horario.dateTime = mensagem.dataEnvio;
-      item.append(horario, elemento('p', mensagem.conteudo));
+      const hora = elemento('time', data(mensagem.dataEnvio));
+      hora.dateTime = mensagem.dataEnvio;
+      item.append(hora, elemento('p', mensagem.conteudo));
       mensagens.append(item);
     }
     mensagens.scrollTop = mensagens.scrollHeight;
@@ -71,42 +139,45 @@ async function abrir(conversa, botao) {
       ? 'Conversa não encontrada. Atualize a lista e tente novamente.'
       : erro.message;
     mostrarEstado(mensagens, 'Não foi possível carregar as mensagens', 'Use “Tentar novamente” para consultar de novo.', 'erro');
-    informar(texto, true, () => abrir(conversa, botao));
+    informar(texto, true, () => abrir(conversa));
     tentarNovamente.focus();
   }
 }
-async function carregar(selecionarId) {
+// Consulta a fila de novo. Mantém a busca e, se a conversa aberta continuar na fila, reabre-a.
+async function carregar(selecionarId = selecionadaId) {
   ++requisicao;
   atualizar.disabled = true;
   lista.setAttribute('aria-busy', 'true');
-  mostrarEstado(lista, 'Carregando conversas…', '', 'carregando');
-  mensagens.replaceChildren();
-  detalhes.textContent = 'Escolha uma conversa na lista.';
-  window.contextoAtendimento?.limpar();
+  if (!conversasCarregadas.length) mostrarEstado(lista, 'Carregando conversas…', '', 'carregando');
   informar('Carregando conversas…');
+  let manter = null;
   try {
-    const conversas = await consultar('/api/historico/fila');
-    lista.replaceChildren();
-    if (!conversas.length) mostrarEstado(lista, 'Nenhuma conversa aguardando', 'Novas conversas aguardando atendimento aparecerão aqui. Use “Atualizar lista” para consultar de novo.');
-    for (const conversa of conversas) {
-      const botao = elemento('button', '', 'conversa');
-      botao.type = 'button';
-      botao.setAttribute('aria-pressed', 'false');
-      botao.append(elemento('strong', conversa.clienteNome || 'Cliente sem nome'), elemento('span', `#${conversa.id} · ${nomesStatus[conversa.status] || conversa.status}`), elemento('span', data(conversa.dataInicio), 'muted'));
-      botao.addEventListener('click', () => abrir(conversa, botao));
-      lista.append(botao);
-      if (conversa.id === selecionarId) botao.dataset.abrir = "true";
-    }
-    informar(conversas.length ? 'Selecione uma conversa.' : 'A fila está vazia. Novas conversas aguardando atendimento aparecerão aqui.');
+    conversasCarregadas = await consultar('/api/historico/fila');
+    manter = conversasCarregadas.find(conversa => conversa.id === selecionarId) || null;
+    const saiu = selecionadaId !== null && !manter;
+    if (!manter) limparSelecao();
+    desenhar();
+    if (!conversasCarregadas.length) informar('A fila está vazia. Novas conversas aguardando atendimento aparecerão aqui.');
+    else if (saiu) informar('A conversa que estava aberta não está mais na fila.');
+    else if (!manter) informar(`${conversasCarregadas.length} conversa(s) na fila. Selecione uma conversa.`);
   } catch (erro) {
+    conversasCarregadas = [];
+    limparSelecao();
+    contador.textContent = 'Indisponível';
     mostrarEstado(lista, 'Não foi possível carregar a fila', 'Confira a mensagem acima e tente novamente.', 'erro');
     informar(erro.message, true, () => carregar(selecionarId));
     tentarNovamente.focus();
+  } finally {
+    atualizar.disabled = false;
+    lista.setAttribute('aria-busy', 'false');
   }
-  finally { atualizar.disabled = false; lista.setAttribute('aria-busy', 'false'); }
-  const selecionado = lista.querySelector('[data-abrir]');
-  if (selecionado) selecionado.click();
+  if (manter) abrir(manter);
 }
+busca.addEventListener('input', () => desenhar(false));
+// Esc limpa a busca e devolve a lista completa.
+busca.addEventListener('keydown', evento => {
+  if (evento.key === 'Escape' && busca.value) { busca.value = ''; desenhar(false); }
+});
 // Setas, Home e End movem o foco entre as conversas; Enter ou Espaço abrem a conversa em foco.
 lista.addEventListener('keydown', evento => {
   const itens = [...lista.querySelectorAll('button.conversa')];
