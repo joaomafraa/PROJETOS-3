@@ -83,6 +83,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,.message-list:focus-vis
 .message-list { flex:1; display:flex; flex-direction:column; gap:18px; min-height:340px; max-height:65dvh; overflow:auto; margin:0; padding:28px 24px; list-style:none; }
 .mensagem { max-width:84%; align-self:flex-start; padding:13px 16px; border:1px solid var(--line); border-radius:12px 12px 12px 3px; background:var(--surface); }
 .mensagem.cliente { align-self:flex-end; border-radius:12px 12px 3px 12px; background:var(--selected); }
+.mensagem.humano { border-color:var(--strong); border-left-width:3px; }
 .mensagem strong { font-size:11px; font-weight:500; }
 .mensagem time { display:block; font-size:10px; color:var(--muted); margin-top:3px; font-variant-numeric:tabular-nums; }
 .mensagem p { font-size:13px; margin-top:8px; white-space:pre-wrap; overflow-wrap:anywhere; }
