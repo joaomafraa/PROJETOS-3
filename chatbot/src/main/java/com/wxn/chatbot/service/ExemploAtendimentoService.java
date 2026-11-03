@@ -13,81 +13,89 @@ import com.wxn.chatbot.model.Cliente;
 import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.model.Empresa;
 import com.wxn.chatbot.model.Mensagem;
-import com.wxn.chatbot.repository.ConversaRepository;
 
 @Service
 @Profile("painel-local")
 public class ExemploAtendimentoService {
-    private static final Long ID_EXEMPLO = 900000001L;
+    private static final long BASE = 900000010L;
     private final EntityManager entityManager;
-    private final ConversaRepository conversas;
     private final TransactionTemplate transacao;
     private final Long atendenteId;
 
-    public ExemploAtendimentoService(EntityManager entityManager, ConversaRepository conversas,
-            PlatformTransactionManager transactionManager,
+    public ExemploAtendimentoService(EntityManager entityManager, PlatformTransactionManager transactionManager,
             @Value("${painel.atendente-id:1}") Long atendenteId) {
         this.entityManager = entityManager;
-        this.conversas = conversas;
         this.transacao = new TransactionTemplate(transactionManager);
         this.atendenteId = atendenteId;
     }
 
     // Serializa os cliques nesta instancia local ate o commit da transacao.
     public synchronized Long criar() {
-        return transacao.execute(status -> criarOuConsultar());
-    }
-
-    private Long criarOuConsultar() {
-        Conversa existente = entityManager.find(Conversa.class, ID_EXEMPLO);
-        Atendente atendente = entityManager.find(Atendente.class, atendenteId);
-        if (existente != null) {
-            if (atendente == null || !atendente.isAtivo()
-                    || !atendente.pertenceA(existente.getEmpresa())
-                    || !"marina.exemplo@example.com".equals(existente.getCliente().getEmail())
-                    || !"Assistente de exemplo".equals(existente.getChatbot().getNome())) {
-                throw new IllegalStateException("O identificador do exemplo ja esta em uso ou o atendente esta indisponivel.");
-            }
-            return existente.getId();
-        }
-        if (entityManager.find(Cliente.class, ID_EXEMPLO) != null
-                || entityManager.find(Chatbot.class, ID_EXEMPLO) != null) {
-            throw new IllegalStateException("Os identificadores do exemplo ja estao em uso.");
-        }
-        Empresa empresa;
-        if (atendente == null) {
-            if (entityManager.find(Empresa.class, ID_EXEMPLO) != null) {
-                throw new IllegalStateException("O identificador da empresa de exemplo ja esta em uso.");
-            }
-            empresa = new Empresa(ID_EXEMPLO, "WXN - Demonstracao");
-            entityManager.persist(empresa);
-            atendente = new Atendente(atendenteId, "Ana (exemplo)", "ana.exemplo@example.com",
-                    empresa, Atendente.PerfilAcesso.ATENDENTE);
-            entityManager.persist(atendente);
-        } else {
-            if (!atendente.isAtivo()) {
+        return transacao.execute(status -> {
+            Atendente atendente = entityManager.find(Atendente.class, atendenteId);
+            if (atendente == null) {
+                if (entityManager.find(Empresa.class, BASE) != null) {
+                    throw new IllegalStateException("O identificador da empresa de exemplo ja esta em uso.");
+                }
+                Empresa empresa = new Empresa(BASE, "WXN - Demonstracao");
+                entityManager.persist(empresa);
+                atendente = new Atendente(atendenteId, "Ana (exemplo)", "ana.exemplo@example.com",
+                        empresa, Atendente.PerfilAcesso.ATENDENTE);
+                entityManager.persist(atendente);
+            } else if (!atendente.isAtivo()) {
                 throw new IllegalStateException("O atendente do painel esta inativo.");
             }
-            empresa = atendente.getEmpresa();
+
+            Empresa empresa = atendente.getEmpresa();
+            Empresa outra = entityManager.find(Empresa.class, BASE + 1);
+            if (outra == null) {
+                outra = new Empresa(BASE + 1, "WXN - Outra empresa de demonstracao");
+                entityManager.persist(outra);
+            } else if (!"WXN - Outra empresa de demonstracao".equals(outra.getNome())
+                    || outra.getId().equals(empresa.getId())) {
+                throw new IllegalStateException("O identificador da outra empresa de exemplo ja esta em uso.");
+            }
+
+            criarConversa(BASE, empresa, "Marina", Conversa.Status.AGUARDANDO_ATENDENTE, atendente);
+            criarConversa(BASE + 1, empresa, "Lucas", Conversa.Status.EM_ATENDIMENTO_AUTOMATICO, atendente);
+            criarConversa(BASE + 2, empresa, "Carla", Conversa.Status.EM_ATENDIMENTO_HUMANO, atendente);
+            criarConversa(BASE + 3, outra, "Rafael", Conversa.Status.AGUARDANDO_ATENDENTE, null);
+            return BASE;
+        });
+    }
+
+    private void criarConversa(long id, Empresa empresa, String nome, Conversa.Status status, Atendente atendente) {
+        String email = nome.toLowerCase(java.util.Locale.ROOT) + ".demo@example.com";
+        String nomeChatbot = "Assistente de demonstracao " + id;
+        Conversa existente = entityManager.find(Conversa.class, id);
+        if (existente != null) {
+            if (!existente.getEmpresa().getId().equals(empresa.getId())
+                    || !email.equals(existente.getCliente().getEmail())
+                    || !nomeChatbot.equals(existente.getChatbot().getNome())) {
+                throw new IllegalStateException("O identificador da conversa de exemplo ja esta em uso.");
+            }
+            return;
         }
-        Cliente cliente = new Cliente(ID_EXEMPLO, "+55 81 99999-0000");
-        cliente.alterarNome("Marina (exemplo)");
-        cliente.atualizarEmail("marina.exemplo@example.com");
-        cliente.informarEmpresa("Empresa ficticia");
+        if (entityManager.find(Cliente.class, id) != null || entityManager.find(Chatbot.class, id) != null) {
+            throw new IllegalStateException("Os identificadores do exemplo ja estao em uso.");
+        }
+        Cliente cliente = new Cliente(id, "+55 81 99999-0000");
+        cliente.alterarNome(nome + " (exemplo)");
+        cliente.atualizarEmail(email);
         cliente.vincularEmpresa(empresa);
         entityManager.persist(cliente);
-        Chatbot chatbot = new Chatbot(ID_EXEMPLO, "Assistente de exemplo", empresa,
-                "Ola, Marina! Vou encaminhar seu pedido para nossa equipe.");
+        Chatbot chatbot = new Chatbot(id, nomeChatbot, empresa, "Ola! Como posso ajudar?");
         entityManager.persist(chatbot);
-        Conversa conversa = new Conversa(ID_EXEMPLO, cliente, empresa, chatbot);
-        conversa.adicionarMensagem(1L, "Gostaria de agendar uma demonstracao do sistema.", Mensagem.TipoRemetente.CLIENTE);
+        Conversa conversa = new Conversa(id, cliente, empresa, chatbot);
+        conversa.adicionarMensagem(1L, "Gostaria de informacoes sobre o atendimento.", Mensagem.TipoRemetente.CLIENTE);
         conversa.adicionarMensagem(2L, chatbot.getMensagemBoasVindas(), Mensagem.TipoRemetente.CHATBOT);
-        conversa.solicitarAtendimentoHumano();
-        conversa.iniciarAtendimentoHumano(atendente);
-        conversa.adicionarMensagem(3L, "Ola! Sou do atendimento e vou ajudar com o agendamento.",
-                Mensagem.TipoRemetente.ATENDENTE, atendente);
-        conversa.adicionarMensagem(4L, "Obrigada! Podemos combinar para amanha?", Mensagem.TipoRemetente.CLIENTE);
-        conversas.saveAndFlush(conversa);
-        return conversa.getId();
+        if (status != Conversa.Status.EM_ATENDIMENTO_AUTOMATICO) {
+            conversa.solicitarAtendimentoHumano();
+        }
+        if (status == Conversa.Status.EM_ATENDIMENTO_HUMANO) {
+            conversa.iniciarAtendimentoHumano(atendente);
+            conversa.adicionarMensagem(3L, "Ola! Vou ajudar voce.", Mensagem.TipoRemetente.ATENDENTE, atendente);
+        }
+        entityManager.persist(conversa);
     }
 }

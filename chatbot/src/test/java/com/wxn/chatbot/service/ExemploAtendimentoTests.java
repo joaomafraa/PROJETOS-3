@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.wxn.chatbot.model.Mensagem;
+import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.repository.ConversaRepository;
 import com.wxn.chatbot.web.PainelHistoricoController;
 
@@ -21,13 +22,18 @@ class ExemploAtendimentoTests {
     void gravaExemploUmaVezEMostraHistoricoDepoisDoCommit() {
         Long id = exemplo.criar();
         assertEquals(id, exemplo.criar());
-        assertEquals(1, conversas.count());
-        assertEquals(1, painel.listar().size());
-        assertEquals("Marina (exemplo)", painel.listar().getFirst().clienteNome());
+        assertEquals(4, conversas.count());
+        assertEquals(1, painel.fila().size());
+        assertEquals(id, painel.fila().getFirst().id());
+        assertEquals("Marina (exemplo)", painel.fila().getFirst().clienteNome());
+        assertEquals(Conversa.Status.EM_ATENDIMENTO_AUTOMATICO, conversas.findById(id + 1).orElseThrow().getStatus());
+        assertEquals(Conversa.Status.EM_ATENDIMENTO_HUMANO, conversas.findById(id + 2).orElseThrow().getStatus());
+        assertEquals(Conversa.Status.AGUARDANDO_ATENDENTE, conversas.findById(id + 3).orElseThrow().getStatus());
         var mensagens = painel.mensagens(id);
-        assertEquals(4, mensagens.size());
-        assertEquals(Mensagem.TipoRemetente.ATENDENTE, mensagens.get(2).remetente());
-        assertEquals("Ana (exemplo)", mensagens.get(2).autor());
-        assertEquals(1L, mensagens.get(2).atendenteId());
+        assertEquals(2, mensagens.size());
+        assertEquals(Mensagem.TipoRemetente.CLIENTE, mensagens.get(0).remetente());
+        assertEquals(Mensagem.TipoRemetente.CHATBOT, mensagens.get(1).remetente());
+        assertEquals(Mensagem.TipoRemetente.ATENDENTE, painel.mensagens(id + 2).get(2).remetente());
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> painel.mensagens(id + 3));
     }
 }
