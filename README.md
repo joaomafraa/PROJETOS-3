@@ -27,7 +27,7 @@ Veja o [modelo de classes e suas regras](docs/modelo-de-classes.md).
 
 Ainda não existem busca, filtros por tipo, status e responsável, assumir conversa, envio de mensagens, **Meus chats**, login, CRM nem o painel completo de solicitações. Esses controles aparecem desativados na tela. O botão **Criar exemplo** grava uma conversa que fica em atendimento humano; portanto, ela não aparece na fila de espera. Para ver uma conversa na fila, é preciso que exista no banco uma conversa em `AGUARDANDO_ATENDENTE` da empresa do atendente (dados de demonstração em preparação pelo grupo).
 
-A persistência de Ticket é uma base para as próximas histórias. Ainda não há serviço de aplicação, API ou tela para abrir, assumir ou concluir tickets. Os IDs dos tickets são informados por quem os cria, seguindo o modelo atual; não há geração automática de protocolo nem regra de unicidade do protocolo.
+A persistência de Ticket inclui o serviço `AssumirTicketService` para atribuir um ticket pendente e iniciar seu atendimento. Veja [as regras e a demonstração](docs/assumir-ticket.md). Ainda não há API ou tela para essa operação, nem serviços de aplicação para abrir ou concluir tickets. Os IDs dos tickets são informados por quem os cria, seguindo o modelo atual; não há geração automática de protocolo nem regra de unicidade do protocolo.
 
 WhatsApp, Spring AI/LLM, documentos oficiais, CRM e demais sistemas externos são integrações planejadas. Autenticação de usuários também não está implementada.
 
