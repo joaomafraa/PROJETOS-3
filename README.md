@@ -10,6 +10,7 @@ Endereço de publicação do projeto: https://projetos-3.onrender.com/
 - Persistência com JPA e migrações SQL com Flyway.
 - Consulta da fila pelo `FilaConversasService`: exige atendente ativo, filtra pela empresa e pelo status `AGUARDANDO_ATENDENTE`, ordenando pela data de início da conversa e pelo ID.
 - Histórico com conteúdo, autor e data das mensagens.
+- Serviço transacional para solicitar e assumir atendimento humano, preservando histórico e tickets. Veja [regras e testes](docs/atendimento-humano.md). A integração com API, autenticação e interface permanece pendente.
 - Tela local da fila (`GET /api/historico/fila`, que usa o `FilaConversasService`): lista as conversas aguardando atendimento da empresa do atendente, abre o histórico da conversa selecionada e mostra o contexto disponível.
 - Estados da tela: carregamento, fila vazia, erro com botão **Tentar novamente** e histórico sem mensagens. Navegação pelo teclado com Tab, setas, Home e End.
 - Botão local para gravar um atendimento fictício no banco configurado.
