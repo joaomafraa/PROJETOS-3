@@ -34,7 +34,7 @@ public class AssumirTicketService {
             throw new SecurityException("É necessário um atendente cadastrado e ativo.");
         }
 
-        Ticket ticket = tickets.buscarParaAssumir(ticketId, atendente.getEmpresa().getId())
+        Ticket ticket = tickets.buscarParaAtualizar(ticketId, atendente.getEmpresa().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Ticket não encontrado nesta empresa."));
 
         if (ticket.getStatus() != Ticket.StatusTicket.PENDENTE) {

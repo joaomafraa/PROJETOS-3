@@ -18,7 +18,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     // Sem EntityGraph: o bloqueio deve atingir o ticket, sem joins opcionais.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Ticket t where t.id = :id and t.empresa.id = :empresaId")
-    Optional<Ticket> buscarParaAssumir(@Param("id") Long id, @Param("empresaId") Long empresaId);
+    Optional<Ticket> buscarParaAtualizar(@Param("id") Long id, @Param("empresaId") Long empresaId);
 
     @EntityGraph(attributePaths = {"empresa", "cliente", "conversaOrigem", "responsavel"})
     Optional<Ticket> findByIdAndEmpresaId(Long id, Long empresaId);

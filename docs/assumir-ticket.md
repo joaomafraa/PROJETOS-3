@@ -13,7 +13,7 @@ O serviço `AssumirTicketService.assumir(ticketId, atendenteId)` busca o atenden
 
 ## Transação e concorrência
 
-A consulta `TicketRepository.buscarParaAssumir` utiliza `PESSIMISTIC_WRITE`. O bloqueio permanece até a transação terminar. Se dois atendentes disputarem o mesmo ticket, o segundo aguarda e verifica o estado atualizado após o primeiro commit, sendo rejeitado se o ticket já estiver em atendimento.
+A consulta `TicketRepository.buscarParaAtualizar` utiliza `PESSIMISTIC_WRITE`. O bloqueio permanece até a transação terminar. Se dois atendentes disputarem o mesmo ticket, o segundo aguarda e verifica o estado atualizado após o primeiro commit, sendo rejeitado se o ticket já estiver em atendimento.
 
 A consulta evita carregar associações com joins opcionais no comando de bloqueio. Não foi necessária migração nem dependência nova. A entidade gerenciada é persistida automaticamente no commit. O retorno é o DTO `TicketAssumido`, sem expor entidades JPA.
 
@@ -37,4 +37,4 @@ O teste concorrente mantém a primeira transação aberta e verifica que a segun
 
 ## Próximas etapas
 
-Conclusão de ticket, transferência da conversa e LLM continuam pendentes. Esta etapa entrega apenas o serviço de assumir ticket e sua demonstração por testes de integração. O botão da interface continua para a etapa de integração com API e autenticação.
+A conclusão já está disponível no serviço `ConcluirTicketService`, descrito em [concluir-ticket.md](concluir-ticket.md). Transferência da conversa e LLM continuam pendentes. Os botões da interface dependem da integração com API e autenticação.

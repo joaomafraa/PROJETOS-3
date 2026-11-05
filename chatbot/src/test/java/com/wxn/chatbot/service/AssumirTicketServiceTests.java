@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class AssumirTicketServiceTests {
     private static final AtomicLong IDS = new AtomicLong(1000);
     @Autowired private AssumirTicketService service;
+    @Autowired private ConcluirTicketService conclusao;
     @Autowired private EntityManager em;
     @Autowired private PlatformTransactionManager manager;
     private TransactionTemplate tx;
@@ -127,6 +128,77 @@ class AssumirTicketServiceTests {
             verificarSalvo(id, Ticket.StatusTicket.EM_ATENDIMENTO);
         } finally {
             liberarCommit.countDown();
+            executor.shutdownNow();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void concluiEPersisteDataSemEncerrarConversa() {
+        service.assumir(id, id);
+        var resultado = conclusao.concluir(id, id);
+        assertEquals(Ticket.StatusTicket.CONCLUIDO, resultado.status());
+        assertEquals(id, resultado.responsavelId());
+        assertNotNull(resultado.dataConclusao());
+        tx.executeWithoutResult(status -> {
+            Ticket ticket = em.find(Ticket.class, id);
+            assertEquals(Ticket.StatusTicket.CONCLUIDO, ticket.getStatus());
+            assertEquals(resultado.dataConclusao().toEpochMilli(), ticket.getDataConclusao().toEpochMilli());
+            assertEquals(Conversa.Status.EM_ATENDIMENTO_AUTOMATICO, ticket.getConversaOrigem().getStatus());
+        });
+        assertThrows(IllegalStateException.class, () -> conclusao.concluir(id, id));
+        tx.executeWithoutResult(status -> assertEquals(resultado.dataConclusao().toEpochMilli(),
+                em.find(Ticket.class, id).getDataConclusao().toEpochMilli()));
+    }
+
+    @Test
+    void rejeitaConclusaoPendenteEEntradaInvalida() {
+        assertThrows(IllegalStateException.class, () -> conclusao.concluir(id, id));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(null, id));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(0L, id));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(id, null));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(id, -1L));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(Long.MAX_VALUE, id));
+        assertThrows(SecurityException.class, () -> conclusao.concluir(id, Long.MAX_VALUE));
+        verificarSalvo(null, Ticket.StatusTicket.PENDENTE);
+    }
+
+    @Test
+    void rejeitaConclusaoPorOutroAtendenteAdministradorExternoOuInativo() {
+        service.assumir(id, id);
+        assertThrows(SecurityException.class, () -> conclusao.concluir(id, id + 1));
+        assertThrows(SecurityException.class, () -> conclusao.concluir(id, id + 3));
+        assertThrows(IllegalArgumentException.class, () -> conclusao.concluir(id, id + 2));
+        tx.executeWithoutResult(status -> em.find(Atendente.class, id)
+                .desativar(em.find(Atendente.class, id + 3)));
+        assertThrows(SecurityException.class, () -> conclusao.concluir(id, id));
+        verificarSalvo(id, Ticket.StatusTicket.EM_ATENDIMENTO);
+        tx.executeWithoutResult(status -> assertNull(em.find(Ticket.class, id).getDataConclusao()));
+    }
+
+    @Test
+    void rejeitaSegundaConclusaoConcorrente() throws Exception {
+        service.assumir(id, id);
+        CountDownLatch concluiu = new CountDownLatch(1);
+        CountDownLatch liberar = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> primeiro = executor.submit(() -> tx.executeWithoutResult(status -> {
+                conclusao.concluir(id, id);
+                concluiu.countDown();
+                aguardar(liberar);
+            }));
+            assertTrue(concluiu.await(5, TimeUnit.SECONDS));
+            Future<?> segundo = executor.submit(() -> conclusao.concluir(id, id));
+            assertThrows(TimeoutException.class, () -> segundo.get(300, TimeUnit.MILLISECONDS));
+            liberar.countDown();
+            primeiro.get(5, TimeUnit.SECONDS);
+            ExecutionException erro = assertThrows(ExecutionException.class,
+                    () -> segundo.get(5, TimeUnit.SECONDS));
+            assertInstanceOf(IllegalStateException.class, erro.getCause());
+            verificarSalvo(id, Ticket.StatusTicket.CONCLUIDO);
+        } finally {
+            liberar.countDown();
             executor.shutdownNow();
             executor.awaitTermination(5, TimeUnit.SECONDS);
         }
