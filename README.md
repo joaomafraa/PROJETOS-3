@@ -11,6 +11,7 @@ Endereço de publicação do projeto: https://projetos-3.onrender.com/
 - Consulta da fila pelo `FilaConversasService`: exige atendente ativo, filtra pela empresa e pelo status `AGUARDANDO_ATENDENTE`, ordenando pela data de início da conversa e pelo ID.
 - Histórico com conteúdo, autor e data das mensagens.
 - Serviço transacional para solicitar e assumir atendimento humano, preservando histórico e tickets. Veja [regras e testes](docs/atendimento-humano.md). A integração com API, autenticação e interface permanece pendente.
+- Serviço transacional para abrir chamados de suporte a partir de uma conversa da empresa, com protocolo único. Veja [abertura de chamados](docs/abertura-chamado.md).
 - Tela local da fila (`GET /api/historico/fila`, que usa o `FilaConversasService`): lista as conversas aguardando atendimento da empresa do atendente, abre o histórico da conversa selecionada e mostra o contexto disponível.
 - Estados da tela: carregamento, fila vazia, erro com botão **Tentar novamente** e histórico sem mensagens. Navegação pelo teclado com Tab, setas, Home e End.
 - Botão local para gravar um atendimento fictício no banco configurado.
@@ -18,17 +19,22 @@ Endereço de publicação do projeto: https://projetos-3.onrender.com/
 
 Veja o [modelo de classes e suas regras](docs/modelo-de-classes.md).
 
+O contrato de `GET /api/historico/fila`, com campos, erros e exemplos para o frontend,
+está na [documentação da API da fila](docs/api-fila.md).
+
 ## Situação das entregas
 
 | Etapa | Situação |
 | --- | --- |
 | Modelagem das entidades em POO | Classes e diagrama disponíveis |
 | Persistência e negócio da fila | Repositório, serviço e testes disponíveis |
-| Tela consumindo o negócio da fila | Disponível: a lista usa `/api/historico/fila` e o histórico usa o `HistoricoConversasService` |
+| Tela consumindo o negócio da fila | A lista consulta `GET /api/historico/fila`, que chama o serviço da fila |
 
-Ainda não existem busca, filtros por tipo, status e responsável, assumir conversa, envio de mensagens, **Meus chats**, login, CRM nem o painel completo de solicitações. Esses controles aparecem desativados na tela. O botão **Criar exemplo** grava uma conversa que fica em atendimento humano; portanto, ela não aparece na fila de espera. Para ver uma conversa na fila, é preciso que exista no banco uma conversa em `AGUARDANDO_ATENDENTE` da empresa do atendente (dados de demonstração em preparação pelo grupo).
+A lista do painel usa o `FilaConversasService`; a consulta das mensagens passa pelo `HistoricoConversasService`. A rota geral `GET /api/historico` permanece disponível para compatibilidade. A tela não possui filtros por tipo, status e responsável. O exemplo atual fica em atendimento humano, portanto não aparece na fila de espera.
 
-A persistência de Ticket inclui `AssumirTicketService` para atribuir um ticket pendente e iniciar seu atendimento e `ConcluirTicketService` para o responsável ativo concluir o ticket. Veja as regras e demonstrações de [assumir](docs/assumir-ticket.md) e [concluir](docs/concluir-ticket.md). Ainda não há API ou tela para essas operações, nem serviço de aplicação para abrir tickets. Os IDs dos tickets são informados por quem os cria, seguindo o modelo atual; não há geração automática de protocolo nem regra de unicidade do protocolo.
+Ainda não existem busca, assumir conversa, envio de mensagens, **Meus chats**, login, CRM nem o painel completo de solicitações. Esses controles aparecem desativados na tela. Para ver uma conversa na fila, é preciso que exista no banco uma conversa em `AGUARDANDO_ATENDENTE` da empresa do atendente (dados de demonstração em preparação pelo grupo).
+
+A persistência de Ticket inclui `AbrirChamadoService`, `AssumirTicketService` e `ConcluirTicketService`. O serviço de abertura gera o ID por sequência e retorna um protocolo único; os demais fluxos mantêm os IDs já recebidos. Veja as regras e demonstrações de [abrir](docs/abertura-chamado.md), [assumir](docs/assumir-ticket.md) e [concluir](docs/concluir-ticket.md). Ainda não há API ou tela para abrir, assumir ou concluir tickets.
 
 WhatsApp, Spring AI/LLM, documentos oficiais, CRM e demais sistemas externos são integrações planejadas. Autenticação de usuários também não está implementada.
 
@@ -145,6 +151,8 @@ Essa demonstração cria os objetos em memória e imprime as mensagens e o ciclo
 | V1 | Empresas, clientes, chatbots, atendentes, conversas e índice da fila |
 | V2 | Mensagens, identificação do autor e ordenação do histórico |
 | V3 | Tickets, relacionamentos e restrições de tipo e estado |
+| V4 | Leads locais, sequência e regra de duplicidade |
+| V5 | Sequência de IDs para novos chamados e unicidade do protocolo |
 
 Flyway aplica migrações pendentes ao iniciar a aplicação com acesso ao banco. O Hibernate usa `validate` por padrão para conferir o mapeamento; alterações futuras de estrutura devem ser feitas em novas migrações.
 
@@ -158,7 +166,7 @@ Dentro de `chatbot`:
 .\mvnw.cmd clean test
 ```
 
-Os testes usam H2 em memória e aplicam as migrações, sem precisar de credenciais Neon. Verificam regras de domínio, consultas por empresa, fila, histórico, persistência de mensagens e tickets e comportamento do painel local. Eles não substituem uma validação no PostgreSQL real.
+Os testes usam H2 em memória e aplicam as migrações, sem precisar de credenciais Neon. Verificam regras de domínio, consultas por empresa, tentativas de acesso entre empresas, abertura de chamados, protocolos, fila, histórico, persistência e comportamento do painel local. Eles não substituem uma validação no PostgreSQL real.
 
 ## Publicação no Render
 
