@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import com.wxn.chatbot.model.ResponsavelNotificacao;
 
-// Destinatário configurado para um tipo de notificação.
 public record ResponsavelNotificacaoResumo(ResponsavelNotificacao.TipoNotificacao tipo, Long atendenteId,
         String atendenteNome, String atendenteEmail, boolean atendenteAtivo, Instant dataConfiguracao) {
 

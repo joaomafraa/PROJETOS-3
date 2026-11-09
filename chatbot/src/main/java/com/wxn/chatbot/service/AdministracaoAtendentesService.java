@@ -14,16 +14,6 @@ import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Atendente.PerfilAcesso;
 import com.wxn.chatbot.repository.AtendenteRepository;
 
-/**
- * Administração de atendentes da empresa (HU08.3): cadastro, consulta, alteração de
- * perfil e ativação/desativação.
- *
- * O solicitanteId deve vir do contexto autenticado (frente de autenticação) e nunca
- * diretamente do corpo da requisição. A empresa é sempre a do solicitante.
- * As regras de perfil e ativação continuam na entidade Atendente; este serviço
- * coordena carregamento, bloqueio, isolamento por empresa e transação.
- * O cadastro não cria credenciais de acesso.
- */
 @Service
 public class AdministracaoAtendentesService {
 
@@ -106,11 +96,6 @@ public class AdministracaoAtendentesService {
         return solicitante;
     }
 
-    /**
-     * Bloqueia solicitante e alvo sempre em ordem crescente de id, evitando deadlock e
-     * impedindo que dois administradores alterem um ao outro ao mesmo tempo com base
-     * em dados desatualizados.
-     */
     private Par travar(Long solicitanteId, Long atendenteId) {
         validarId(solicitanteId);
         validarId(atendenteId);

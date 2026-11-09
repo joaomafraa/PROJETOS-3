@@ -22,13 +22,6 @@ import com.wxn.chatbot.repository.ResponsavelNotificacaoRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 
-/**
- * Configuração dos responsáveis por notificações da empresa (HU08.3).
- *
- * Apenas persiste quem deve ser notificado; nenhum envio é feito aqui.
- * Atendentes desativados permanecem na configuração, mas não aparecem em
- * {@link #destinatariosAtivos(Long, TipoNotificacao)}.
- */
 @Service
 public class ResponsaveisNotificacaoService {
 
@@ -45,10 +38,6 @@ public class ResponsaveisNotificacaoService {
         this.entityManager = Objects.requireNonNull(entityManager);
     }
 
-    /**
-     * Substitui a lista de responsáveis de um tipo de notificação. Uma lista vazia
-     * remove todos os responsáveis do tipo.
-     */
     @Transactional
     public List<ResponsavelNotificacaoResumo> definir(Long solicitanteId, TipoNotificacao tipo,
             Collection<Long> atendenteIds) {
@@ -83,10 +72,6 @@ public class ResponsaveisNotificacaoService {
                 .map(ResponsavelNotificacaoResumo::de).toList();
     }
 
-    /**
-     * Para uso interno do futuro envio de notificações: somente atendentes ativos.
-     * O empresaId deve vir de dado já validado (por exemplo, a empresa do ticket).
-     */
     @Transactional(readOnly = true)
     public List<ResponsavelNotificacaoResumo> destinatariosAtivos(Long empresaId, TipoNotificacao tipo) {
         Objects.requireNonNull(empresaId, "A empresa é obrigatória.");

@@ -13,10 +13,6 @@ import com.wxn.chatbot.model.Atendente;
 
 import jakarta.persistence.LockModeType;
 
-/**
- * Acesso aos atendentes. Consultas sempre limitadas por empresa, exceto a busca
- * por id usada para carregar o solicitante (cuja empresa ainda nao e conhecida).
- */
 public interface AtendenteRepository extends JpaRepository<Atendente, Long> {
 
     List<Atendente> findByEmpresaIdOrderByNomeAscIdAsc(Long empresaId);
