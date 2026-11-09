@@ -5,7 +5,8 @@ import java.util.Objects;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "tickets")
+@Table(name = "tickets", uniqueConstraints =
+        @UniqueConstraint(name = "uk_tickets_protocolo", columnNames = "protocolo"))
 public class Ticket {
 
     public enum TipoSolicitacao {

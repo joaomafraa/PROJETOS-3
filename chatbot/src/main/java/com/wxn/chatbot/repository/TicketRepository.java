@@ -26,6 +26,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     @EntityGraph(attributePaths = {"cliente", "responsavel"})
     List<Ticket> findByEmpresaIdOrderByDataAberturaAscIdAsc(Long empresaId);
 
+    boolean existsByProtocolo(String protocolo);
+
+    @Query(value = "select nextval('tickets_id_seq')", nativeQuery = true)
+    Long proximoId();
+
     // Listagem paginada com filtros (ver TicketSpecifications).
     @Override
     @EntityGraph(attributePaths = {"cliente", "responsavel"})

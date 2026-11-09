@@ -29,4 +29,9 @@ public interface ConversaRepository extends JpaRepository<Conversa, Long> {
 
     @EntityGraph(attributePaths = {"mensagens", "mensagens.atendente", "cliente", "chatbot"})
     Optional<Conversa> findByIdAndEmpresaId(Long id, Long empresaId);
+
+    @EntityGraph(attributePaths = {"cliente", "cliente.empresa", "chatbot", "chatbot.empresa", "responsavel"})
+    @Query("select c from Conversa c where c.id = :id and c.empresa.id = :empresaId")
+    Optional<Conversa> buscarParaAbrirChamado(
+            @Param("id") Long id, @Param("empresaId") Long empresaId);
 }
