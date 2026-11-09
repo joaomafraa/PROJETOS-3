@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 import java.util.List;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,21 +27,43 @@ import com.wxn.chatbot.model.Mensagem;
 import com.wxn.chatbot.model.Ticket.StatusTicket;
 import com.wxn.chatbot.model.Ticket.TipoSolicitacao;
 import com.wxn.chatbot.service.ConsultaTicketsService;
+import com.wxn.chatbot.security.ContextoAcesso;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @ExtendWith(MockitoExtension.class)
 class TicketsControllerTests {
-    @Mock private EntityManager entityManager;
     @Mock private ConsultaTicketsService consulta;
+    @Mock private ContextoAcesso contextoAcesso;
+
     private Atendente atendente;
     private MockMvc mvc;
 
+
     @BeforeEach
     void configurar() {
-        atendente = new Atendente(10L, "Ana", "ana@example.com", new Empresa(1L, "WXN"),
-                Atendente.PerfilAcesso.ATENDENTE);
-        when(entityManager.find(Atendente.class, 10L)).thenReturn(atendente);
-        mvc = MockMvcBuilders.standaloneSetup(new PainelTicketsController(entityManager, consulta, 10L)).build();
-    }
+        atendente = new Atendente(
+                10L,
+                "Ana",
+                "ana@example.com",
+                new Empresa(1L, "WXN"),
+                Atendente.PerfilAcesso.ATENDENTE
+        );
+
+        lenient().when(contextoAcesso.atendenteAtual())
+                .thenReturn(atendente);
+
+        mvc = MockMvcBuilders.standaloneSetup(
+                new PainelTicketsController(
+                        consulta,
+                        contextoAcesso
+                )
+        )
+        .setControllerAdvice(new TratamentoAcessoNegadoTeste())
+        .build();
+        }
+
 
     @Test
     void repassaFiltrosEPaginacaoAoServico() throws Exception {
@@ -116,12 +137,37 @@ class TicketsControllerTests {
         mvc.perform(get("/api/tickets/99")).andExpect(status().isNotFound());
     }
 
-    @Test
-    void responde403QuandoAtendenteDoPainelNaoExisteOuEstaInativo() throws Exception {
-        when(entityManager.find(Atendente.class, 10L)).thenReturn(null);
 
-        mvc.perform(get("/api/tickets")).andExpect(status().isForbidden());
-        mvc.perform(get("/api/tickets/1")).andExpect(status().isForbidden());
+    @Test
+    void responde403QuandoAtendenteNaoEstaAutorizado()
+             throws Exception {
+
+        doThrow(new AccessDeniedException(
+                "Atendente nao autenticado."))
+                .when(contextoAcesso)
+                .atendenteAtual();
+
+        mvc.perform(get("/api/tickets"))
+                .andExpect(status().isForbidden());
+
+        mvc.perform(get("/api/tickets/1"))
+                .andExpect(status().isForbidden());
+
         verifyNoInteractions(consulta);
-    }
+     }
+
+        @RestControllerAdvice
+        static class TratamentoAcessoNegadoTeste {
+
+                @ExceptionHandler(AccessDeniedException.class)
+                public org.springframework.http.ResponseEntity<Void>
+                        tratarAcessoNegado(AccessDeniedException ex) {
+
+                return org.springframework.http.ResponseEntity
+                        .status(403)
+                        .build();
+        }
+      }
+
+
 }

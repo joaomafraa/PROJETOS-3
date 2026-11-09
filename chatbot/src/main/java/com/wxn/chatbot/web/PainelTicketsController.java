@@ -1,8 +1,5 @@
 package com.wxn.chatbot.web;
 
-import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import com.wxn.chatbot.security.ContextoAcesso;
 
 import com.wxn.chatbot.dto.FiltroTickets;
 import com.wxn.chatbot.dto.PaginaResumo;
@@ -20,25 +18,20 @@ import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Ticket;
 import com.wxn.chatbot.service.ConsultaTicketsService;
 
-// Consulta de solicitacoes no modo de apresentacao local.
-// Usa o atendente configurado; nao substitui autenticacao em producao.
+// Consulta protegida: usa exclusivamente o atendente autenticado.
 //
 // GET /api/tickets?tipo=SUPORTE&status=PENDENTE&responsavelId=1&semResponsavel=false&pagina=0&tamanho=20
 // GET /api/tickets/{ticketId}
-@Profile("painel-local")
 @RestController
 @RequestMapping("/api/tickets")
 @Transactional(readOnly = true)
 public class PainelTicketsController {
-    private final EntityManager entityManager;
     private final ConsultaTicketsService consulta;
-    private final Long atendenteId;
+    private final ContextoAcesso contextoAcesso;
 
-    public PainelTicketsController(EntityManager entityManager, ConsultaTicketsService consulta,
-            @Value("${painel.atendente-id:1}") Long atendenteId) {
-        this.entityManager = entityManager;
+    public PainelTicketsController(ConsultaTicketsService consulta, ContextoAcesso contextoAcesso) {
         this.consulta = consulta;
-        this.atendenteId = atendenteId;
+        this.contextoAcesso = contextoAcesso;
     }
 
     @GetMapping
@@ -73,10 +66,6 @@ public class PainelTicketsController {
     }
 
     private Atendente atendenteDoPainel() {
-        Atendente atendente = entityManager.find(Atendente.class, atendenteId);
-        if (atendente == null || !atendente.isAtivo()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Configure um atendente ativo para o painel local.");
-        }
-        return atendente;
+        return contextoAcesso.atendenteAtual();
     }
 }

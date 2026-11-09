@@ -36,8 +36,9 @@ async function consultar(url) {
   let resposta;
   try { resposta = await fetch(url, { cache: 'no-store' }); }
   catch { throw new Error('Não foi possível conectar. Confira se a aplicação está rodando.'); }
-  if (resposta.status === 403) throw new Error('O atendente do painel não está cadastrado ou está inativo. Configure PAINEL_ATENDENTE_ID com um atendente ativo.');
-  if (resposta.status === 404) throw new Error('Consulta indisponível. Verifique o modo painel-local ou atualize a lista.');
+  if (resposta.status === 401) throw new Error('Autenticação obrigatória. Entre com as credenciais do atendente.');
+  if (resposta.status === 403) throw new Error('O atendente autenticado não tem acesso ou está inativo.');
+  if (resposta.status === 404) throw new Error('Consulta indisponível. Atualize a lista e tente novamente.');
   if (!resposta.ok) throw new Error('Não foi possível consultar o histórico. Tente novamente.');
   return resposta.json();
 }

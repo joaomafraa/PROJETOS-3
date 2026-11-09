@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.access.AccessDeniedException;
 
 import jakarta.persistence.EntityManager;
 
@@ -36,6 +38,7 @@ class HistoricoPersistenciaTests {
     @Autowired private PainelHistoricoController painel;
 
     @Test
+    @WithMockUser(username = "ana@example.com", roles = "ATENDENTE")
     void persisteRecarregaEConsultaForaDaTransacaoSemVazarOutraEmpresa() {
         TransactionTemplate transacao = new TransactionTemplate(transactionManager);
         Empresa empresa = new Empresa(1L, "WXN");
@@ -111,8 +114,6 @@ class HistoricoPersistenciaTests {
         assertEquals("Ana", historicoService.visualizarHistorico(1L, admin).getLast().autor());
         ana.desativar(admin);
         assertThrows(SecurityException.class, () -> historicoService.visualizarHistorico(1L, ana));
-        assertEquals(org.springframework.http.HttpStatus.FORBIDDEN,
-                assertThrows(org.springframework.web.server.ResponseStatusException.class,
-                        () -> painel.listar()).getStatusCode());
+        assertThrows(AccessDeniedException.class, () -> painel.listar());
     }
 }
