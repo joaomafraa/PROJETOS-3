@@ -26,6 +26,7 @@ class AtendimentoHumanoServiceTests {
     @Autowired private EntityManager em;
     @Autowired private PlatformTransactionManager manager;
     @Autowired private ConversaRepository conversas;
+    @Autowired private RespostaAutomaticaService respostaReal;
     private TransactionTemplate tx;
     private long id;
 
@@ -82,6 +83,20 @@ class AtendimentoHumanoServiceTests {
         verificarBotBloqueado();
         service.assumir(id, id);
         verificarBotBloqueado();
+    }
+
+    @Test
+    @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named = "WXN_TESTAR_GROQ_REAL", matches = "true")
+    void respostaRealDaGroqEhPersistidaNoHistorico() {
+        String resposta = respostaReal.responder(id, id, 3L);
+        assertNotNull(resposta);
+        assertFalse(resposta.isBlank());
+        tx.executeWithoutResult(s -> {
+            Conversa salva = em.find(Conversa.class, id);
+            assertEquals(3, salva.getMensagens().size());
+            assertEquals(Mensagem.TipoRemetente.CHATBOT, salva.getMensagens().getLast().getRemetente());
+            assertEquals(resposta, salva.getMensagens().getLast().getConteudo());
+        });
     }
 
     @Test
