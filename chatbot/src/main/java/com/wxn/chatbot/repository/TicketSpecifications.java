@@ -5,13 +5,11 @@ import org.springframework.data.jpa.domain.Specification;
 import com.wxn.chatbot.dto.FiltroTickets;
 import com.wxn.chatbot.model.Ticket;
 
-// Criterios da listagem de tickets, aplicados pelo banco.
 public final class TicketSpecifications {
 
     private TicketSpecifications() {
     }
 
-    // A empresa e sempre obrigatoria; os demais filtros so entram quando informados.
     public static Specification<Ticket> daEmpresaComFiltro(Long empresaId, FiltroTickets filtro) {
         Specification<Ticket> criterio = daEmpresa(empresaId);
         if (filtro.tipo() != null) {

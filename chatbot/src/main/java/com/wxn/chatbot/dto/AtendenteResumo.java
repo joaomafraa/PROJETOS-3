@@ -2,7 +2,6 @@ package com.wxn.chatbot.dto;
 
 import com.wxn.chatbot.model.Atendente;
 
-// Dados do atendente para administração, sem expor a entidade JPA.
 public record AtendenteResumo(Long id, Long empresaId, String nome, String email,
         Atendente.PerfilAcesso perfil, boolean ativo) {
 
