@@ -140,7 +140,7 @@ class FilaApiTests {
     }
 
     private Conversa criarConversa(Long id, Empresa dona, String nome, Conversa.Status status) {
-        Cliente cliente = new Cliente(id, "+5581999999999");
+        Cliente cliente = new Cliente(id, "+55819999" + (100000 - id));
         if (nome != null) {
             cliente.alterarNome(nome);
         }

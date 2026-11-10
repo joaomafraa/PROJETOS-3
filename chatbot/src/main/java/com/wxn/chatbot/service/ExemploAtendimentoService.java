@@ -79,7 +79,8 @@ public class ExemploAtendimentoService {
         if (entityManager.find(Cliente.class, id) != null || entityManager.find(Chatbot.class, id) != null) {
             throw new IllegalStateException("Os identificadores do exemplo ja estao em uso.");
         }
-        Cliente cliente = new Cliente(id, "+55 81 99999-0000");
+
+        Cliente cliente = new Cliente(id, "+55 81 99999-000" + (id - BASE));
         cliente.alterarNome(nome + " (exemplo)");
         cliente.atualizarEmail(email);
         cliente.vincularEmpresa(empresa);
