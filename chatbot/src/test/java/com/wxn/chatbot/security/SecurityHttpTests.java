@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(SecurityHttpTests.ControladorTeste.class)
 @Import({
         SecurityConfig.class,
+        com.wxn.chatbot.web.PaginasController.class,
         SecurityHttpTests.ControladorTeste.class,
         SecurityHttpTests.UsuariosTeste.class
 })
@@ -41,11 +42,26 @@ class SecurityHttpTests {
         mockMvc.perform(post("/login").param("username", "atendente@teste.com").param("password", "SenhaSegura123!"))
                 .andExpect(status().isForbidden());
         mockMvc.perform(post("/login").with(csrf()).param("username", "atendente@teste.com").param("password", "SenhaSegura123!"))
-                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/painel.html"));
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/painel"));
         mockMvc.perform(post("/login").with(csrf()).param("username", "atendente@teste.com").param("password", "errada"))
-                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login.html?erro"));
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/entrar?erro"));
         mockMvc.perform(post("/login").with(csrf()).param("username", "inativo@teste.com").param("password", "SenhaSegura123!"))
-                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login.html?erro"));
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/entrar?erro"));
+    }
+
+    @Test
+    void paginasLimpasPreservamAutenticacao() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/abertura/index.html"));
+        mockMvc.perform(get("/entrar"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/login.html"));
+        mockMvc.perform(get("/painel"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/painel").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/painel.html"));
     }
 
     @Test

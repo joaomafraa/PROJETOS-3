@@ -32,7 +32,7 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(
                     SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/abertura/**", "/login.html", "/inicio.css", "/login.js", "/csrf-token", "/error").permitAll()
+                .requestMatchers("/", "/index.html", "/abertura/**", "/login.html", "/entrar", "/inicio.css", "/login.js", "/csrf-token", "/error").permitAll()
                 .requestMatchers("/actuator/health")
                     .permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**")
@@ -41,16 +41,16 @@ public class SecurityConfig {
                     .hasRole("ADMINISTRADOR")
                 .requestMatchers("/api/**")
                     .authenticated()
-                .requestMatchers("/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js")
+                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js")
                     .authenticated()
                 .anyRequest()
                     .denyAll()
             )
             .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), PathPatternRequestMatcher.withDefaults().matcher("/api/**")))
-            .formLogin(form -> form.loginPage("/login.html").loginProcessingUrl("/login")
-                .defaultSuccessUrl("/painel.html", true).failureUrl("/login.html?erro").permitAll())
-            .logout(logout -> logout.logoutSuccessUrl("/login.html?saiu"))
+            .formLogin(form -> form.loginPage("/entrar").loginProcessingUrl("/login")
+                .defaultSuccessUrl("/painel", true).failureUrl("/entrar?erro").permitAll())
+            .logout(logout -> logout.logoutSuccessUrl("/entrar?saiu"))
             .httpBasic(Customizer.withDefaults());
 
         return http.build();
