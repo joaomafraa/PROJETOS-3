@@ -35,3 +35,9 @@
 .nexus-login .login-vignette{background:radial-gradient(ellipse at 45% 45%,transparent 5%,#05060735 65%,#0506078c 100%)}
 .nexus-login .login-card{background:linear-gradient(145deg,rgba(205,222,229,.10),rgba(69,85,94,.045) 45%,rgba(8,13,16,.10));-webkit-backdrop-filter:blur(3px) saturate(145%);backdrop-filter:blur(3px) saturate(145%)}
 @media(prefers-reduced-transparency:reduce){.nexus-login .login-card{background:#182025;-webkit-backdrop-filter:none;backdrop-filter:none}}
+.nexus-login .login-error{margin:18px 0 0;padding:12px 14px;color:#ffe0dd;background:rgba(91,39,39,.65);border:1px solid rgba(255,174,165,.45);font-size:12px;line-height:1.5}
+.nexus-login .login-retry{border:0;background:none;color:#e2edf0;text-decoration:underline;text-underline-offset:3px;padding:10px 0 0;font-size:12px}
+.nexus-login input[aria-invalid=true]{border-color:#e1a4a0!important}
+.nexus-login .field-error{display:block;margin:0 0 2px;color:#ffb9b3;font-size:12px;line-height:1.4}
+.nexus-login .field-error[hidden]{display:none}
+.nexus-login input[aria-invalid=true]{border-color:#e5a9a4!important;box-shadow:0 0 0 1px rgba(229,169,164,.16)}
