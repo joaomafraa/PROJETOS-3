@@ -54,12 +54,21 @@ class CredencialAdministradorBootstrapTests {
         when(buscaAtendente.getResultList()).thenReturn(List.of(administrador));
 
         new CredencialAdministradorBootstrap(entityManager, encoder,
-                " ADMIN@EXAMPLE.COM ", "SenhaInicial123!").run(null);
+                " ADMIN@EXAMPLE.COM ", "Senha123").run(null);
 
         ArgumentCaptor<CredencialAtendente> captor =
                 ArgumentCaptor.forClass(CredencialAtendente.class);
         verify(entityManager).persist(captor.capture());
-        assertTrue(encoder.matches("SenhaInicial123!", captor.getValue().getSenhaHash()));
+        assertTrue(encoder.matches("Senha123", captor.getValue().getSenhaHash()));
+    }
+
+    @Test
+    void rejeitaSenhaComSeteCaracteres() {
+        when(contagem.getSingleResult()).thenReturn(0L);
+        var bootstrap = new CredencialAdministradorBootstrap(entityManager, encoder,
+                "admin@example.com", "1234567");
+        assertThrows(IllegalStateException.class, () -> bootstrap.run(null));
+        verify(entityManager, never()).persist(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -67,7 +76,7 @@ class CredencialAdministradorBootstrapTests {
         when(contagem.getSingleResult()).thenReturn(1L);
 
         new CredencialAdministradorBootstrap(entityManager, encoder,
-                "admin@example.com", "SenhaInicial123!").run(null);
+                "admin@example.com", "Senha123").run(null);
 
         verify(entityManager, never()).persist(org.mockito.ArgumentMatchers.any());
         verify(entityManager, never()).createQuery(anyString(), eq(Atendente.class));
@@ -81,7 +90,7 @@ class CredencialAdministradorBootstrapTests {
         when(buscaAtendente.getResultList()).thenReturn(List.of(atendente));
 
         var bootstrap = new CredencialAdministradorBootstrap(entityManager, encoder,
-                "ana@example.com", "SenhaInicial123!");
+                "ana@example.com", "Senha123");
 
         assertThrows(IllegalStateException.class, () -> bootstrap.run(null));
         verify(entityManager, never()).persist(org.mockito.ArgumentMatchers.any());

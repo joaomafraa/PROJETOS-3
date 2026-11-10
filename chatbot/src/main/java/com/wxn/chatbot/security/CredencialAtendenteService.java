@@ -33,9 +33,9 @@ public class CredencialAtendenteService {
 
         contextoAcesso.exigirAdministrador();
 
-        if (novaSenha == null || novaSenha.length() < 12) {
+        if (novaSenha == null || novaSenha.length() < 8) {
             throw new IllegalArgumentException(
-                    "A senha deve ter pelo menos 12 caracteres.");
+                    "A senha deve ter pelo menos 8 caracteres.");
         }
 
         Atendente atendente =

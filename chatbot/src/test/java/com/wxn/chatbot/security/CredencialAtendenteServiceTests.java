@@ -51,7 +51,7 @@ class CredencialAtendenteServiceTests {
                 CredencialAtendente.class, 1L))
                 .thenReturn(null);
 
-        service.definirSenha(1L, "SenhaSegura123!");
+        service.definirSenha(1L, "Senha123");
 
         var captor = org.mockito.ArgumentCaptor.forClass(
                 CredencialAtendente.class);
@@ -61,11 +61,11 @@ class CredencialAtendenteServiceTests {
         CredencialAtendente credencial = captor.getValue();
 
         assertEquals(1L, credencial.getAtendenteId());
-        assertNotEquals("SenhaSegura123!",
+        assertNotEquals("Senha123",
                 credencial.getSenhaHash());
 
         assertTrue(passwordEncoder.matches(
-                "SenhaSegura123!",
+                "Senha123",
                 credencial.getSenhaHash()));
     }
 
@@ -73,7 +73,7 @@ class CredencialAtendenteServiceTests {
     void deveRejeitarSenhaCurta() {
 
         assertThrows(IllegalArgumentException.class,
-                () -> service.definirSenha(1L, "123"));
+                () -> service.definirSenha(1L, "1234567"));
 
         verify(entityManager, never())
                 .persist(any());
@@ -87,7 +87,7 @@ class CredencialAtendenteServiceTests {
 
         assertThrows(IllegalArgumentException.class,
                 () -> service.definirSenha(
-                        99L, "SenhaSegura123!"));
+                        99L, "Senha123"));
     }
 
     @Test
@@ -100,7 +100,7 @@ class CredencialAtendenteServiceTests {
 
         assertThrows(AccessDeniedException.class,
                 () -> service.definirSenha(
-                        1L, "SenhaSegura123!"));
+                        1L, "Senha123"));
 
         verify(entityManager, never())
                 .persist(any());
@@ -125,7 +125,7 @@ class CredencialAtendenteServiceTests {
 
         assertThrows(AccessDeniedException.class,
                 () -> service.definirSenha(
-                        2L, "SenhaSegura123!"));
+                        2L, "Senha123"));
 
         verify(entityManager, never())
                 .persist(any());

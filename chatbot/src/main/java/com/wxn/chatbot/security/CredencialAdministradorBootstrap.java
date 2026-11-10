@@ -54,9 +54,9 @@ public class CredencialAdministradorBootstrap implements ApplicationRunner {
             throw new IllegalStateException(
                     "Informe o e-mail do administrador para o bootstrap de seguranca.");
         }
-        if (senha == null || senha.length() < 12) {
+        if (senha == null || senha.length() < 8) {
             throw new IllegalStateException(
-                    "A senha inicial do administrador deve ter pelo menos 12 caracteres.");
+                    "A senha inicial do administrador deve ter pelo menos 8 caracteres.");
         }
 
         var administradores = entityManager.createQuery(
