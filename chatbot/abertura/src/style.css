@@ -104,3 +104,11 @@ h1 span,h2 span{background:linear-gradient(120deg,#fafafa,#9b9da2 55%,#e6e8eb);b
 .orb-art{position:absolute;z-index:0;width:min(55vw,650px);height:min(55vw,650px);right:3%;top:50%;transform:translateY(-50%)}
 @media(max-width:800px){.closing{min-height:680px;align-items:flex-end;padding-bottom:75px}.orb-art{width:min(100vw,480px);height:min(100vw,480px);right:50%;top:2%;transform:translateX(50%)}.closing-copy{text-shadow:0 2px 25px #000}}
 .closing-copy .magnet-cta{pointer-events:auto}
+/* Loader Two, adaptado das utilidades originais ao CSS da home. */
+.page-loader{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:#050505}
+.loader-two{display:flex;align-items:center;padding-left:16px}
+.loader-two-dot{width:16px;height:16px;border-radius:9999px;background:#737373;box-shadow:0 4px 6px -1px #0000001a,0 2px 4px -2px #0000001a;flex:none}
+.loader-two-dot-1{margin-left:-8px}.loader-two-dot-2{margin-left:-16px}
+.loader-label{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#aab3b6}
+.loader-two-dot{position:relative}
+.loader-two-dot-1{margin-left:0;left:-8px}.loader-two-dot-2{margin-left:0;left:-16px}

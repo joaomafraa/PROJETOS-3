@@ -1,12 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import './style.css';
 import GradientASCII from './GradientASCII';
 import Orb from './Orb';
 import Magnet from './Magnet';
 
-function Flow({ progress }) {
+function LoaderTwo() {
+  const transition = x => ({duration:2, repeat:Infinity, repeatType:'loop', delay:x*.2, ease:'easeInOut'});
+  return <div className="loader-two" aria-hidden="true">{[0,.4,.8].map((delay,i)=><motion.div key={delay} className={`loader-two-dot loader-two-dot-${i}`} initial={{x:0}} animate={{x:[0,20,0]}} transition={transition(delay)}/>)}</div>;
+}
+function Flow({ progress, onReady }) {
   const video = useRef(null);
   const opacity = useTransform(progress, [0, .58, .80], [1, 1, 0]);
   const escurecer = useTransform(progress, [0, .14, .32, .60, .80], [0, .35, .52, .54, .8]);
@@ -21,19 +25,25 @@ function Flow({ progress }) {
     el.addEventListener('playing',start); if(!el.paused) start();
     return () => {cancelAnimationFrame(raf);el.removeEventListener('playing',start);};
   }, []);
-  return <motion.div className="flow-backdrop flow-main" style={{opacity}} aria-hidden="true"><motion.div className="flow-scroll" style={{x:deslocamento,y:altura,rotate:giro,scale:profundidade}}><motion.div className="flow-scene" initial={{scale:1.2,x:'-6%',opacity:0}} animate={{scale:1,x:'0%',opacity:1}} transition={{duration:1.7,ease:[.16,1,.3,1]}}><video ref={video} src="/abertura/media/wxn-animacao-1-loop.mp4" autoPlay muted loop playsInline preload="auto"/></motion.div></motion.div><div className="flow-ambient"/><motion.div className="flow-darken" style={{opacity:escurecer}}/><div className="flow-shade"/></motion.div>;
+  return <motion.div className="flow-backdrop flow-main" style={{opacity}} aria-hidden="true"><motion.div className="flow-scroll" style={{x:deslocamento,y:altura,rotate:giro,scale:profundidade}}><motion.div className="flow-scene" initial={{scale:1.2,x:'-6%',opacity:0}} animate={{scale:1,x:'0%',opacity:1}} transition={{duration:1.7,ease:[.16,1,.3,1]}}><video ref={video} src="/abertura/media/wxn-animacao-1-loop.mp4" autoPlay muted loop playsInline preload="auto" onCanPlay={onReady} onError={onReady}/></motion.div></motion.div><div className="flow-ambient"/><motion.div className="flow-darken" style={{opacity:escurecer}}/><div className="flow-shade"/></motion.div>;
 }
 
 function App() {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setLoading(false), 12000);
+    return () => window.clearTimeout(timeout);
+  }, []);
   const jornada = useRef(null);
   const { scrollYProgress } = useScroll({ target: jornada, offset: ['start start', 'end end'] });
   const heroOpacity = useTransform(scrollYProgress, [0, .09, .17], [1, 1, 0]);
   const heroY = useTransform(scrollYProgress, [0, .17], [0, -50]);
   return <div className="page">
+    <AnimatePresence>{loading && <motion.div className="page-loader" role="status" aria-live="polite" initial={{opacity:1}} exit={{opacity:0}} transition={{duration:.4}}><LoaderTwo/><span className="loader-label">Carregando NEXUS</span></motion.div>}</AnimatePresence>
     <header className="mast"><a className="logo" href="/" aria-label="NEXUS início"><span>NEXUS</span></a><nav aria-label="Navegação principal"><Magnet padding={65} magnetStrength={4} maxOffset={10}><a className="nav-login" href="/entrar">Entrar <span aria-hidden="true">↗</span></a></Magnet></nav></header>
     <main>
       <div ref={jornada} className="journey">
-        <div className="sticky-stage"><Flow progress={scrollYProgress}/></div>
+        <div className="sticky-stage"><Flow progress={scrollYProgress} onReady={() => setLoading(false)}/></div>
         <section className="chapter hero" aria-labelledby="hero-title">
           <motion.div className="hero-copy" style={{opacity: heroOpacity, y: heroY}}><motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.85,delay:.25,ease:[.23,1,.32,1]}}>
             <p className="eyebrow">NEXUS <span> / </span> INTELIGÊNCIA NO ATENDIMENTO</p>
