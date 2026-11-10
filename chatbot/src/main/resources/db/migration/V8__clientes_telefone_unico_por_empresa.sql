@@ -7,7 +7,7 @@ CREATE SEQUENCE clientes_id_seq START WITH 1 INCREMENT BY 1;
 -- igual ao que o servico passa a gravar, para que a restricao abaixo possa ser criada.
 -- So afeta os quatro clientes de exemplo, identificados pelo ID e pelo e-mail de exemplo.
 UPDATE clientes
-SET numero_telefone = CONCAT('+558199999000', CAST(id - 900000010 AS VARCHAR(4)))
+SET numero_telefone = CONCAT('+558188888000', CAST(id - 900000010 AS VARCHAR(4)))
 WHERE id BETWEEN 900000010 AND 900000013
   AND email LIKE '%.demo@example.com';
 

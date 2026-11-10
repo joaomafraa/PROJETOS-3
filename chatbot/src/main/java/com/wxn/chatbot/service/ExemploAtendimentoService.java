@@ -80,7 +80,7 @@ public class ExemploAtendimentoService {
             throw new IllegalStateException("Os identificadores do exemplo ja estao em uso.");
         }
 
-        Cliente cliente = new Cliente(id, "+55 81 99999-000" + (id - BASE));
+        Cliente cliente = new Cliente(id, "+55 81 88888-000" + (id - BASE));
         cliente.alterarNome(nome + " (exemplo)");
         cliente.atualizarEmail(email);
         cliente.vincularEmpresa(empresa);
