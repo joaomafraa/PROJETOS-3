@@ -197,8 +197,11 @@ criarExemplo.addEventListener('click', async () => {
   atualizar.disabled = true;
   informar('Salvando atendimento de exemplo no banco…');
   try {
+    const csrfResposta = await fetch('/csrf-token', { cache: 'no-store' });
+    if (!csrfResposta.ok) throw new Error('Não foi possível preparar a solicitação. Atualize a página e tente novamente.');
+    const csrf = await csrfResposta.json();
     const resposta = await fetch('/api/historico/exemplo', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      method: 'POST', headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token }, body: '{}'
     });
     if (!resposta.ok) throw new Error('Não foi possível criar o exemplo. Verifique o modo local e se o atendente e os identificadores estão disponíveis.');
     const resultado = await resposta.json();

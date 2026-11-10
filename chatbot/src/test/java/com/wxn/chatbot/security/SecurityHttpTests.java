@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 @WebMvcTest(SecurityHttpTests.ControladorTeste.class)
 @Import({
@@ -32,6 +35,18 @@ class SecurityHttpTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    void loginExigeCsrfEAutenticaAtendente() throws Exception {
+        mockMvc.perform(post("/login").param("username", "atendente@teste.com").param("password", "SenhaSegura123!"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/login").with(csrf()).param("username", "atendente@teste.com").param("password", "SenhaSegura123!"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/painel.html"));
+        mockMvc.perform(post("/login").with(csrf()).param("username", "atendente@teste.com").param("password", "errada"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login.html?erro"));
+        mockMvc.perform(post("/login").with(csrf()).param("username", "inativo@teste.com").param("password", "SenhaSegura123!"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login.html?erro"));
+    }
 
     @Test
     void deveBloquearUsuarioNaoAutenticado() throws Exception {

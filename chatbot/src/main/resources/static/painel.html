@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Painel de acompanhamento de conversas da NEXUS.">
+  <title>Caixa de entrada | NEXUS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/tema.js?v=6"></script>
+  <link rel="stylesheet" href="/painel.css?v=10">
+</head>
+<body>
+  <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="/" aria-label="NEXUS, página inicial">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>NEXUS</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Seções do painel">
+        <a class="nav-link active" href="/painel.html" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v12h-5l-3 4-3-4H4z"/></svg>Atendimentos</a>
+        <span class="nav-link unavailable" aria-disabled="true"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Solicitações</span>
+        <span class="nav-link unavailable" aria-disabled="true"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></svg>Clientes e leads</span>
+        <a class="nav-link settings-nav" href="#configuracoes" aria-label="Configurações"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg><span>Configurações</span></a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="attendant-avatar" aria-hidden="true">A</div>
+        <div><strong>Painel local</strong><span>Atendimento NEXUS</span></div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div><span class="topbar-label">Atendimentos</span><strong>Central de conversas</strong></div>
+        <div class="topbar-actions">
+          <button id="exemplo" class="button secondary" type="button">Criar exemplo</button>
+          <button id="atualizar" class="button primary" type="button">Atualizar lista</button>
+        </div>
+      </header>
+
+      <div id="barra-aviso" class="status-bar">
+        <p id="aviso" class="system-message" role="status" aria-live="polite"></p>
+        <button id="tentar-novamente" class="button secondary" type="button" hidden>Tentar novamente</button>
+      </div>
+
+      <div class="inbox-layout">
+        <section class="conversation-list-panel" aria-labelledby="titulo-lista">
+          <div class="panel-heading">
+            <div><h1 id="titulo-lista">Caixa de entrada</h1><p>Conversas aguardando atendimento</p></div>
+            <span id="contador-fila" class="status-badge" aria-live="polite">Fila</span>
+          </div>
+
+          <label class="search-field">
+            <span class="visually-hidden">Buscar conversa</span><span aria-hidden="true">⌕</span>
+            <input id="busca" type="search" placeholder="Buscar por nome do cliente..." autocomplete="off" aria-controls="conversas">
+          </label>
+
+          <div class="list-tabs" aria-label="Filtros da caixa de entrada">
+            <button class="tab active" type="button" disabled>Recentes</button>
+            <button class="tab" type="button" disabled title="Disponível em uma próxima entrega">Meus chats</button>
+          </div>
+          <div id="conversas" class="conversation-list" role="group" aria-label="Conversas aguardando atendimento" aria-busy="false"></div>
+        </section>
+
+        <section class="chat-panel" aria-labelledby="titulo-historico">
+          <header class="chat-heading">
+            <div><h2 id="titulo-historico">Conversa</h2><p id="detalhes">Escolha uma conversa na caixa de entrada.</p></div>
+            <button class="button dark" type="button" disabled title="Disponível em uma próxima entrega">Assumir conversa</button>
+          </header>
+
+          <div class="waiting-banner">
+            <span class="waiting-symbol" aria-hidden="true">◷</span>
+            <div><strong>Histórico de atendimento</strong><span>Consulte as mensagens registradas nesta conversa.</span></div>
+          </div>
+
+          <ol id="mensagens" class="message-list" tabindex="0" aria-label="Mensagens da conversa selecionada"></ol>
+
+          <footer class="composer">
+            <label for="mensagem-resposta" class="visually-hidden">Mensagem para o cliente</label>
+            <textarea id="mensagem-resposta" rows="2" disabled placeholder="Assuma o atendimento para escrever uma mensagem."></textarea>
+            <button class="button primary" type="button" disabled>Enviar</button>
+          </footer>
+        </section>
+
+        <aside class="context-panel" aria-labelledby="titulo-contexto">
+          <div class="panel-heading context-heading">
+            <div><h2 id="titulo-contexto">Contexto do atendimento</h2><p>Informações disponíveis para a equipe</p></div>
+          </div>
+          <div class="privacy-note"><span aria-hidden="true">●</span>Contexto da conversa</div>
+          <div class="context-section">
+            <h3>Resumo</h3>
+            <p id="contexto-resumo">Selecione uma conversa para acompanhar as mensagens e os dados já registrados.</p>
+          </div>
+          <dl id="contexto" class="context-data" aria-live="polite">
+            <div><dt>Cliente</dt><dd data-campo="cliente">Aguardando seleção</dd></div>
+            <div><dt>Telefone</dt><dd data-campo="telefone">—</dd></div>
+            <div><dt>Chatbot</dt><dd data-campo="chatbot">—</dd></div>
+            <div><dt>Status</dt><dd data-campo="status"><span class="status-badge">Não selecionado</span></dd></div>
+          </dl>
+          <div class="context-note">
+            <strong>Informações já coletadas</strong>
+            <p>E-mail, protocolo e responsável ainda não são enviados pela API e serão disponibilizados na próxima etapa.</p>
+          </div>
+        </aside>
+      </div>
+      <section id="configuracoes" class="settings-view" aria-labelledby="titulo-configuracoes" hidden>
+        <div class="settings-heading"><span class="topbar-label">Seu espaço de trabalho</span><h1 id="titulo-configuracoes" tabindex="-1">Configurações</h1><p>Deixe o painel do seu jeito.</p></div>
+        <div class="appearance-card">
+          <div class="theme-preview" aria-hidden="true"><div class="preview-sidebar"></div><div class="preview-content"><span></span><span></span><span></span></div></div>
+          <div class="appearance-details"><h2>Aparência</h2><p>Escolha entre o tema claro e escuro. Sua preferência fica salva neste navegador.</p><div class="theme-controls"><span id="tema-atual" role="status"></span><button id="alternar-tema" class="theme-option" type="button">Alternar tema</button></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/contexto.js" defer></script>
+  <script src="/historico.js?v=2" defer></script>
+</body>
+</html>
