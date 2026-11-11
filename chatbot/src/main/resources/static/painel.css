@@ -245,3 +245,33 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 
 .revisao-envio { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .revisao-envio .button { min-height:30px; font-size:11px; }
+
+/* Tela de administração (HU08.3) */
+.admin-aviso { margin-top:20px; min-height:18px; }
+.admin-card { margin-top:20px; padding:22px; border:1px solid var(--line); border-radius:12px; background:var(--subtle); }
+.admin-card h2 { font-size:16px; }
+.admin-card-topo { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.admin-card-acoes { display:flex; align-items:center; gap:8px; }
+.admin-form { display:grid; grid-template-columns:1fr 1fr 180px; gap:12px; margin-top:16px; align-items:end; }
+.admin-form .filter-actions { grid-column:auto; }
+.filter-field input { width:100%; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); font:inherit; font-size:12px; }
+.filter-field input:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.filter-field input[aria-invalid="true"] { border-color:var(--danger); }
+.admin-dica { margin-top:12px; color:var(--muted); font-size:12px; }
+.admin-tabela-area { margin-top:14px; overflow-x:auto; }
+.admin-tabela { width:100%; border-collapse:collapse; font-size:12px; }
+.admin-tabela th { text-align:left; color:var(--muted); font-weight:500; padding:8px; border-bottom:1px solid var(--line); }
+.admin-tabela td { padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:middle; overflow-wrap:anywhere; }
+.admin-tabela td.vazio { color:var(--muted); text-align:center; padding:24px 8px; }
+.admin-tabela select { padding:6px 8px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); font:inherit; font-size:12px; }
+.admin-tabela .acoes { display:flex; flex-wrap:wrap; gap:6px; }
+.admin-tabela .button { min-height:30px; font-size:11px; }
+.status-badge[data-ativo="false"] { color:var(--danger); border-color:var(--danger); }
+.admin-responsaveis { display:grid; gap:14px; margin-top:16px; }
+.admin-responsaveis fieldset { border:1px solid var(--line); border-radius:10px; padding:14px; }
+.admin-responsaveis legend { padding:0 6px; font-size:13px; font-weight:600; }
+.admin-responsaveis .opcoes { display:flex; flex-wrap:wrap; gap:8px 18px; margin:8px 0 12px; font-size:12px; }
+.admin-responsaveis label { display:inline-flex; align-items:center; gap:6px; }
+@media (max-width:700px) {
+  .admin-form { grid-template-columns:1fr; }
+}
