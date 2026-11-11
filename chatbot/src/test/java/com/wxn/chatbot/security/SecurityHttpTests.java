@@ -65,6 +65,14 @@ class SecurityHttpTests {
     }
 
     @Test
+    void scriptDaTelaDeSolicitacoesExigeLogin() throws Exception {
+        mockMvc.perform(get("/solicitacoes.js"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/solicitacoes.js").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void deveBloquearUsuarioNaoAutenticado() throws Exception {
         mockMvc.perform(get("/api/teste/seguro"))
                 .andExpect(status().isUnauthorized());

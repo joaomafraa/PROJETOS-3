@@ -153,8 +153,36 @@ class TicketsControllerTests {
         mvc.perform(get("/api/tickets/1"))
                 .andExpect(status().isForbidden());
 
+        mvc.perform(get("/api/tickets/responsaveis"))
+                .andExpect(status().isForbidden());
+
         verifyNoInteractions(consulta);
      }
+
+    @Test
+    void listaResponsaveisDaEmpresaDoAtendenteAutenticado() throws Exception {
+        when(consulta.listarResponsaveis(atendente)).thenReturn(List.of(
+                new com.wxn.chatbot.dto.ResponsavelOpcao(10L, "Ana", true, true),
+                new com.wxn.chatbot.dto.ResponsavelOpcao(11L, "Bruno", false, false)));
+
+        mvc.perform(get("/api/tickets/responsaveis"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10))
+                .andExpect(jsonPath("$[0].voce").value(true))
+                .andExpect(jsonPath("$[1].nome").value("Bruno"))
+                .andExpect(jsonPath("$[1].ativo").value(false));
+
+        verify(consulta).listarResponsaveis(atendente);
+        verify(consulta, never()).detalhar(any(), any());
+    }
+
+    @Test
+    void responsaveisResponde403ParaAtendenteInativo() throws Exception {
+        when(consulta.listarResponsaveis(atendente))
+                .thenThrow(new SecurityException("Um atendente inativo nao pode consultar solicitacoes."));
+
+        mvc.perform(get("/api/tickets/responsaveis")).andExpect(status().isForbidden());
+    }
 
         @RestControllerAdvice
         static class TratamentoAcessoNegadoTeste {
