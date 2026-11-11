@@ -2,6 +2,10 @@ package com.wxn.chatbot.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import com.wxn.chatbot.model.*;
+import com.wxn.chatbot.llm.ProvedorLlm;
+import com.wxn.chatbot.llm.RespostaAutomaticaService;
+import com.wxn.chatbot.repository.ConversaRepository;
+import static org.mockito.Mockito.*;
 import jakarta.persistence.EntityManager;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,6 +25,8 @@ class AtendimentoHumanoServiceTests {
     @Autowired private FilaConversasService fila;
     @Autowired private EntityManager em;
     @Autowired private PlatformTransactionManager manager;
+    @Autowired private ConversaRepository conversas;
+    @Autowired private RespostaAutomaticaService respostaReal;
     private TransactionTemplate tx;
     private long id;
 
@@ -77,6 +83,48 @@ class AtendimentoHumanoServiceTests {
         verificarBotBloqueado();
         service.assumir(id, id);
         verificarBotBloqueado();
+    }
+
+    @Test
+    @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named = "WXN_TESTAR_GROQ_REAL", matches = "true")
+    void respostaRealDaGroqEhPersistidaNoHistorico() {
+        String resposta = respostaReal.responder(id, id, 3L);
+        assertNotNull(resposta);
+        assertFalse(resposta.isBlank());
+        tx.executeWithoutResult(s -> {
+            Conversa salva = em.find(Conversa.class, id);
+            assertEquals(3, salva.getMensagens().size());
+            assertEquals(Mensagem.TipoRemetente.CHATBOT, salva.getMensagens().getLast().getRemetente());
+            assertEquals(resposta, salva.getMensagens().getLast().getConteudo());
+        });
+    }
+
+    @Test
+    void respostaSimuladaEhSalvaETransferenciaDuranteGeracaoDescartaResposta() {
+        ProvedorLlm provedor = mock(ProvedorLlm.class);
+        var respostas = new RespostaAutomaticaService(provedor, conversas, manager);
+        when(provedor.responder(anyList())).thenReturn("Posso ajudar.");
+        assertEquals("Posso ajudar.", respostas.responder(id, id, 3L));
+        tx.executeWithoutResult(s -> assertEquals(3, em.find(Conversa.class, id).getMensagens().size()));
+        when(provedor.responder(anyList())).thenAnswer(invocacao -> {
+            service.solicitar(id, id);
+            return "Resposta que chegou tarde";
+        });
+        assertThrows(IllegalStateException.class, () -> respostas.responder(id, id, 4L));
+        tx.executeWithoutResult(s -> {
+            Conversa salva = em.find(Conversa.class, id);
+            assertEquals(Conversa.Status.AGUARDANDO_ATENDENTE, salva.getStatus());
+            assertEquals(3, salva.getMensagens().size());
+        });
+    }
+
+    @Test
+    void respostaVaziaNaoEhSalva() {
+        ProvedorLlm provedor = mock(ProvedorLlm.class);
+        when(provedor.responder(anyList())).thenReturn(" ");
+        var respostas = new RespostaAutomaticaService(provedor, conversas, manager);
+        assertThrows(com.wxn.chatbot.llm.FalhaLlmException.class, () -> respostas.responder(id, id, 3L));
+        tx.executeWithoutResult(s -> assertEquals(2, em.find(Conversa.class, id).getMensagens().size()));
     }
 
     private void verificarBotBloqueado() {

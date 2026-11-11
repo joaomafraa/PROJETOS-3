@@ -1,5 +1,6 @@
 package com.wxn.chatbot.service;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.data.domain.Page;
@@ -10,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.wxn.chatbot.dto.FiltroTickets;
 import com.wxn.chatbot.dto.PaginaResumo;
+import com.wxn.chatbot.dto.ResponsavelOpcao;
 import com.wxn.chatbot.dto.TicketDetalhe;
 import com.wxn.chatbot.dto.TicketResumo;
 import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Cliente;
 import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.model.Ticket;
+import com.wxn.chatbot.repository.AtendenteRepository;
 import com.wxn.chatbot.repository.TicketRepository;
 import com.wxn.chatbot.repository.TicketSpecifications;
 
@@ -31,11 +34,24 @@ public class ConsultaTicketsService {
 
     private final TicketRepository ticketRepository;
     private final HistoricoConversasService historicoService;
+    private final AtendenteRepository atendenteRepository;
 
     public ConsultaTicketsService(TicketRepository ticketRepository,
-            HistoricoConversasService historicoService) {
+            HistoricoConversasService historicoService, AtendenteRepository atendenteRepository) {
         this.ticketRepository = Objects.requireNonNull(ticketRepository);
         this.historicoService = Objects.requireNonNull(historicoService);
+        this.atendenteRepository = Objects.requireNonNull(atendenteRepository);
+    }
+
+    // Opcoes do filtro por responsavel: atendentes da mesma empresa, inclusive inativos,
+    // porque tickets antigos podem continuar com eles como responsaveis.
+    @Transactional(readOnly = true)
+    public List<ResponsavelOpcao> listarResponsaveis(Atendente atendente) {
+        verificarAtendente(atendente);
+        return atendenteRepository.findByEmpresaIdOrderByNomeAscIdAsc(atendente.getEmpresa().getId()).stream()
+                .map(opcao -> new ResponsavelOpcao(opcao.getId(), opcao.getNome(), opcao.isAtivo(),
+                        opcao.getId().equals(atendente.getId())))
+                .toList();
     }
 
     @Transactional(readOnly = true)

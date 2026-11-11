@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import jakarta.persistence.EntityManager;
 
@@ -32,6 +33,7 @@ class PainelContextoTests {
     @Autowired private PainelHistoricoController painel;
 
     @Test
+    @WithMockUser(username = "ana@example.com", roles = "ATENDENTE")
     void filaEntregaDadosDoContextoSemVazarOutraEmpresa() {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             Empresa empresa = new Empresa(1L, "WXN");

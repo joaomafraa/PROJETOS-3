@@ -1,0 +1,43 @@
+.nexus-login{background:#050607;color:#f4f6f6;position:relative;isolation:isolate;font-family:Inter,'DM Sans',sans-serif}
+#particles-root,.login-vignette{position:fixed;inset:0;z-index:-2;pointer-events:none}
+.particles-container{position:relative;width:100%;height:100%;overflow:hidden}.particles-canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+.login-vignette{z-index:-1;background:radial-gradient(ellipse at 24% 40%,transparent 0%,#0506077d 55%,#050607d9 100%)}
+.nexus-login .header{height:88px;padding:0 clamp(24px,5vw,76px);border-color:#ffffff12}
+.nexus-login .brand{font-size:22px;letter-spacing:-.06em}.nexus-login .header-link{color:#c6ced0;font-size:12px}
+.nexus-login .login-layout{flex:1;max-width:1500px;grid-template-columns:1fr minmax(360px,440px);gap:clamp(50px,10vw,160px);padding:70px clamp(24px,7vw,110px);align-items:center}
+.nexus-login .eyebrow{color:#a7b5b9;font-size:10px;letter-spacing:.18em}.nexus-login .eyebrow span{color:#556267;margin:0 7px}
+.nexus-login h1{font-size:clamp(48px,5.5vw,82px);line-height:1.08;font-weight:500;letter-spacing:-.06em}.nexus-login h1 em{color:#9aa8ae}
+.nexus-login .lead{color:#b0bbbe;font-size:15px;max-width:390px;line-height:1.8}
+.intro-caption{display:flex;align-items:center;gap:12px;margin-top:65px;color:#849398;letter-spacing:.13em;font-size:10px}.intro-caption span{width:26px;height:1px;background:#9eabad}
+.nexus-login .login-card{background:#111518db;border:1px solid #ffffff24;border-radius:16px;padding:clamp(28px,3vw,42px);box-shadow:0 30px 100px #000a;backdrop-filter:blur(18px)}
+.nexus-login .card-kicker{color:#9caeb5;letter-spacing:.15em;font-size:10px}.nexus-login .login-card h2{font-size:27px;font-weight:500}.nexus-login .card-description{color:#aab5b8;margin-bottom:28px}
+.nexus-login .login-card form{gap:9px}.nexus-login .login-card label{font-size:12px;color:#dce2e4;margin-top:11px}.nexus-login .login-card input:not([type=hidden]){background:#080b0d;border-color:#ffffff26;border-radius:8px;color:#fff;padding:14px}.nexus-login .login-card input:not([type=hidden]):focus{border-color:#aab9bf;outline:2px solid #aab9bf55;outline-offset:1px}
+.nexus-login .login-submit{margin-top:22px;border-radius:8px;background:#eef1f1;color:#101415;min-height:51px}.nexus-login .login-submit:hover{background:#fff}.nexus-login .card-footer{color:#a1adaf;font-size:12px}
+.nexus-login .site-footer{position:relative;padding:25px clamp(24px,5vw,76px);border-color:#ffffff12;color:#8c9a9e;font-size:10px;letter-spacing:.1em}
+@media(max-width:850px){.nexus-login .login-layout{grid-template-columns:1fr;max-width:650px;gap:36px;padding-top:55px}.nexus-login h1{font-size:clamp(42px,8vw,60px)}.intro-caption{margin-top:28px}}
+@media(max-width:480px){.nexus-login .header{height:74px}.nexus-login .header-link{font-size:11px}.nexus-login .login-layout{padding:40px 20px}.nexus-login .login-card{padding:26px}.nexus-login .site-footer{padding-inline:20px}}
+.nexus-login .header,.nexus-login .login-layout,.nexus-login .site-footer{position:relative;z-index:1}
+.nexus-login .login-card{background:linear-gradient(145deg,rgba(137,154,164,.16),rgba(24,32,37,.52) 46%,rgba(10,15,18,.68));border:1px solid rgba(224,238,243,.25);box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.16);-webkit-backdrop-filter:blur(20px) saturate(135%);backdrop-filter:blur(20px) saturate(135%)}
+.nexus-login .login-card form{margin-top:27px}
+.nexus-login .login-card input:not([type=hidden]){background:rgba(6,11,14,.62);border-color:rgba(225,238,242,.2)}
+/* Vidro escuro com reflexo superior e camadas de contraste. */
+.nexus-login .login-card{background:linear-gradient(160deg,rgba(172,190,197,.18) 0%,rgba(72,86,94,.14) 28%,rgba(13,18,21,.76) 100%);border:1px solid rgba(218,234,239,.21);border-top-color:rgba(239,249,252,.38);border-radius:20px;box-shadow:0 32px 90px rgba(0,0,0,.58),0 1px 0 rgba(255,255,255,.11) inset,0 0 35px rgba(173,203,215,.035);-webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%)}
+.nexus-login .card-kicker{color:#bfccd1;font-weight:600}
+.nexus-login .login-card label{color:#e1e9eb;font-weight:500}
+.nexus-login .login-card input:not([type=hidden]){background:rgba(4,8,10,.7);border:1px solid rgba(215,231,237,.22);box-shadow:inset 0 1px 3px rgba(0,0,0,.2)}
+.nexus-login .login-card input::placeholder{color:#a0adb1}
+.nexus-login .card-footer{color:#b5c1c4}
+@media(prefers-reduced-transparency:reduce){.nexus-login .login-card{background:#181f23;-webkit-backdrop-filter:none;backdrop-filter:none}}
+/* Vidro translúcido: as partículas permanecem visíveis através do card. */
+.nexus-login .login-card{background:linear-gradient(145deg,rgba(205,222,229,.12),rgba(69,85,94,.075) 45%,rgba(8,13,16,.19));border:1px solid rgba(225,240,245,.24);border-top-color:rgba(245,252,255,.4);box-shadow:0 30px 80px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(7px) saturate(145%);backdrop-filter:blur(7px) saturate(145%)}
+.nexus-login .login-card input:not([type=hidden]){background:rgba(4,8,10,.42)}
+@media(prefers-reduced-transparency:reduce){.nexus-login .login-card{background:#182025;-webkit-backdrop-filter:none;backdrop-filter:none}}
+.nexus-login .login-vignette{background:radial-gradient(ellipse at 45% 45%,transparent 5%,#05060735 65%,#0506078c 100%)}
+.nexus-login .login-card{background:linear-gradient(145deg,rgba(205,222,229,.10),rgba(69,85,94,.045) 45%,rgba(8,13,16,.10));-webkit-backdrop-filter:blur(3px) saturate(145%);backdrop-filter:blur(3px) saturate(145%)}
+@media(prefers-reduced-transparency:reduce){.nexus-login .login-card{background:#182025;-webkit-backdrop-filter:none;backdrop-filter:none}}
+.nexus-login .login-error{margin:18px 0 0;padding:12px 14px;color:#ffe0dd;background:rgba(91,39,39,.65);border:1px solid rgba(255,174,165,.45);font-size:12px;line-height:1.5}
+.nexus-login .login-retry{border:0;background:none;color:#e2edf0;text-decoration:underline;text-underline-offset:3px;padding:10px 0 0;font-size:12px}
+.nexus-login input[aria-invalid=true]{border-color:#e1a4a0!important}
+.nexus-login .field-error{display:block;margin:0 0 2px;color:#ffb9b3;font-size:12px;line-height:1.4}
+.nexus-login .field-error[hidden]{display:none}
+.nexus-login input[aria-invalid=true]{border-color:#e5a9a4!important;box-shadow:0 0 0 1px rgba(229,169,164,.16)}

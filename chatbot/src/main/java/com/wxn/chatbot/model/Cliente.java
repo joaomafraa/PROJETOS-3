@@ -10,9 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "clientes")
+@Table(name = "clientes", uniqueConstraints = @UniqueConstraint(
+        name = "uk_clientes_empresa_telefone", columnNames = {"empresa_id", "numero_telefone"}))
 public class Cliente {
 
     private static final Pattern FORMATO_EMAIL = Pattern.compile(
@@ -24,7 +26,7 @@ public class Cliente {
     private String nome;
     @Column(length = 254)
     private String email;
-    @Column(name = "numero_telefone", nullable = false, length = 32)
+    @Column(name = "numero_telefone", length = 32)
     private String numeroTelefone;
     @Column(name = "identidade_confirmada", nullable = false)
     private boolean identidadeConfirmada;
@@ -44,6 +46,14 @@ public class Cliente {
         this.id = id;
         this.numeroTelefone = validarTelefone(numeroTelefone);
         this.identidadeConfirmada = false;
+    }
+
+    /** Cliente de canal que ainda não informou telefone. */
+    public static Cliente semTelefone(Long id) {
+        if (id == null || id <= 0) throw new IllegalArgumentException("O id do cliente deve ser positivo.");
+        Cliente cliente = new Cliente();
+        cliente.id = id;
+        return cliente;
     }
 
     public Long getId() {
@@ -146,6 +156,10 @@ public class Cliente {
     }
 
     private String validarTelefone(String numeroTelefone) {
+        return normalizarTelefone(numeroTelefone);
+    }
+
+    public static String normalizarTelefone(String numeroTelefone) {
         if (numeroTelefone == null) {
             throw new IllegalArgumentException("O telefone do cliente é obrigatório.");
         }

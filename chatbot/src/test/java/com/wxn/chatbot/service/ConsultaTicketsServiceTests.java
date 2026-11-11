@@ -284,4 +284,31 @@ class ConsultaTicketsServiceTests {
         assertThrows(IllegalArgumentException.class, () -> consulta.detalhar(0L, atendente(1L)));
         assertThrows(IllegalArgumentException.class, () -> consulta.detalhar(null, atendente(1L)));
     }
+
+    @Test
+    void responsaveisSaoDaMesmaEmpresaEMarcamOAtendenteAtual() {
+        atendente(5L).desativar(atendente(3L));
+
+        var opcoes = consulta.listarResponsaveis(atendente(2L));
+
+        // Ordem por nome; Carla aparece mesmo inativa, porque pode ter tickets antigos.
+        assertEquals(List.of("Admin", "Ana", "Bruno", "Carla"),
+                opcoes.stream().map(com.wxn.chatbot.dto.ResponsavelOpcao::nome).toList());
+        assertTrue(opcoes.stream().noneMatch(opcao -> opcao.id() == 4L), "Atendente de outra empresa nao aparece.");
+        assertEquals(List.of(2L), opcoes.stream().filter(com.wxn.chatbot.dto.ResponsavelOpcao::voce)
+                .map(com.wxn.chatbot.dto.ResponsavelOpcao::id).toList());
+        assertFalse(opcoes.stream().filter(opcao -> opcao.id() == 5L).findFirst().orElseThrow().ativo());
+
+        assertEquals(List.of("Externo"), consulta.listarResponsaveis(atendente(4L)).stream()
+                .map(com.wxn.chatbot.dto.ResponsavelOpcao::nome).toList());
+    }
+
+    @Test
+    void responsaveisRecusaAtendenteNuloOuInativo() {
+        Atendente carla = atendente(5L);
+        carla.desativar(atendente(3L));
+
+        assertThrows(NullPointerException.class, () -> consulta.listarResponsaveis(null));
+        assertThrows(SecurityException.class, () -> consulta.listarResponsaveis(carla));
+    }
 }

@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 import java.util.List;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,24 +21,40 @@ import com.wxn.chatbot.model.Empresa;
 import com.wxn.chatbot.repository.ConversaRepository;
 import com.wxn.chatbot.service.FilaConversasService;
 import com.wxn.chatbot.service.HistoricoConversasService;
+import com.wxn.chatbot.security.ContextoAcesso;
 
 @ExtendWith(MockitoExtension.class)
 class FilaControllerTests {
-    @Mock private EntityManager entityManager;
     @Mock private ConversaRepository conversas;
     @Mock private HistoricoConversasService historico;
     @Mock private FilaConversasService fila;
     private Atendente atendente;
     private MockMvc mvc;
 
-    @BeforeEach
-    void configurar() {
-        atendente = new Atendente(10L, "Ana", "ana@example.com", new Empresa(1L, "WXN"),
-                Atendente.PerfilAcesso.ATENDENTE);
-        when(entityManager.find(Atendente.class, 10L)).thenReturn(atendente);
-        mvc = MockMvcBuilders.standaloneSetup(new PainelHistoricoController(
-                entityManager, conversas, historico, fila, 10L)).build();
-    }
+
+        @BeforeEach
+        void configurar() {
+                atendente = new Atendente(
+                        10L,
+                        "Ana",
+                        "ana@example.com",
+                        new Empresa(1L, "WXN"),
+                        Atendente.PerfilAcesso.ATENDENTE
+                );
+
+        ContextoAcesso contextoAcesso = mock(ContextoAcesso.class);
+
+        when(contextoAcesso.atendenteAtual())
+                .thenReturn(atendente);
+
+        mvc = MockMvcBuilders.standaloneSetup(new PainelHistoricoController(conversas,
+                        historico,
+                        fila,
+                        contextoAcesso
+                )
+                ).build();
+        }
+
 
     @Test
     void delegaAoServicoComAtendenteConfiguradoEPreservaOrdem() throws Exception {

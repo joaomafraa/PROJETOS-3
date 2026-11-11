@@ -20,6 +20,9 @@ public interface ConversaRepository extends JpaRepository<Conversa, Long> {
             @Param("id") Long id, @Param("empresaId") Long empresaId);
 
     @EntityGraph(attributePaths = {"cliente", "chatbot"})
+    List<Conversa> findByEmpresaIdAndResponsavelIdAndStatusOrderByDataInicioAscIdAsc(Long empresaId, Long responsavelId, Conversa.Status status);
+
+    @EntityGraph(attributePaths = {"cliente", "chatbot"})
     List<Conversa> findTop100ByEmpresaIdOrderByDataInicioDescIdDesc(Long empresaId);
 
     @EntityGraph(attributePaths = {"cliente", "chatbot"})

@@ -10,8 +10,10 @@ import java.time.Duration;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -21,6 +23,8 @@ class ChatbotApplicationTests {
 
 	@Value("${local.server.port}")
 	private int port;
+	@Autowired
+	private ApplicationContext context;
 
 	@Test
 	void healthEndpointReportsUp() throws Exception {
@@ -33,6 +37,14 @@ class ChatbotApplicationTests {
 			assertEquals(200, response.statusCode());
 			assertEquals("UP", JsonMapper.builder().build().readValue(response.body(), Map.class).get("status"));
 		}
+	}
+
+	@Test
+	void protectedApiControllersAreAvailableWithoutLocalPanelProfile() {
+		assertEquals(1, context.getBeansOfType(
+				com.wxn.chatbot.web.PainelHistoricoController.class).size());
+		assertEquals(1, context.getBeansOfType(
+				com.wxn.chatbot.web.PainelTicketsController.class).size());
 	}
 
 }

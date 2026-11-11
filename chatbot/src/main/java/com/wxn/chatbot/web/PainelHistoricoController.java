@@ -1,9 +1,6 @@
 package com.wxn.chatbot.web;
 
 import java.util.List;
-import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,27 +15,25 @@ import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.repository.ConversaRepository;
 import com.wxn.chatbot.service.HistoricoConversasService;
 import com.wxn.chatbot.service.FilaConversasService;
+import com.wxn.chatbot.security.ContextoAcesso;
 
-// Modo de apresentacao local; nao substitui autenticacao em producao.
-@Profile("painel-local")
+// API protegida pelo SecurityConfig; a identidade vem do contexto autenticado.
 @RestController
 @RequestMapping("/api/historico")
 @Transactional(readOnly = true)
 public class PainelHistoricoController {
-    private final EntityManager entityManager;
     private final ConversaRepository conversas;
     private final HistoricoConversasService historico;
     private final FilaConversasService fila;
-    private final Long atendenteId;
+    private final ContextoAcesso contextoAcesso;
 
-    public PainelHistoricoController(EntityManager entityManager, ConversaRepository conversas,
+    public PainelHistoricoController(ConversaRepository conversas,
             HistoricoConversasService historico, FilaConversasService fila,
-            @Value("${painel.atendente-id:1}") Long atendenteId) {
-        this.entityManager = entityManager;
+            ContextoAcesso contextoAcesso) {
         this.conversas = conversas;
         this.historico = historico;
         this.fila = fila;
-        this.atendenteId = atendenteId;
+        this.contextoAcesso = contextoAcesso;
     }
 
     @GetMapping("/fila")
@@ -49,6 +44,15 @@ public class PainelHistoricoController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "O atendente nao tem permissao para visualizar a fila.");
         }
+    }
+
+    @GetMapping("/meus")
+    public List<ConversaResumo> meus() {
+        Atendente atendente = atendenteDoPainel();
+        return conversas.findByEmpresaIdAndResponsavelIdAndStatusOrderByDataInicioAscIdAsc(
+                atendente.getEmpresa().getId(), atendente.getId(), com.wxn.chatbot.model.Conversa.Status.EM_ATENDIMENTO_HUMANO)
+                .stream().map(c -> new ConversaResumo(c.getId(), c.getCliente().getId(), c.getCliente().getNome(),
+                        c.getCliente().getNumeroTelefone(), c.getChatbot().getNome(), c.getDataInicio(), c.getStatus())).toList();
     }
 
     @GetMapping
@@ -71,10 +75,7 @@ public class PainelHistoricoController {
     }
 
     private Atendente atendenteDoPainel() {
-        Atendente atendente = entityManager.find(Atendente.class, atendenteId);
-        if (atendente == null || !atendente.isAtivo()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Configure um atendente ativo para o painel local.");
-        }
-        return atendente;
+        return contextoAcesso.atendenteAtual();
     }
+
 }
