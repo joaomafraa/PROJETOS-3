@@ -16,12 +16,14 @@
         titulo: 'Caixa de entrada', foco: '#titulo-lista', pular: '#conversas', textoPular: 'Ir para a lista de conversas' },
       '#solicitacoes': { elemento: solicitacoes, rotulo: 'Atendimentos', topo: 'Solicitações dos clientes',
         titulo: 'Solicitações', foco: '#titulo-solicitacoes', pular: '#titulo-solicitacoes', textoPular: 'Ir para as solicitações' },
+      '#leads': { elemento: document.querySelector('#leads'), rotulo: 'Relacionamento', topo: 'Clientes e leads', titulo: 'Clientes e leads', foco: '#titulo-leads', pular: '#titulo-leads', textoPular: 'Ir para clientes e leads' },
       '#configuracoes': { elemento: configuracoes, rotulo: 'Preferências', topo: 'Configurações do painel',
         titulo: 'Configurações', foco: '#titulo-configuracoes', pular: '#titulo-configuracoes', textoPular: 'Ir para configurações' }
     };
     function telaAtual() {
       if (['#configuracoes', '#titulo-configuracoes'].includes(location.hash)) return '#configuracoes';
       if (solicitacoes && ['#solicitacoes', '#titulo-solicitacoes'].includes(location.hash)) return '#solicitacoes';
+      if (['#leads', '#titulo-leads'].includes(location.hash)) return '#leads';
       return '#atendimentos';
     }
     function navegar(focar = false) {

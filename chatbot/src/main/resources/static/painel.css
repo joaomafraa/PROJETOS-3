@@ -232,3 +232,11 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
   .filter-actions .button { flex:1; }
   .request-detail-heading,.request-detail-body { padding-inline:16px; }
 }
+.leads-toolbar { display:flex; gap:12px; margin:28px 0 16px; }
+.leads-toolbar .search-field { flex:1; margin:0; }
+.leads-list { display:grid; gap:12px; margin-top:20px; }
+.lead-card { padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--subtle); }
+.lead-contact,.lead-empty { color:var(--muted); margin-top:5px; }
+.lead-data { display:grid; gap:12px; margin:18px 0 0; }
+.lead-data dt { color:var(--muted); font-size:11px; }
+.lead-data dd { margin:3px 0 0; overflow-wrap:anywhere; }
