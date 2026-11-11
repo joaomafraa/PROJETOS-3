@@ -17,6 +17,8 @@
       '#solicitacoes': { elemento: solicitacoes, rotulo: 'Atendimentos', topo: 'Solicitações dos clientes',
         titulo: 'Solicitações', foco: '#titulo-solicitacoes', pular: '#titulo-solicitacoes', textoPular: 'Ir para as solicitações' },
       '#leads': { elemento: document.querySelector('#leads'), rotulo: 'Relacionamento', topo: 'Clientes e leads', titulo: 'Clientes e leads', foco: '#titulo-leads', pular: '#titulo-leads', textoPular: 'Ir para clientes e leads' },
+      '#administracao': { elemento: document.querySelector('#administracao'), rotulo: 'Administração', topo: 'Equipe e permissões',
+        titulo: 'Administração', foco: '#titulo-administracao', pular: '#titulo-administracao', textoPular: 'Ir para a administração' },
       '#configuracoes': { elemento: configuracoes, rotulo: 'Preferências', topo: 'Configurações do painel',
         titulo: 'Configurações', foco: '#titulo-configuracoes', pular: '#titulo-configuracoes', textoPular: 'Ir para configurações' }
     };
@@ -24,6 +26,7 @@
       if (['#configuracoes', '#titulo-configuracoes'].includes(location.hash)) return '#configuracoes';
       if (solicitacoes && ['#solicitacoes', '#titulo-solicitacoes'].includes(location.hash)) return '#solicitacoes';
       if (['#leads', '#titulo-leads'].includes(location.hash)) return '#leads';
+      if (['#administracao', '#titulo-administracao'].includes(location.hash)) return '#administracao';
       return '#atendimentos';
     }
     function navegar(focar = false) {

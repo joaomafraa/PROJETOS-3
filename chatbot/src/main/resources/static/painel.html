@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=7"></script>
-  <link rel="stylesheet" href="/painel.css?v=11">
+  <link rel="stylesheet" href="/painel.css?v=12">
 </head>
 <body>
   <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
@@ -23,6 +23,7 @@
         <a class="nav-link active" href="/painel" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v12h-5l-3 4-3-4H4z"/></svg>Atendimentos</a>
         <a class="nav-link" href="#solicitacoes" aria-label="Solicitações"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Solicitações</a>
         <a class="nav-link" href="#leads" aria-label="Clientes e leads"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></svg>Clientes e leads</a>
+        <a class="nav-link" href="#administracao" aria-label="Administração"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Administração</a>
         <a class="nav-link settings-nav" href="#configuracoes" aria-label="Configurações"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg><span>Configurações</span></a>
       </nav>
 
@@ -175,6 +176,58 @@
         <div class="leads-toolbar"><label class="search-field"><span class="visually-hidden">Buscar leads</span><input id="busca-leads" type="search" placeholder="Buscar por nome ou contato"></label><button id="atualizar-leads" class="button secondary" type="button">Atualizar</button></div>
         <p id="aviso-leads" class="system-message" role="status" aria-live="polite"></p><div id="lista-leads" class="leads-list" aria-busy="false"></div>
       </section>
+      <section id="administracao" class="settings-view admin-view" aria-labelledby="titulo-administracao" hidden>
+        <div class="settings-heading"><span class="topbar-label">Equipe</span><h1 id="titulo-administracao" tabindex="-1">Administração</h1><p>Atendentes, perfis de acesso e responsáveis por notificações da sua empresa.</p></div>
+        <p id="aviso-admin" class="system-message admin-aviso" role="status" aria-live="polite"></p>
+
+        <div id="conteudo-admin">
+          <section class="admin-card" aria-labelledby="titulo-novo-atendente">
+            <h2 id="titulo-novo-atendente">Novo atendente</h2>
+            <form id="form-novo-atendente" class="admin-form" novalidate>
+              <label class="filter-field"><span>Nome</span><input id="novo-nome" name="nome" type="text" autocomplete="off" required maxlength="120"></label>
+              <label class="filter-field"><span>E-mail</span><input id="novo-email" name="email" type="email" autocomplete="off" required maxlength="160"></label>
+              <label class="filter-field"><span>Perfil de acesso</span>
+                <select id="novo-perfil" name="perfil">
+                  <option value="ATENDENTE">Atendente</option>
+                  <option value="COORDENADOR">Coordenador</option>
+                  <option value="ADMINISTRADOR">Administrador</option>
+                </select>
+              </label>
+              <div class="filter-actions"><button class="button primary" type="submit">Cadastrar atendente</button></div>
+            </form>
+            <p class="admin-dica">O cadastro não cria senha. Depois de cadastrar, use "Definir senha" na lista abaixo para liberar o acesso.</p>
+          </section>
+
+          <section class="admin-card" aria-labelledby="titulo-equipe">
+            <div class="admin-card-topo">
+              <h2 id="titulo-equipe">Equipe</h2>
+              <div class="admin-card-acoes">
+                <label class="filter-field"><span class="visually-hidden">Mostrar</span>
+                  <select id="filtro-ativo-admin">
+                    <option value="">Todos</option>
+                    <option value="true">Somente ativos</option>
+                    <option value="false">Somente inativos</option>
+                  </select>
+                </label>
+                <button id="atualizar-admin" class="button secondary" type="button">Atualizar</button>
+              </div>
+            </div>
+            <div class="admin-tabela-area">
+              <table class="admin-tabela">
+                <caption class="visually-hidden">Atendentes da empresa</caption>
+                <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Perfil</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+                <tbody id="lista-atendentes" aria-busy="false"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-card" aria-labelledby="titulo-responsaveis">
+            <h2 id="titulo-responsaveis">Responsáveis por notificações</h2>
+            <p class="admin-dica">Escolha quem deve ser avisado em cada situação. Por enquanto o sistema só guarda essa configuração; o envio dos avisos ainda não foi implementado.</p>
+            <div id="lista-responsaveis" class="admin-responsaveis"></div>
+          </section>
+        </div>
+      </section>
       <section id="configuracoes" class="settings-view" aria-labelledby="titulo-configuracoes" hidden>
         <div class="settings-heading"><span class="topbar-label">Seu espaço de trabalho</span><h1 id="titulo-configuracoes" tabindex="-1">Configurações</h1><p>Deixe o painel do seu jeito.</p></div>
         <div class="appearance-card">
@@ -188,5 +241,6 @@
   <script src="/historico.js?v=2" defer></script>
   <script src="/solicitacoes.js?v=1" defer></script>
   <script src="/leads.js?v=1" defer></script>
+  <script src="/administracao.js?v=1" defer></script>
 </body>
 </html>
