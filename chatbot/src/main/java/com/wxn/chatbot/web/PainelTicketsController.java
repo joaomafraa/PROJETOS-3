@@ -1,5 +1,6 @@
 package com.wxn.chatbot.web;
 
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import com.wxn.chatbot.security.ContextoAcesso;
 
 import com.wxn.chatbot.dto.FiltroTickets;
 import com.wxn.chatbot.dto.PaginaResumo;
+import com.wxn.chatbot.dto.ResponsavelOpcao;
 import com.wxn.chatbot.dto.TicketDetalhe;
 import com.wxn.chatbot.dto.TicketResumo;
 import com.wxn.chatbot.model.Atendente;
@@ -22,6 +24,7 @@ import com.wxn.chatbot.service.ConsultaTicketsService;
 //
 // GET /api/tickets?tipo=SUPORTE&status=PENDENTE&responsavelId=1&semResponsavel=false&pagina=0&tamanho=20
 // GET /api/tickets/{ticketId}
+// GET /api/tickets/responsaveis
 @RestController
 @RequestMapping("/api/tickets")
 @Transactional(readOnly = true)
@@ -48,6 +51,17 @@ public class PainelTicketsController {
                     new FiltroTickets(tipo, status, responsavelId, semResponsavel), pagina, tamanho);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (SecurityException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+        }
+    }
+
+    // Opcoes do filtro por responsavel, sempre da empresa do atendente autenticado.
+    @GetMapping("/responsaveis")
+    public List<ResponsavelOpcao> responsaveis() {
+        Atendente atendente = atendenteDoPainel();
+        try {
+            return consulta.listarResponsaveis(atendente);
         } catch (SecurityException e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
         }

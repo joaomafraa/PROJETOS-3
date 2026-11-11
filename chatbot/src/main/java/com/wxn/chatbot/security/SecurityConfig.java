@@ -41,7 +41,7 @@ public class SecurityConfig {
                     .hasRole("ADMINISTRADOR")
                 .requestMatchers("/api/**")
                     .authenticated()
-                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js")
+                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js", "/solicitacoes.js")
                     .authenticated()
                 .anyRequest()
                     .denyAll()

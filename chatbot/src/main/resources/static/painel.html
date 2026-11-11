@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="/tema.js?v=6"></script>
-  <link rel="stylesheet" href="/painel.css?v=10">
+  <script src="/tema.js?v=7"></script>
+  <link rel="stylesheet" href="/painel.css?v=11">
 </head>
 <body>
   <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
@@ -22,7 +22,7 @@
 
       <nav class="main-nav" aria-label="Seções do painel">
         <a class="nav-link active" href="/painel" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 4h16v12h-5l-3 4-3-4H4z"/></svg>Atendimentos</a>
-        <span class="nav-link unavailable" aria-disabled="true"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Solicitações</span>
+        <a class="nav-link" href="#solicitacoes" aria-label="Solicitações"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Solicitações</a>
         <span class="nav-link unavailable" aria-disabled="true"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></svg>Clientes e leads</span>
         <a class="nav-link settings-nav" href="#configuracoes" aria-label="Configurações"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg><span>Configurações</span></a>
       </nav>
@@ -107,6 +107,70 @@
           </div>
         </aside>
       </div>
+      <section id="solicitacoes" class="requests-view" aria-labelledby="titulo-solicitacoes" hidden>
+        <div class="requests-list-panel">
+          <div class="panel-heading">
+            <div><h1 id="titulo-solicitacoes" tabindex="-1">Solicitações</h1><p>Tickets abertos pelos clientes da sua empresa</p></div>
+            <span id="total-solicitacoes" class="status-badge" aria-live="polite">—</span>
+          </div>
+
+          <div class="request-filters" role="group" aria-label="Filtrar solicitações">
+            <label class="filter-field">
+              <span>Tipo</span>
+              <select id="filtro-tipo">
+                <option value="">Todos os tipos</option>
+                <option value="SUPORTE">Suporte</option>
+                <option value="ORCAMENTO">Orçamento</option>
+                <option value="DEMONSTRACAO">Demonstração</option>
+                <option value="REUNIAO">Reunião</option>
+                <option value="VISITA_TECNICA">Visita técnica</option>
+              </select>
+            </label>
+            <label class="filter-field">
+              <span>Status</span>
+              <select id="filtro-status">
+                <option value="">Todos os status</option>
+                <option value="PENDENTE">Pendente</option>
+                <option value="EM_ATENDIMENTO">Em atendimento</option>
+                <option value="CONCLUIDO">Concluído</option>
+              </select>
+            </label>
+            <label class="filter-field">
+              <span>Responsável</span>
+              <select id="filtro-responsavel">
+                <option value="">Todos os responsáveis</option>
+                <option value="sem">Sem responsável</option>
+              </select>
+            </label>
+            <div class="filter-actions">
+              <button id="limpar-filtros" class="button secondary" type="button">Limpar filtros</button>
+              <button id="atualizar-solicitacoes" class="button primary" type="button">Atualizar</button>
+            </div>
+          </div>
+
+          <div class="request-notice">
+            <p id="aviso-solicitacoes" class="system-message" role="status" aria-live="polite"></p>
+            <button id="tentar-solicitacoes" class="button secondary" type="button" hidden>Tentar novamente</button>
+          </div>
+
+          <div id="lista-solicitacoes" class="request-list" role="group" aria-label="Lista de solicitações" aria-busy="false"></div>
+
+          <nav class="pagination" aria-label="Páginas de solicitações">
+            <button id="pagina-anterior" class="button secondary" type="button" disabled>Anterior</button>
+            <span id="pagina-atual" aria-live="polite">Página 1</span>
+            <button id="pagina-proxima" class="button secondary" type="button" disabled>Próxima</button>
+          </nav>
+        </div>
+
+        <section class="request-detail" aria-labelledby="titulo-detalhe-solicitacao">
+          <header class="request-detail-heading">
+            <div><h2 id="titulo-detalhe-solicitacao">Detalhes da solicitação</h2><p id="subtitulo-detalhe-solicitacao">Escolha uma solicitação na lista.</p></div>
+            <!-- Ações de assumir e concluir (HU10.3) entram neste espaço. -->
+            <div id="acoes-solicitacao" class="request-actions"></div>
+          </header>
+          <div id="detalhe-solicitacao" class="request-detail-body" aria-live="polite" aria-busy="false"></div>
+        </section>
+      </section>
       <section id="configuracoes" class="settings-view" aria-labelledby="titulo-configuracoes" hidden>
         <div class="settings-heading"><span class="topbar-label">Seu espaço de trabalho</span><h1 id="titulo-configuracoes" tabindex="-1">Configurações</h1><p>Deixe o painel do seu jeito.</p></div>
         <div class="appearance-card">
@@ -118,5 +182,6 @@
   </div>
   <script src="/contexto.js" defer></script>
   <script src="/historico.js?v=2" defer></script>
+  <script src="/solicitacoes.js?v=1" defer></script>
 </body>
 </html>
