@@ -26,7 +26,7 @@ public class Cliente {
     private String nome;
     @Column(length = 254)
     private String email;
-    @Column(name = "numero_telefone", nullable = false, length = 32)
+    @Column(name = "numero_telefone", length = 32)
     private String numeroTelefone;
     @Column(name = "identidade_confirmada", nullable = false)
     private boolean identidadeConfirmada;
@@ -46,6 +46,14 @@ public class Cliente {
         this.id = id;
         this.numeroTelefone = validarTelefone(numeroTelefone);
         this.identidadeConfirmada = false;
+    }
+
+    /** Cliente de canal que ainda não informou telefone. */
+    public static Cliente semTelefone(Long id) {
+        if (id == null || id <= 0) throw new IllegalArgumentException("O id do cliente deve ser positivo.");
+        Cliente cliente = new Cliente();
+        cliente.id = id;
+        return cliente;
     }
 
     public Long getId() {
