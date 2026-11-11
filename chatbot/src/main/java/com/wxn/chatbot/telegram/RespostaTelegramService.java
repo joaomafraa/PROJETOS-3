@@ -22,6 +22,20 @@ public class RespostaTelegramService {
         this.transacao = new TransactionTemplate(manager);
     }
 
+    public String respostaExistenteOuPendente(Long empresaId, Long conversaId) {
+        return transacao.execute(status -> {
+            Conversa conversa = conversas.findByIdAndEmpresaId(conversaId, empresaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Conversa não encontrada."));
+            if (conversa.getStatus() != Conversa.Status.EM_ATENDIMENTO_AUTOMATICO) return null;
+            var mensagens = conversa.getMensagens();
+            if (!mensagens.isEmpty()) {
+                Mensagem ultima = mensagens.get(mensagens.size() - 1);
+                if (ultima.getRemetente() == Mensagem.TipoRemetente.CHATBOT) return ultima.getConteudo();
+            }
+            return "";
+        });
+    }
+
     public String gerar(Long empresaId, Long conversaId) {
         if (empresaId == null || empresaId <= 0 || conversaId == null || conversaId <= 0)
             throw new IllegalArgumentException("Empresa e conversa são obrigatórias.");

@@ -46,7 +46,41 @@ async function consultar(url) {
 const busca = document.querySelector('#busca');
 const contador = document.querySelector('#contador-fila');
 let conversasCarregadas = [];
+let abaAtual = 'fila';
+const abaFila = document.querySelector('#tab-fila');
+const abaMeus = document.querySelector('#tab-meus');
+function selecionarAba(aba, id = null) {
+ abaAtual = aba;
+ for (const [botao, ativo] of [[abaFila, aba === 'fila'], [abaMeus, aba === 'meus']]) { botao.classList.toggle('active', ativo); botao.setAttribute('aria-pressed', String(ativo)); }
+ carregar(id);
+}
+abaFila.addEventListener('click', () => selecionarAba('fila'));
+abaMeus.addEventListener('click', () => selecionarAba('meus'));
 let selecionadaId = null;
+let conversaAtual = null;
+const assumirConversa = document.querySelector('#assumir-conversa');
+const respostaHumana = document.querySelector('#mensagem-resposta');
+const enviarResposta = document.querySelector('#enviar-resposta');
+function controlesConversa() {
+  const assumida = conversaAtual?.status === 'EM_ATENDIMENTO_HUMANO';
+  assumirConversa.disabled = conversaAtual?.status !== 'AGUARDANDO_ATENDENTE';
+  respostaHumana.disabled = !assumida; enviarResposta.disabled = !assumida;
+}
+async function postSeguro(url, corpo) {
+ const csrf = await consultar('/csrf-token');
+ const resposta = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify(corpo)});
+ if (!resposta.ok) throw new Error(resposta.status === 503 ? 'Envio sem confirmação. Confira antes de enviar novamente.' : 'Não foi possível concluir. Verifique suas permissões e tente novamente.');
+}
+assumirConversa.addEventListener('click', async () => {
+ if (!conversaAtual) return; assumirConversa.disabled=true;
+ try { await postSeguro(`/api/conversas/${conversaAtual.id}/assumir`,{}); conversaAtual.status='EM_ATENDIMENTO_HUMANO'; selecionarAba('meus', conversaAtual.id); }
+ catch(e) { informar(e.message,true); controlesConversa(); }
+});
+enviarResposta.addEventListener('click', async () => {
+ if (!conversaAtual || !respostaHumana.value.trim()) return; enviarResposta.disabled=true;
+ try { await postSeguro(`/api/conversas/${conversaAtual.id}/mensagens`,{conteudo:respostaHumana.value}); respostaHumana.value=''; await abrir(conversaAtual); }
+ catch(e) { informar(e.message,true); } finally { controlesConversa(); }
+});
 
 // Remove acentos e caixa para a busca achar "joao" em "João".
 function normalizar(texto) {
@@ -91,7 +125,7 @@ function desenhar(animar = true) {
     ? conversasCarregadas.filter(conversa => normalizar(conversa.clienteNome).includes(termo))
     : conversasCarregadas;
   if (!conversasCarregadas.length) {
-    mostrarEstado(lista, 'Nenhuma conversa aguardando', 'Novas conversas aguardando atendimento aparecerão aqui. Use “Atualizar lista” para consultar de novo.');
+    mostrarEstado(lista, abaAtual === 'fila' ? 'Nenhuma conversa aguardando' : 'Nenhuma conversa assumida', abaAtual === 'fila' ? 'Novas conversas aguardando atendimento aparecerão aqui.' : 'As conversas que você assumir aparecerão aqui.');
   } else if (!visiveis.length) {
     mostrarEstado(lista, 'Nenhuma conversa encontrada', `Nenhum cliente com “${busca.value.trim()}” no nome. Limpe a busca para ver toda a fila.`);
   } else {
@@ -100,10 +134,11 @@ function desenhar(animar = true) {
   }
   contador.textContent = termo
     ? `${visiveis.length} de ${conversasCarregadas.length}`
-    : `${conversasCarregadas.length} na fila`;
+    : `${conversasCarregadas.length} conversa(s)`;
 }
 function limparSelecao() {
   selecionadaId = null;
+  conversaAtual = null; controlesConversa();
   mensagens.replaceChildren();
   detalhes.textContent = 'Escolha uma conversa na caixa de entrada.';
   window.contextoAtendimento?.limpar();
@@ -112,6 +147,7 @@ function limparSelecao() {
 async function abrir(conversa) {
   const atual = ++requisicao;
   selecionadaId = conversa.id;
+  conversaAtual = conversa; controlesConversa();
   marcarSelecionada();
   mostrarEstado(mensagens, 'Carregando mensagens…', '', 'carregando');
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
@@ -119,6 +155,10 @@ async function abrir(conversa) {
   window.contextoAtendimento?.mostrar(conversa);
   try {
     const historico = await consultar(`/api/historico/${encodeURIComponent(conversa.id)}/mensagens`);
+    let envios = [];
+    let erroEnvios = false;
+    try { envios = await consultar(`/api/conversas/${encodeURIComponent(conversa.id)}/envios`); }
+    catch { erroEnvios = true; }
     if (atual !== requisicao) return;
     mensagens.replaceChildren();
     if (!historico.length) mostrarEstado(mensagens, 'Sem mensagens', 'Esta conversa ainda não tem mensagens salvas.');
@@ -130,10 +170,30 @@ async function abrir(conversa) {
       const hora = elemento('time', data(mensagem.dataEnvio));
       hora.dateTime = mensagem.dataEnvio;
       item.append(hora, elemento('p', mensagem.conteudo));
+      const envio = envios.find(e => e.mensagemId === mensagem.id);
+      if (envio) {
+        const status = {ENVIADO:'Enviada ao Telegram', PENDENTE:'Aguardando envio', INCERTO:'Entrega não confirmada — confira antes de reenviar', CONFIRMADO:'Recebimento confirmado pelo atendente'};
+        item.append(elemento('small', status[envio.status] || 'Status de entrega indisponível', 'mensagem-status-envio'));
+        if (envio.status === 'INCERTO' && conversa.status === 'EM_ATENDIMENTO_HUMANO') {
+          const acoes = elemento('div', '', 'revisao-envio');
+          for (const [rotulo, acao] of [['Confirmar que chegou', 'confirmar'], ['Reenviar mensagem', 'reenviar']]) {
+            const botao = elemento('button', rotulo, 'button secondary'); botao.type = 'button';
+            botao.addEventListener('click', async () => {
+              if (acao === 'reenviar' && !window.confirm('A mensagem pode já ter chegado. Você verificou que ela não chegou e deseja reenviar?')) return;
+              botao.disabled = true;
+              try { await postSeguro(`/api/conversas/${conversa.id}/envios/${mensagem.id}/${acao}`, {}); await abrir(conversa); }
+              catch (erro) { informar('Não foi possível concluir a revisão. Confira a entrega antes de tentar novamente.', true); botao.disabled = false; }
+            });
+            acoes.append(botao);
+          }
+          item.append(acoes);
+        }
+      }
       mensagens.append(item);
     }
     mensagens.scrollTop = mensagens.scrollHeight;
-    informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
+    if (erroEnvios) informar('Não foi possível verificar a entrega das mensagens.', true);
+    else informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
   } catch (erro) {
     if (atual !== requisicao) return;
     const texto = erro.message.startsWith('Consulta indisponível')
@@ -153,12 +213,12 @@ async function carregar(selecionarId = selecionadaId) {
   informar('Carregando conversas…');
   let manter = null;
   try {
-    conversasCarregadas = await consultar('/api/historico/fila');
+    conversasCarregadas = await consultar(abaAtual === 'fila' ? '/api/historico/fila' : '/api/historico/meus');
     manter = conversasCarregadas.find(conversa => conversa.id === selecionarId) || null;
     const saiu = selecionadaId !== null && !manter;
     if (!manter) limparSelecao();
     desenhar();
-    if (!conversasCarregadas.length) informar('A fila está vazia. Novas conversas aguardando atendimento aparecerão aqui.');
+    if (!conversasCarregadas.length) informar(abaAtual === 'fila' ? 'A fila está vazia.' : 'Você ainda não tem conversas assumidas.');
     else if (saiu) informar('A conversa que estava aberta não está mais na fila.');
     else if (!manter) informar(`${conversasCarregadas.length} conversa(s) na fila. Selecione uma conversa.`);
   } catch (erro) {

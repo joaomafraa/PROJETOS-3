@@ -59,8 +59,8 @@
           </label>
 
           <div class="list-tabs" aria-label="Filtros da caixa de entrada">
-            <button class="tab active" type="button" disabled>Recentes</button>
-            <button class="tab" type="button" disabled title="Disponível em uma próxima entrega">Meus chats</button>
+            <button id="tab-fila" class="tab active" type="button" aria-pressed="true">Fila</button>
+            <button id="tab-meus" class="tab" type="button" aria-pressed="false">Meus chats</button>
           </div>
           <div id="conversas" class="conversation-list" role="group" aria-label="Conversas aguardando atendimento" aria-busy="false"></div>
         </section>
@@ -68,7 +68,7 @@
         <section class="chat-panel" aria-labelledby="titulo-historico">
           <header class="chat-heading">
             <div><h2 id="titulo-historico">Conversa</h2><p id="detalhes">Escolha uma conversa na caixa de entrada.</p></div>
-            <button class="button dark" type="button" disabled title="Disponível em uma próxima entrega">Assumir conversa</button>
+            <button id="assumir-conversa" class="button dark" type="button" disabled>Assumir conversa</button>
           </header>
 
           <div class="waiting-banner">
@@ -81,7 +81,7 @@
           <footer class="composer">
             <label for="mensagem-resposta" class="visually-hidden">Mensagem para o cliente</label>
             <textarea id="mensagem-resposta" rows="2" disabled placeholder="Assuma o atendimento para escrever uma mensagem."></textarea>
-            <button class="button primary" type="button" disabled>Enviar</button>
+            <button id="enviar-resposta" class="button primary" type="button" disabled>Enviar</button>
           </footer>
         </section>
 

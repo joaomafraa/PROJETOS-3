@@ -240,3 +240,8 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 .lead-data { display:grid; gap:12px; margin:18px 0 0; }
 .lead-data dt { color:var(--muted); font-size:11px; }
 .lead-data dd { margin:3px 0 0; overflow-wrap:anywhere; }
+
+.mensagem-status-envio { display:block; margin-top:6px; color:var(--muted); font-size:11px; font-style:italic; font-weight:400; }
+
+.revisao-envio { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.revisao-envio .button { min-height:30px; font-size:11px; }

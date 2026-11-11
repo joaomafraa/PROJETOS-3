@@ -46,6 +46,15 @@ public class PainelHistoricoController {
         }
     }
 
+    @GetMapping("/meus")
+    public List<ConversaResumo> meus() {
+        Atendente atendente = atendenteDoPainel();
+        return conversas.findByEmpresaIdAndResponsavelIdAndStatusOrderByDataInicioAscIdAsc(
+                atendente.getEmpresa().getId(), atendente.getId(), com.wxn.chatbot.model.Conversa.Status.EM_ATENDIMENTO_HUMANO)
+                .stream().map(c -> new ConversaResumo(c.getId(), c.getCliente().getId(), c.getCliente().getNome(),
+                        c.getCliente().getNumeroTelefone(), c.getChatbot().getNome(), c.getDataInicio(), c.getStatus())).toList();
+    }
+
     @GetMapping
     public List<ConversaResumo> listar() {
         Atendente atendente = atendenteDoPainel();
