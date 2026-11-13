@@ -99,26 +99,28 @@ public class AdministracaoAtendentesService {
     private Par travar(Long solicitanteId, Long atendenteId) {
         validarId(solicitanteId);
         validarId(atendenteId);
-        Long empresaId = atendentes.buscarEmpresaIdComPerfil(solicitanteId, PerfilAcesso.ADMINISTRADOR)
-                .orElseThrow(() -> new SecurityException(MENSAGEM_SEM_PERMISSAO));
         Atendente solicitante;
         Atendente alvo;
         if (solicitanteId.equals(atendenteId)) {
-            solicitante = bloquear(solicitanteId, empresaId, true);
+            solicitante = bloquear(solicitanteId, true);
             alvo = solicitante;
         } else if (solicitanteId < atendenteId) {
-            solicitante = bloquear(solicitanteId, empresaId, true);
-            alvo = bloquear(atendenteId, empresaId, false);
+            solicitante = bloquear(solicitanteId, true);
+            alvo = bloquear(atendenteId, false);
         } else {
-            alvo = bloquear(atendenteId, empresaId, false);
-            solicitante = bloquear(solicitanteId, empresaId, true);
+            alvo = bloquear(atendenteId, false);
+            solicitante = bloquear(solicitanteId, true);
         }
         verificarAdministrador(solicitante);
+        if (!alvo.pertenceA(solicitante.getEmpresa())) {
+            // Não revela a existência de atendentes de outra empresa.
+            throw new NoSuchElementException(MENSAGEM_NAO_ENCONTRADO);
+        }
         return new Par(solicitante, alvo);
     }
 
-    private Atendente bloquear(Long id, Long empresaId, boolean ehSolicitante) {
-        return atendentes.buscarParaAtualizar(id, empresaId).orElseThrow(() -> ehSolicitante
+    private Atendente bloquear(Long id, boolean ehSolicitante) {
+        return atendentes.buscarParaAtualizar(id).orElseThrow(() -> ehSolicitante
                 ? new SecurityException(MENSAGEM_SEM_PERMISSAO)
                 : new NoSuchElementException(MENSAGEM_NAO_ENCONTRADO));
     }

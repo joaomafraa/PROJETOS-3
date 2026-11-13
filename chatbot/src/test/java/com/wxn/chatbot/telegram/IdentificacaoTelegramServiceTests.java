@@ -46,8 +46,8 @@ class IdentificacaoTelegramServiceTests {
   assertEquals(1L, ((Number)em.createNativeQuery("select count(*) from telegram_revisoes_envio where atendente_id=80001").getSingleResult()).longValue());
   Atendente estranho = new Atendente(80002L, "Beto", "beto.teste@example.com", b, Atendente.PerfilAcesso.ATENDENTE);
   em.persist(estranho); em.flush();
-  assertThrows(java.util.NoSuchElementException.class, () -> humana.preparar(primeira, estranho, "Oi"));
-  assertThrows(IllegalArgumentException.class, () -> revisao.confirmar(primeira, 3L, estranho));
+  assertThrows(IllegalArgumentException.class, () -> humana.preparar(primeira, estranho, "Oi"));
+  assertThrows(SecurityException.class, () -> revisao.confirmar(primeira, 3L, estranho));
   assertThrows(IllegalArgumentException.class,()->service.obterConversa(80001L,80002L,778L,"Ana"));
  }
 }
