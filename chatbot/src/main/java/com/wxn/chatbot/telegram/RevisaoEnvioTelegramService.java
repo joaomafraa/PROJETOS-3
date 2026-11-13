@@ -10,9 +10,13 @@ public class RevisaoEnvioTelegramService {
  public RevisaoEnvioTelegramService(EntityManager em,TelegramCliente telegram,PlatformTransactionManager manager){this.em=em;this.telegram=telegram;this.tx=new TransactionTemplate(manager);}
  private void validar(long conversa,Atendente a){
   if(a==null || !a.isAtivo()) throw new SecurityException("Atendente inativo.");
-  var n=em.createNativeQuery("select count(*) from conversas where id=:c and empresa_id=:e and responsavel_id=:a and status='EM_ATENDIMENTO_HUMANO'")
-   .setParameter("c",conversa).setParameter("e",a.getEmpresa().getId()).setParameter("a",a.getId()).getSingleResult();
-  if(((Number)n).longValue()!=1) throw new SecurityException("Somente o responsável pode revisar o envio.");
+  var linhas=em.createNativeQuery("select responsavel_id, status from conversas where id=:c and empresa_id=:e")
+   .setParameter("c",conversa).setParameter("e",a.getEmpresa().getId()).getResultList();
+  if(linhas.size()!=1) throw new IllegalArgumentException("Conversa não encontrada.");
+  Object[] dados=(Object[])linhas.get(0);
+  if(dados[0]==null || ((Number)dados[0]).longValue()!=a.getId()
+    || !"EM_ATENDIMENTO_HUMANO".equals(dados[1]))
+   throw new SecurityException("Somente o responsável pode revisar o envio.");
  }
  public void confirmar(long conversa,long mensagem,Atendente a){
   tx.executeWithoutResult(s->{validar(conversa,a); var linhas=em.createNativeQuery("select id from telegram_envios_atendente where conversa_id=:c and mensagem_id=:m and empresa_id=:e and status='INCERTO' for update")
@@ -27,11 +31,12 @@ public class RevisaoEnvioTelegramService {
    var linhas=em.createNativeQuery("select id,chat_id,conteudo from telegram_envios_atendente where conversa_id=:c and mensagem_id=:m and empresa_id=:e and status='INCERTO' and not exists (select 1 from telegram_revisoes_envio r where r.envio_id=telegram_envios_atendente.id) for update")
     .setParameter("c",conversa).setParameter("m",mensagem).setParameter("e",a.getEmpresa().getId()).getResultList();
    if(linhas.size()!=1) throw new IllegalStateException("Envio não disponível para reenvio."); Object[] v=(Object[])linhas.get(0);
-   em.createNativeQuery("update telegram_envios_atendente set status='PENDENTE' where id=:id").setParameter("id",v[0]).executeUpdate(); return v;
+   em.createNativeQuery("update telegram_envios_atendente set status='PENDENTE' where id=:id and empresa_id=:e")
+    .setParameter("id",v[0]).setParameter("e",a.getEmpresa().getId()).executeUpdate(); return v;
   });
   try {telegram.enviarMensagem(((Number)dados[1]).longValue(),(String)dados[2]);}
-  catch(RuntimeException erro){atualizar(((Number)dados[0]).longValue(),"INCERTO");throw erro;}
-  atualizar(((Number)dados[0]).longValue(),"ENVIADO");
+  catch(RuntimeException erro){atualizar(((Number)dados[0]).longValue(),a.getEmpresa().getId(),"INCERTO");throw erro;}
+  atualizar(((Number)dados[0]).longValue(),a.getEmpresa().getId(),"ENVIADO");
  }
- private void atualizar(long id,String status){tx.executeWithoutResult(s->em.createNativeQuery("update telegram_envios_atendente set status=:status where id=:id and status='PENDENTE'").setParameter("status",status).setParameter("id",id).executeUpdate());}
+ private void atualizar(long id,long empresaId,String status){tx.executeWithoutResult(s->em.createNativeQuery("update telegram_envios_atendente set status=:status where id=:id and empresa_id=:empresa and status='PENDENTE'").setParameter("status",status).setParameter("id",id).setParameter("empresa",empresaId).executeUpdate());}
 }
