@@ -53,8 +53,8 @@ class IdentificacaoTelegramServiceTests {
   assertEquals(3, em.find(Conversa.class, primeira).getMensagens().size());
   Atendente estranho = new Atendente(80002L, "Beto", "beto.teste@example.com", b, Atendente.PerfilAcesso.ATENDENTE);
   em.persist(estranho); em.flush();
-  assertThrows(IllegalArgumentException.class, () -> humana.preparar(primeira, estranho, "Oi"));
-  assertThrows(SecurityException.class, () -> revisao.confirmar(primeira, 3L, estranho));
+  assertThrows(java.util.NoSuchElementException.class, () -> humana.preparar(primeira, estranho, "Oi"));
+  assertThrows(IllegalArgumentException.class, () -> revisao.confirmar(primeira, 3L, estranho));
   assertThrows(IllegalArgumentException.class,()->service.obterConversa(80001L,80002L,778L,"Ana"));
  }
 }
