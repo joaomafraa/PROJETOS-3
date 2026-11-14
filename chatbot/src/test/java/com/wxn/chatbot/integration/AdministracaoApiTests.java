@@ -111,7 +111,9 @@ class AdministracaoApiTests {
 
     @Test
     void scriptDaTelaExigeLogin() throws Exception {
-        mvc.perform(get("/administracao.js")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/administracao.js"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/entrar"));
     }
 
     @Test
