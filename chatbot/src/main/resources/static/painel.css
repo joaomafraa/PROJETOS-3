@@ -210,6 +210,8 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 .request-detail-heading p { color:var(--muted); font-size:11px; margin-top:5px; overflow-wrap:anywhere; }
 .request-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .request-actions:empty { display:none; }
+.request-action-notice { margin:0; padding:10px 24px; border-bottom:1px solid var(--line); }
+.request-action-notice[hidden] { display:none; }
 .request-detail-body { display:grid; align-content:start; gap:16px; padding:20px 24px 28px; max-height:calc(100dvh - 190px); overflow:auto; }
 .request-detail-body > .estado { min-height:300px; justify-content:center; }
 .request-block { padding:18px 20px; border:1px solid var(--line); border-radius:10px; background:var(--surface); animation:item-enter 240ms var(--ease) both; }

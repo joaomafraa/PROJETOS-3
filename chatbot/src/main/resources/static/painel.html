@@ -165,9 +165,9 @@
         <section class="request-detail" aria-labelledby="titulo-detalhe-solicitacao">
           <header class="request-detail-heading">
             <div><h2 id="titulo-detalhe-solicitacao">Detalhes da solicitação</h2><p id="subtitulo-detalhe-solicitacao">Escolha uma solicitação na lista.</p></div>
-            <!-- Ações de assumir e concluir (HU10.3) entram neste espaço. -->
             <div id="acoes-solicitacao" class="request-actions"></div>
           </header>
+          <p id="aviso-acoes-solicitacao" class="system-message request-action-notice" role="status" aria-live="polite" hidden></p>
           <div id="detalhe-solicitacao" class="request-detail-body" aria-live="polite" aria-busy="false"></div>
         </section>
       </section>
@@ -240,6 +240,7 @@
   <script src="/contexto.js" defer></script>
   <script src="/historico.js?v=2" defer></script>
   <script src="/solicitacoes.js?v=1" defer></script>
+  <script src="/acoes-solicitacao.js?v=1" defer></script>
   <script src="/leads.js?v=1" defer></script>
   <script src="/administracao.js?v=1" defer></script>
 </body>
