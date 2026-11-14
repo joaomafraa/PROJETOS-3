@@ -13,6 +13,7 @@ public class AtendimentoTelegramController {
  private final ContextoAcesso contexto; private final AtendimentoHumanoService atendimento; private final EnvioHumanoTelegramService envio;
  public AtendimentoTelegramController(ContextoAcesso contexto, AtendimentoHumanoService atendimento, EnvioHumanoTelegramService envio, jakarta.persistence.EntityManager em, com.wxn.chatbot.telegram.RevisaoEnvioTelegramService revisao) {this.revisao=revisao;this.em=em;this.contexto=contexto;this.atendimento=atendimento;this.envio=envio;}
  @PostMapping("/{id}/assumir") public void assumir(@PathVariable Long id) {try { atendimento.assumir(id,contexto.atendenteIdAtual()); } catch(IllegalArgumentException | IllegalStateException e) {throw new ResponseStatusException(HttpStatus.CONFLICT,"Não foi possível assumir a conversa.");} }
+ @PostMapping("/{id}/concluir") public void concluir(@PathVariable Long id) { atendimento.concluirConversa(id, contexto.atendenteIdAtual()); }
  public record StatusEnvio(Long mensagemId, String status) {}
  @GetMapping("/{id}/envios")
  @org.springframework.transaction.annotation.Transactional(readOnly=true)

@@ -59,12 +59,36 @@ abaMeus.addEventListener('click', () => selecionarAba('meus'));
 let selecionadaId = null;
 let conversaAtual = null;
 const assumirConversa = document.querySelector('#assumir-conversa');
+const concluirConversa = document.querySelector('#concluir-conversa');
+const pontoMeus = document.querySelector('#notificacao-meus');
+let notificacoes = new Map(), leituras = {}, chaveLeituras = null;
+async function atualizarNotificacoes() {
+ try {
+  const dados = await consultar('/api/historico/notificacoes');
+  const chave = `nexus-leituras-${dados.atendenteId}`;
+  if (chave !== chaveLeituras) { chaveLeituras = chave; try { leituras = JSON.parse(localStorage.getItem(chave) || '{}'); } catch { leituras = {}; } }
+  notificacoes = new Map(dados.conversas.map(c => [c.conversaId, c.ultimaMensagem]));
+  if (selecionadaId && !document.hidden && conversaAtual?.status === 'EM_ATENDIMENTO_HUMANO' && (notificacoes.get(selecionadaId) || 0) > (leituras[selecionadaId] || 0)) await abrir(conversaAtual);
+  pontoMeus.hidden = ![...notificacoes].some(([id, valor]) => valor > (leituras[id] || 0));
+  if (abaAtual === 'meus') desenhar(false);
+ } catch { /* não modificar a lista se a consulta falhar */ }
+}
+function marcarLida(id) { leituras[id] = notificacoes.get(id) || 0; try { if(chaveLeituras) localStorage.setItem(chaveLeituras, JSON.stringify(leituras)); } catch {} }
+concluirConversa.addEventListener('click', async () => {
+ if (!conversaAtual) return;
+ if (!window.confirm('Concluir este atendimento? Uma nova mensagem iniciará outro atendimento automático. O status da solicitação não será alterado.')) return;
+ concluirConversa.disabled = true;
+ try { await postSeguro(`/api/conversas/${conversaAtual.id}/concluir`, {}); informar('Atendimento concluído.'); selecionarAba('meus'); }
+ catch(e) { informar(e.message, true); } finally { concluirConversa.disabled = false; }
+});
+setInterval(atualizarNotificacoes, 10000);
+atualizarNotificacoes();
 const respostaHumana = document.querySelector('#mensagem-resposta');
 const enviarResposta = document.querySelector('#enviar-resposta');
 function controlesConversa() {
   const assumida = conversaAtual?.status === 'EM_ATENDIMENTO_HUMANO';
   assumirConversa.disabled = conversaAtual?.status !== 'AGUARDANDO_ATENDENTE';
-  respostaHumana.disabled = !assumida; enviarResposta.disabled = !assumida;
+  respostaHumana.disabled = !assumida; enviarResposta.disabled = !assumida; concluirConversa.hidden = !assumida;
 }
 async function postSeguro(url, corpo) {
  const csrf = await consultar('/csrf-token');
@@ -107,7 +131,9 @@ function criarItem(conversa) {
   const hora = elemento('time', horario(conversa.dataInicio), 'conversa-hora');
   hora.dateTime = conversa.dataInicio;
   hora.title = conversa.dataInicio ? data(conversa.dataInicio) : '';
-  topo.append(elemento('strong', nome), hora);
+  topo.append(elemento('strong', nome));
+  if (abaAtual === 'meus' && (notificacoes.get(conversa.id) || 0) > (leituras[conversa.id] || 0)) { const ponto=elemento('span','','notificacao-ponto'); ponto.setAttribute('aria-label','Nova mensagem'); topo.append(ponto); }
+  topo.append(hora);
   const rodape = elemento('div', '', 'conversa-rodape');
   const selo = elemento('span', nomesStatus[conversa.status] || conversa.status || 'Sem status', 'status-badge');
   if (conversa.status) selo.dataset.status = conversa.status;
@@ -148,6 +174,7 @@ async function abrir(conversa) {
   const atual = ++requisicao;
   selecionadaId = conversa.id;
   conversaAtual = conversa; controlesConversa();
+
   marcarSelecionada();
   mostrarEstado(mensagens, 'Carregando mensagens…', '', 'carregando');
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
@@ -160,6 +187,7 @@ async function abrir(conversa) {
     try { envios = await consultar(`/api/conversas/${encodeURIComponent(conversa.id)}/envios`); }
     catch { erroEnvios = true; }
     if (atual !== requisicao) return;
+    if (conversa.status === 'EM_ATENDIMENTO_HUMANO') { marcarLida(conversa.id); pontoMeus.hidden = ![...notificacoes].some(([id, valor]) => valor > (leituras[id] || 0)); }
     mensagens.replaceChildren();
     if (!historico.length) mostrarEstado(mensagens, 'Sem mensagens', 'Esta conversa ainda não tem mensagens salvas.');
     for (const mensagem of historico) {

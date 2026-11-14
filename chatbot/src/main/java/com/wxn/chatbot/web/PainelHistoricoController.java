@@ -46,6 +46,18 @@ public class PainelHistoricoController {
         }
     }
 
+    public record NotificacaoConversa(Long conversaId, Long ultimaMensagem) {}
+    @GetMapping("/notificacoes")
+    public java.util.Map<String,Object> notificacoes() {
+        Atendente atendente = atendenteDoPainel();
+        var lista = conversas.findByEmpresaIdAndResponsavelIdAndStatusOrderByDataInicioAscIdAsc(
+            atendente.getEmpresa().getId(), atendente.getId(), com.wxn.chatbot.model.Conversa.Status.EM_ATENDIMENTO_HUMANO);
+        var dados = lista.stream().map(c -> new NotificacaoConversa(c.getId(), c.getMensagens().stream()
+            .filter(m -> m.getRemetente() == com.wxn.chatbot.model.Mensagem.TipoRemetente.CLIENTE)
+            .mapToLong(com.wxn.chatbot.model.Mensagem::getId).max().orElse(0L))).toList();
+        return java.util.Map.of("atendenteId", atendente.getId(), "conversas", dados);
+    }
+
     @GetMapping("/meus")
     public List<ConversaResumo> meus() {
         Atendente atendente = atendenteDoPainel();

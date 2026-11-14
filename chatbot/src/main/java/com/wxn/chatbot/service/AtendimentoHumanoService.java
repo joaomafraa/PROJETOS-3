@@ -42,6 +42,17 @@ public class AtendimentoHumanoService {
         return resumo(conversa);
     }
 
+    @Transactional
+    public void concluirConversa(Long conversaId, Long atendenteId) {
+        validarId(conversaId, "conversa"); validarId(atendenteId, "atendente");
+        Atendente atendente = entityManager.find(Atendente.class, atendenteId);
+        if (atendente == null || !atendente.isAtivo()) throw new SecurityException("Atendente inativo.");
+        Conversa conversa = buscar(conversaId, atendente.getEmpresa().getId());
+        if (conversa.getStatus() != Conversa.Status.EM_ATENDIMENTO_HUMANO || conversa.getResponsavel() == null || !conversa.getResponsavel().getId().equals(atendenteId))
+            throw new SecurityException("Somente o responsável pode concluir o atendimento.");
+        conversa.encerrar();
+    }
+
     private Conversa buscar(Long id, Long empresaId) {
         return conversas.buscarParaAtualizar(id, empresaId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversa não encontrada nesta empresa."));

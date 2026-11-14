@@ -61,7 +61,7 @@
 
           <div class="list-tabs" aria-label="Filtros da caixa de entrada">
             <button id="tab-fila" class="tab active" type="button" aria-pressed="true">Fila</button>
-            <button id="tab-meus" class="tab" type="button" aria-pressed="false">Meus chats</button>
+            <button id="tab-meus" class="tab" type="button" aria-pressed="false">Meus chats <span id="notificacao-meus" class="notificacao-ponto" hidden aria-label="Novas mensagens"></span></button>
           </div>
           <div id="conversas" class="conversation-list" role="group" aria-label="Conversas aguardando atendimento" aria-busy="false"></div>
         </section>
@@ -69,7 +69,7 @@
         <section class="chat-panel" aria-labelledby="titulo-historico">
           <header class="chat-heading">
             <div><h2 id="titulo-historico">Conversa</h2><p id="detalhes">Escolha uma conversa na caixa de entrada.</p></div>
-            <button id="assumir-conversa" class="button dark" type="button" disabled>Assumir conversa</button>
+            <button id="concluir-conversa" class="button secondary" type="button" hidden>Concluir atendimento</button><button id="assumir-conversa" class="button dark" type="button" disabled>Assumir conversa</button>
           </header>
 
           <div class="waiting-banner">

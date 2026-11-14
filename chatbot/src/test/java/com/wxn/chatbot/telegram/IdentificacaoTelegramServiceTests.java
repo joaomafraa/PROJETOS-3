@@ -18,6 +18,7 @@ class IdentificacaoTelegramServiceTests {
  @Autowired TransferenciaTelegramService transferencia;
  @Autowired MensagemHumanaTelegramService humana;
  @Autowired RevisaoEnvioTelegramService revisao;
+ @Autowired com.wxn.chatbot.service.AtendimentoHumanoService atendimento;
  @Test void criaEVinculaSemTelefoneEIsolaEmpresas() {
   Empresa a=new Empresa(80001L,"A"), b=new Empresa(80002L,"B"); em.persist(a); em.persist(b);
   em.persist(new Chatbot(80001L,"Bot A",a,"Olá")); em.persist(new Chatbot(80002L,"Bot B",b,"Olá")); em.flush();
@@ -44,6 +45,12 @@ class IdentificacaoTelegramServiceTests {
   em.createNativeQuery("update telegram_envios_atendente set status='INCERTO' where conversa_id=:id").setParameter("id", primeira).executeUpdate();
   revisao.confirmar(primeira, 3L, atendente);
   assertEquals(1L, ((Number)em.createNativeQuery("select count(*) from telegram_revisoes_envio where atendente_id=80001").getSingleResult()).longValue());
+  atendimento.concluirConversa(primeira, atendente.getId());
+  assertEquals(Conversa.Status.ENCERRADA, em.find(Conversa.class, primeira).getStatus());
+  Long nova = service.obterConversa(80001L,80001L,777L,"Ana");
+  assertNotEquals(primeira, nova);
+  assertEquals(Conversa.Status.EM_ATENDIMENTO_AUTOMATICO, em.find(Conversa.class, nova).getStatus());
+  assertEquals(3, em.find(Conversa.class, primeira).getMensagens().size());
   Atendente estranho = new Atendente(80002L, "Beto", "beto.teste@example.com", b, Atendente.PerfilAcesso.ATENDENTE);
   em.persist(estranho); em.flush();
   assertThrows(IllegalArgumentException.class, () -> humana.preparar(primeira, estranho, "Oi"));
