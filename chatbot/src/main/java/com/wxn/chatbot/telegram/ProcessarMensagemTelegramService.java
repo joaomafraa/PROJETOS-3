@@ -21,22 +21,26 @@ public class ProcessarMensagemTelegramService {
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
         if (mensagem == null) throw new IllegalArgumentException("Mensagem obrigatória.");
-        long conversa = identificacao.obterConversa(empresaId, chatbotId, mensagem.usuarioId(), mensagem.nome());
-        registro.registrar(empresaId, chatbotId, mensagem);
-        String estado = fila.status(empresaId, mensagem.atualizacaoId());
+        long conversa = executar("identificacao", () -> identificacao.obterConversa(empresaId, chatbotId, mensagem.usuarioId(), mensagem.nome()));
+        executar("registro", () -> registro.registrar(empresaId, chatbotId, mensagem));
+        String estado = executar("consulta_envio", () -> fila.status(empresaId, mensagem.atualizacaoId()));
         if ("ENVIADO".equals(estado) || "INCERTO".equals(estado)) return false;
         if (estado != null) throw new IllegalStateException("Envio pendente requer revisão antes de continuar.");
         boolean pediuAtendente = mensagem.texto().strip().equalsIgnoreCase("/atendente");
-        String texto = pediuAtendente ? transferencia.solicitar(empresaId, conversa) : resposta.respostaExistenteOuPendente(empresaId, conversa);
+        String texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
         if (texto == null) return false; // conversa com atendente: mensagem já salva
-        if (texto.isEmpty()) texto = resposta.gerar(empresaId, conversa);
-        fila.preparar(empresaId, mensagem.atualizacaoId(), mensagem.chatId(), texto);
+        if (texto.isEmpty()) texto = executar("geracao_ia", () -> resposta.gerar(empresaId, conversa));
+        String conteudo = texto;
+        executar("preparo_envio", () -> { fila.preparar(empresaId, mensagem.atualizacaoId(), mensagem.chatId(), conteudo); return true; });
         // Marca como incerto antes da chamada externa: evita duplicar após queda ou timeout.
         if (!fila.marcarIncerteza(empresaId, mensagem.atualizacaoId()))
             throw new IllegalStateException("Não foi possível preparar o envio.");
-        telegram.enviarMensagem(mensagem.chatId(), texto);
+        executar("envio", () -> { telegram.enviarMensagem(mensagem.chatId(), conteudo); return true; });
         if (!fila.marcarEnviado(empresaId, mensagem.atualizacaoId()))
             throw new IllegalStateException("Não foi possível confirmar o envio.");
         return true;
+    }
+    private static <T> T executar(String etapa, java.util.function.Supplier<T> operacao) {
+        try { return operacao.get(); } catch (RuntimeException erro) { throw new FalhaEtapaTelegramException(etapa, erro); }
     }
 }

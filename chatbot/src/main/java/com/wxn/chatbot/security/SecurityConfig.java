@@ -46,12 +46,15 @@ public class SecurityConfig {
                 .anyRequest()
                     .denyAll()
             )
-            .exceptionHandling(errors -> errors.defaultAuthenticationEntryPointFor(
-                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), PathPatternRequestMatcher.withDefaults().matcher("/api/**")))
+            .exceptionHandling(errors -> errors
+                .defaultAuthenticationEntryPointFor(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    PathPatternRequestMatcher.withDefaults().matcher("/api/**"))
+                .defaultAuthenticationEntryPointFor(new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/entrar"),
+                    org.springframework.security.web.util.matcher.AnyRequestMatcher.INSTANCE))
             .formLogin(form -> form.loginPage("/entrar").loginProcessingUrl("/login")
                 .defaultSuccessUrl("/painel", true).failureUrl("/entrar?erro").permitAll())
             .logout(logout -> logout.logoutSuccessUrl("/entrar?saiu"))
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(basic -> basic.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
         return http.build();
     }

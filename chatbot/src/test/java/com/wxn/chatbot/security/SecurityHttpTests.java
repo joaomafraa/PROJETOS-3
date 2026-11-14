@@ -58,7 +58,7 @@ class SecurityHttpTests {
                 .andExpect(status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/login.html"));
         mockMvc.perform(get("/painel"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/entrar"));
         mockMvc.perform(get("/painel").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
                 .andExpect(status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl("/painel.html"));
@@ -67,9 +67,19 @@ class SecurityHttpTests {
     @Test
     void scriptDaTelaDeSolicitacoesExigeLogin() throws Exception {
         mockMvc.perform(get("/solicitacoes.js"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/entrar"));
         mockMvc.perform(get("/solicitacoes.js").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void naoExibeJanelaDeAutenticacaoNativa() throws Exception {
+        mockMvc.perform(get("/api/teste/seguro"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().doesNotExist("WWW-Authenticate"));
+        mockMvc.perform(get("/painel"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().doesNotExist("WWW-Authenticate"));
     }
 
     @Test

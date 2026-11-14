@@ -48,13 +48,15 @@ const contador = document.querySelector('#contador-fila');
 let conversasCarregadas = [];
 let abaAtual = 'fila';
 const abaFila = document.querySelector('#tab-fila');
+const abaTodas = document.querySelector('#tab-todas');
 const abaMeus = document.querySelector('#tab-meus');
 function selecionarAba(aba, id = null) {
  abaAtual = aba;
- for (const [botao, ativo] of [[abaFila, aba === 'fila'], [abaMeus, aba === 'meus']]) { botao.classList.toggle('active', ativo); botao.setAttribute('aria-pressed', String(ativo)); }
+ for (const [botao, ativo] of [[abaFila, aba === 'fila'], [abaTodas, aba === 'todas'], [abaMeus, aba === 'meus']]) { botao.classList.toggle('active', ativo); botao.setAttribute('aria-pressed', String(ativo)); }
  carregar(id);
 }
 abaFila.addEventListener('click', () => selecionarAba('fila'));
+abaTodas.addEventListener('click', () => selecionarAba('todas'));
 abaMeus.addEventListener('click', () => selecionarAba('meus'));
 let selecionadaId = null;
 let conversaAtual = null;
@@ -151,7 +153,7 @@ function desenhar(animar = true) {
     ? conversasCarregadas.filter(conversa => normalizar(conversa.clienteNome).includes(termo))
     : conversasCarregadas;
   if (!conversasCarregadas.length) {
-    mostrarEstado(lista, abaAtual === 'fila' ? 'Nenhuma conversa aguardando' : 'Nenhuma conversa assumida', abaAtual === 'fila' ? 'Novas conversas aguardando atendimento aparecerão aqui.' : 'As conversas que você assumir aparecerão aqui.');
+    mostrarEstado(lista, abaAtual === 'fila' ? 'Nenhuma conversa aguardando' : abaAtual === 'meus' ? 'Nenhuma conversa assumida' : 'Nenhuma conversa encontrada', abaAtual === 'fila' ? 'Novas conversas aguardando atendimento aparecerão aqui.' : abaAtual === 'meus' ? 'As conversas que você assumir aparecerão aqui.' : 'As conversas registradas aparecerão aqui.');
   } else if (!visiveis.length) {
     mostrarEstado(lista, 'Nenhuma conversa encontrada', `Nenhum cliente com “${busca.value.trim()}” no nome. Limpe a busca para ver toda a fila.`);
   } else {
@@ -241,12 +243,12 @@ async function carregar(selecionarId = selecionadaId) {
   informar('Carregando conversas…');
   let manter = null;
   try {
-    conversasCarregadas = await consultar(abaAtual === 'fila' ? '/api/historico/fila' : '/api/historico/meus');
+    conversasCarregadas = await consultar(abaAtual === 'fila' ? '/api/historico/fila' : abaAtual === 'meus' ? '/api/historico/meus' : '/api/historico');
     manter = conversasCarregadas.find(conversa => conversa.id === selecionarId) || null;
     const saiu = selecionadaId !== null && !manter;
     if (!manter) limparSelecao();
     desenhar();
-    if (!conversasCarregadas.length) informar(abaAtual === 'fila' ? 'A fila está vazia.' : 'Você ainda não tem conversas assumidas.');
+    if (!conversasCarregadas.length) informar(abaAtual === 'fila' ? 'A fila está vazia.' : abaAtual === 'meus' ? 'Você ainda não tem conversas assumidas.' : 'Ainda não há conversas registradas.');
     else if (saiu) informar('A conversa que estava aberta não está mais na fila.');
     else if (!manter) informar(`${conversasCarregadas.length} conversa(s) na fila. Selecione uma conversa.`);
   } catch (erro) {
