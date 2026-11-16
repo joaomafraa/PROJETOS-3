@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,7 +75,7 @@ class SecurityHttpTests {
 
     @Test
     void naoExibeJanelaDeAutenticacaoNativa() throws Exception {
-        mockMvc.perform(get("/api/teste/seguro"))
+        mockMvc.perform(get("/api/tickets/teste"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().doesNotExist("WWW-Authenticate"));
         mockMvc.perform(get("/painel"))
@@ -84,16 +85,34 @@ class SecurityHttpTests {
 
     @Test
     void deveBloquearUsuarioNaoAutenticado() throws Exception {
-        mockMvc.perform(get("/api/teste/seguro"))
+        mockMvc.perform(get("/api/tickets/teste"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void devePermitirAtendenteAutenticado() throws Exception {
-        mockMvc.perform(get("/api/teste/seguro")
+        mockMvc.perform(get("/api/tickets/teste")
                 .with(httpBasic("atendente@teste.com",
                         "SenhaSegura123!")))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void perfisDaEquipePodemAcessarConsultaMasNaoAdministracao() throws Exception {
+        for (String perfil : new String[] {"ATENDENTE", "COORDENADOR", "ADMINISTRADOR"}) {
+            mockMvc.perform(get("/api/tickets/teste").with(user("equipe").roles(perfil)))
+                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/admin/teste").with(user("equipe").roles(perfil)))
+                    .andExpect(perfil.equals("ADMINISTRADOR") ? status().isOk() : status().isForbidden());
+        }
+    }
+
+    @Test
+    void rotaOuMetodoSemRegraExplicitaSaoNegados() throws Exception {
+        mockMvc.perform(get("/api/novo-servico").with(user("equipe").roles("ADMINISTRADOR")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/tickets/teste").with(user("equipe").roles("ADMINISTRADOR")).with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -116,7 +135,7 @@ class SecurityHttpTests {
 
     @Test
     void deveBloquearAtendenteInativo() throws Exception {
-        mockMvc.perform(get("/api/teste/seguro")
+        mockMvc.perform(get("/api/tickets/teste")
                 .with(httpBasic("inativo@teste.com",
                         "SenhaSegura123!")))
                 .andExpect(status().isUnauthorized());
@@ -125,7 +144,7 @@ class SecurityHttpTests {
     @RestController
     static class ControladorTeste {
 
-        @GetMapping("/api/teste/seguro")
+        @GetMapping("/api/tickets/teste")
         public String seguro() {
             return "Acesso autorizado";
         }

@@ -103,6 +103,18 @@ class AdministracaoApiTests {
     }
 
     @Test
+    @WithMockUser(username = ATENDENTE_A, roles = "ADMINISTRADOR")
+    void permissaoAntigaDeAdministradorNaoConcedeAcesso() throws Exception {
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "carla@empresa-a.example", roles = "ADMINISTRADOR")
+    void sessaoDeAtendenteInativoNaoConcedeAcesso() throws Exception {
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = ADMIN_A, roles = "ADMINISTRADOR")
     void alteracaoSemCsrfEhRecusada() throws Exception {
         mvc.perform(post("/api/admin/atendentes/302/desativar")).andExpect(status().isForbidden());

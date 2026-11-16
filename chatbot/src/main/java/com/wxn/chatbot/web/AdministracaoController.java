@@ -63,12 +63,12 @@ public class AdministracaoController {
 
     @GetMapping("/atendentes")
     public List<AtendenteResumo> listarAtendentes(@RequestParam(required = false) Boolean ativo) {
-        return executar(() -> administracao.listar(contexto.atendenteIdAtual(), ativo));
+        return executar(() -> administracao.listar(administradorAtual(), ativo));
     }
 
     @GetMapping("/atendentes/{id}")
     public AtendenteResumo buscarAtendente(@PathVariable Long id) {
-        return executar(() -> administracao.buscar(contexto.atendenteIdAtual(), id));
+        return executar(() -> administracao.buscar(administradorAtual(), id));
     }
 
     @PostMapping("/atendentes")
@@ -77,7 +77,7 @@ public class AdministracaoController {
         if (dados == null || dados.perfil() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Escolha o perfil de acesso do atendente.");
         }
-        return executar(() -> administracao.cadastrar(contexto.atendenteIdAtual(), dados));
+        return executar(() -> administracao.cadastrar(administradorAtual(), dados));
     }
 
     @PatchMapping("/atendentes/{id}/perfil")
@@ -85,17 +85,17 @@ public class AdministracaoController {
         if (corpo == null || corpo.perfil() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Escolha o novo perfil de acesso.");
         }
-        return executar(() -> administracao.alterarPerfil(contexto.atendenteIdAtual(), id, corpo.perfil()));
+        return executar(() -> administracao.alterarPerfil(administradorAtual(), id, corpo.perfil()));
     }
 
     @PostMapping("/atendentes/{id}/ativar")
     public AtendenteResumo ativar(@PathVariable Long id) {
-        return executar(() -> administracao.ativar(contexto.atendenteIdAtual(), id));
+        return executar(() -> administracao.ativar(administradorAtual(), id));
     }
 
     @PostMapping("/atendentes/{id}/desativar")
     public AtendenteResumo desativar(@PathVariable Long id) {
-        return executar(() -> administracao.desativar(contexto.atendenteIdAtual(), id));
+        return executar(() -> administracao.desativar(administradorAtual(), id));
     }
 
     @PutMapping("/atendentes/{id}/senha")
@@ -103,7 +103,7 @@ public class AdministracaoController {
     public void definirSenha(@PathVariable Long id, @RequestBody NovaSenha corpo) {
         String senha = corpo == null ? null : corpo.senha();
         executar(() -> {
-            Long atendenteId = administracao.buscar(contexto.atendenteIdAtual(), id).id();
+            Long atendenteId = administracao.buscar(administradorAtual(), id).id();
             credenciais.definirSenha(atendenteId, senha);
             return null;
         });
@@ -111,7 +111,7 @@ public class AdministracaoController {
 
     @GetMapping("/responsaveis-notificacao")
     public List<ResponsavelNotificacaoResumo> listarResponsaveis() {
-        return executar(() -> responsaveis.listar(contexto.atendenteIdAtual()));
+        return executar(() -> responsaveis.listar(administradorAtual()));
     }
 
     @PutMapping("/responsaveis-notificacao/{tipo}")
@@ -120,7 +120,15 @@ public class AdministracaoController {
         if (corpo == null || corpo.atendenteIds() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Envie a lista de atendentes responsáveis.");
         }
-        return executar(() -> responsaveis.definir(contexto.atendenteIdAtual(), tipo, corpo.atendenteIds()));
+        return executar(() -> responsaveis.definir(administradorAtual(), tipo, corpo.atendenteIds()));
+    }
+
+    private Long administradorAtual() {
+        var atendente = contexto.atendenteAtual();
+        if (atendente.getPerfil() != PerfilAcesso.ADMINISTRADOR) {
+            throw new org.springframework.security.access.AccessDeniedException("Operacao exige administrador.");
+        }
+        return atendente.getId();
     }
 
     private <T> T executar(Supplier<T> operacao) {
