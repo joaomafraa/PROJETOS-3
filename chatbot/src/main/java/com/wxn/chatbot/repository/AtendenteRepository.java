@@ -25,6 +25,12 @@ public interface AtendenteRepository extends JpaRepository<Atendente, Long> {
 
     boolean existsByEmpresaIdAndEmail(Long empresaId, String email);
 
+    @Query("select (count(c) > 0) from Conversa c where c.responsavel.id = :id and c.status = com.wxn.chatbot.model.Conversa.Status.EM_ATENDIMENTO_HUMANO")
+    boolean possuiConversasEmAtendimento(@Param("id") Long id);
+
+    @Query("select (count(t) > 0) from Ticket t where t.responsavel.id = :id and t.status = com.wxn.chatbot.model.Ticket.StatusTicket.EM_ATENDIMENTO")
+    boolean possuiTicketsEmAtendimento(@Param("id") Long id);
+
     // Bloqueia a linha para evitar alteracoes administrativas concorrentes.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from Atendente a where a.id = :id")

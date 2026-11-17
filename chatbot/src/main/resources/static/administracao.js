@@ -167,7 +167,17 @@
     const botaoSenha = botao('Definir senha');
     botaoSenha.setAttribute('aria-label', `Definir senha de ${atendente.nome}`);
     botaoSenha.addEventListener('click', () => abrirCampoSenha(atendente, acoes, botaoSenha));
-    acoes.append(botaoSituacao, botaoSenha);
+    const remover = botao('', 'botao-lixeira');
+    remover.setAttribute('aria-label', `Remover ${atendente.nome} da equipe`);
+    remover.title = remover.getAttribute('aria-label');
+    remover.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg>';
+    remover.addEventListener('click', async () => {
+      if (!confirm(`Remover ${atendente.nome} da equipe? O acesso será desativado e o histórico preservado.`)) return;
+      remover.disabled = true;
+      try { await chamarApi(`/api/admin/atendentes/${atendente.id}`, 'DELETE'); await carregarTudo(); mostrarAviso(`${atendente.nome} foi removido da equipe.`); }
+      catch (erro) { mostrarAviso(erro.message, true); remover.disabled = false; }
+    });
+    acoes.append(botaoSituacao, botaoSenha, remover);
     celulaAcoes.append(acoes);
 
     linha.append(celulaPerfil, celulaSituacao, celulaAcoes);

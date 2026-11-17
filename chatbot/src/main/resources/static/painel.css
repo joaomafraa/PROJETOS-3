@@ -293,3 +293,12 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 
 .lead-card .lead-contact span, .lead-card .lead-contact strong { display:block; margin-top:5px; }
 .lead-card select { display:block; max-width:100%; margin:12px 0 8px; padding:9px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); }
+
+.botao-lixeira { display:inline-grid; place-items:center; width:34px; height:34px; flex:none; padding:7px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--muted); cursor:pointer; transition:color 160ms ease, background-color 160ms ease, border-color 160ms ease; }
+.botao-lixeira svg { width:18px; height:18px; }
+.botao-lixeira:hover, .botao-lixeira:focus-visible { color:var(--ink); background:var(--selected); border-color:var(--line); }
+.botao-lixeira:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+
+.conversa-linha { display:flex; align-items:center; min-width:0; }
+.conversa-linha .conversa { flex:1; min-width:0; }
+.list-tabs { flex-wrap:wrap; }

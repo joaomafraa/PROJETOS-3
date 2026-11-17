@@ -56,7 +56,7 @@ public class AdministracaoAtendentesService {
         List<Atendente> encontrados = ativo == null
                 ? atendentes.findByEmpresaIdOrderByNomeAscIdAsc(empresaId)
                 : atendentes.findByEmpresaIdAndAtivoOrderByNomeAscIdAsc(empresaId, ativo);
-        return encontrados.stream().map(AtendenteResumo::de).toList();
+        return encontrados.stream().filter(a -> !a.isRemovido()).map(AtendenteResumo::de).toList();
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +80,14 @@ public class AdministracaoAtendentesService {
         Par par = travar(solicitanteId, atendenteId);
         par.alvo().desativar(par.solicitante());
         return AtendenteResumo.de(par.alvo());
+    }
+
+    @Transactional
+    public void remover(Long solicitanteId, Long atendenteId) {
+        Par par = travar(solicitanteId, atendenteId);
+        if (atendentes.possuiConversasEmAtendimento(atendenteId) || atendentes.possuiTicketsEmAtendimento(atendenteId))
+            throw new IllegalStateException("Conclua ou transfira os atendimentos e solicitações antes de remover esta pessoa.");
+        par.alvo().removerDaEquipe(par.solicitante());
     }
 
     @Transactional

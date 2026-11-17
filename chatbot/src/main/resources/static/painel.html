@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=7"></script>
-  <link rel="stylesheet" href="/painel.css?v=13">
+  <link rel="stylesheet" href="/painel.css?v=14">
 </head>
 <body>
   <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
@@ -37,7 +37,6 @@
       <header class="topbar">
         <div><span class="topbar-label">Atendimentos</span><strong>Central de conversas</strong></div>
         <div class="topbar-actions">
-          <button id="exemplo" class="button secondary" type="button">Criar exemplo</button>
           <button id="atualizar" class="button primary" type="button">Atualizar lista</button>
         </div>
       </header>
@@ -62,6 +61,7 @@
           <div class="list-tabs" aria-label="Filtros da caixa de entrada">
             <button id="tab-fila" class="tab active" type="button" aria-pressed="true">Fila</button>
             <button id="tab-todas" class="tab" type="button" aria-pressed="false">Todas</button>
+            <button id="tab-arquivo" class="tab" type="button" aria-pressed="false">Arquivadas</button>
             <button id="tab-meus" class="tab" type="button" aria-pressed="false">Meus chats <span id="notificacao-meus" class="notificacao-ponto" hidden aria-label="Novas mensagens"></span></button>
           </div>
           <div id="conversas" class="conversation-list" role="group" aria-label="Conversas aguardando atendimento" aria-busy="false"></div>
@@ -251,10 +251,10 @@
     </main>
   </div>
   <script src="/contexto.js" defer></script>
-  <script src="/historico.js?v=2" defer></script>
+  <script src="/historico.js?v=3" defer></script>
   <script src="/solicitacoes.js?v=1" defer></script>
   <script src="/acoes-solicitacao.js?v=1" defer></script>
   <script src="/leads.js?v=3" defer></script>
-  <script src="/administracao.js?v=1" defer></script>
+  <script src="/administracao.js?v=2" defer></script>
 </body>
 </html>

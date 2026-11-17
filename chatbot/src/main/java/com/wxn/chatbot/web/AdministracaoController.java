@@ -93,6 +93,12 @@ public class AdministracaoController {
         return executar(() -> administracao.ativar(administradorAtual(), id));
     }
 
+    @org.springframework.web.bind.annotation.DeleteMapping("/atendentes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable Long id) {
+        executar(() -> { administracao.remover(administradorAtual(), id); return null; });
+    }
+
     @PostMapping("/atendentes/{id}/desativar")
     public AtendenteResumo desativar(@PathVariable Long id) {
         return executar(() -> administracao.desativar(administradorAtual(), id));

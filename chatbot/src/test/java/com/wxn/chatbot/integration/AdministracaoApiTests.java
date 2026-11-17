@@ -134,6 +134,23 @@ class AdministracaoApiTests {
         mvc.perform(get("/administracao.js")).andExpect(status().isOk());
     }
 
+    @Test
+    @WithMockUser(username = ADMIN_A, roles = "ADMINISTRADOR")
+    void removerDesativaEOcultaSemApagar() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/302").with(csrf()))
+            .andExpect(status().isNoContent());
+        entityManager.flush(); entityManager.clear();
+        Atendente removido = entityManager.find(Atendente.class, 302L);
+        org.junit.jupiter.api.Assertions.assertFalse(removido.isAtivo());
+        assertTrue(removido.isRemovido());
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isOk())
+            .andExpect(content().string(not(containsString(ATENDENTE_A))));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/301").with(csrf()))
+            .andExpect(status().isBadRequest());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/304").with(csrf()))
+            .andExpect(status().isNotFound());
+    }
+
     // ---------- Atendentes ----------
 
     @Test
