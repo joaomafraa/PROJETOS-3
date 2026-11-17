@@ -12,13 +12,15 @@ public class ProcessarMensagemTelegramService {
     private final TelegramCliente telegram;
     private final TransferenciaTelegramService transferencia;
     private final com.wxn.chatbot.security.ValidacaoClienteService validacao;
+    private final CadastroTelegramService cadastro;
 
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
             FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
-            com.wxn.chatbot.security.ValidacaoClienteService validacao) {
+            com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro) {
         this.identificacao = identificacao; this.registro = registro; this.resposta = resposta;
         this.fila = fila; this.telegram = telegram; this.transferencia = transferencia; this.validacao = validacao;
+        this.cadastro = cadastro;
     }
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
@@ -36,6 +38,8 @@ public class ProcessarMensagemTelegramService {
         if (estado != null) throw new IllegalStateException("Envio pendente requer revisão antes de continuar.");
         boolean pediuAtendente = entrada.equalsIgnoreCase("/atendente");
         String texto;
+        TelegramCliente.Teclado teclado = TelegramCliente.Teclado.NENHUM;
+        boolean preparado = false;
         if (entrada.equalsIgnoreCase("/validar")) {
             try {
                 validacao.solicitar(empresaId, conversa);
@@ -58,16 +62,29 @@ public class ProcessarMensagemTelegramService {
                 texto = "Para consultar suas solicitacoes, valide sua identidade com /validar.";
             }
         } else {
-            texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
+            // HU07.1/HU07.2: identificacao e cadastro antes da IA; a resposta ja vem preparada na fila.
+            var etapa = pediuAtendente ? java.util.Optional.<CadastroTelegramService.Resposta>empty()
+                    : executar("cadastro", () -> cadastro.atender(empresaId, conversa, mensagem));
+            if (etapa.isPresent()) {
+                texto = etapa.get().texto(); teclado = etapa.get().teclado(); preparado = true;
+            } else {
+                texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
+            }
         }
         if (texto == null) return false; // conversa com atendente: mensagem já salva
         if (texto.isEmpty()) texto = executar("geracao_ia", () -> resposta.gerar(empresaId, conversa));
         String conteudo = texto;
-        executar("preparo_envio", () -> { fila.preparar(empresaId, mensagem.atualizacaoId(), mensagem.chatId(), conteudo); return true; });
+        if (!preparado)
+            executar("preparo_envio", () -> { fila.preparar(empresaId, mensagem.atualizacaoId(), mensagem.chatId(), conteudo); return true; });
+        TelegramCliente.Teclado botoes = teclado;
         // Marca como incerto antes da chamada externa: evita duplicar após queda ou timeout.
         if (!fila.marcarIncerteza(empresaId, mensagem.atualizacaoId()))
             throw new IllegalStateException("Não foi possível preparar o envio.");
-        executar("envio", () -> { telegram.enviarMensagem(mensagem.chatId(), conteudo); return true; });
+        executar("envio", () -> {
+            if (botoes == TelegramCliente.Teclado.NENHUM) telegram.enviarMensagem(mensagem.chatId(), conteudo);
+            else telegram.enviarMensagem(mensagem.chatId(), conteudo, botoes);
+            return true;
+        });
         if (!fila.marcarEnviado(empresaId, mensagem.atualizacaoId()))
             throw new IllegalStateException("Não foi possível confirmar o envio.");
         return true;
