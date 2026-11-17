@@ -32,6 +32,45 @@
         data.append(row);
       }
       card.append(data);
+      const resumo = element('p', 'Carregando resumo…', 'lead-contact');
+      const selecionar = document.createElement('select');
+      selecionar.setAttribute('aria-label', `Conversa de ${lead.nome || 'lead'}`);
+      const inicial = element('option', 'Selecione uma conversa'); inicial.value = ''; selecionar.append(inicial);
+      const vincular = element('button', 'Vincular conversa', 'button secondary'); vincular.type = 'button'; vincular.disabled = true;
+      const avisoVinculo = element('p', '', 'lead-contact');
+      async function carregarResumo() {
+        try {
+          const response = await fetch(`/api/leads/${lead.id}/conversa`, {cache:'no-store'});
+          if (!response.ok) throw Error();
+          const dados = await response.json();
+          const trecho = dados.resumo?.trechoInicialCliente?.trecho;
+          resumo.replaceChildren();
+          if (!dados.resumo) { resumo.textContent = 'Nenhuma conversa vinculada.'; return; }
+          resumo.append(element('strong', 'Resumo da conversa'));
+          resumo.append(element('span', trecho ? `Primeira mensagem: ${trecho}` : 'Sem mensagem inicial do cliente.'));
+          for (const mensagem of dados.resumo.mensagensRecentes || []) {
+            const autores = {CLIENTE:'Cliente', CHATBOT:'Chatbot', ATENDENTE:'Atendente'};
+            resumo.append(element('span', `${autores[mensagem.remetente] || 'Mensagem'}: ${mensagem.trecho}`));
+          }
+        } catch { resumo.textContent = 'Não foi possível carregar o resumo.'; }
+      }
+      selecionar.addEventListener('change', () => { vincular.disabled = !selecionar.value; });
+      vincular.addEventListener('click', async () => {
+        if (!selecionar.value) return;
+        vincular.disabled = true; avisoVinculo.textContent = 'Salvando vínculo…';
+        try {
+          const token = await fetch('/csrf-token', {cache:'no-store'}); if (!token.ok) throw Error();
+          const csrf = await token.json();
+          const response = await fetch(`/api/leads/${lead.id}/conversa`, {method:'PUT',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify({conversaId:Number(selecionar.value)})});
+          if (!response.ok) throw Error();
+          avisoVinculo.textContent = 'Conversa vinculada.'; await carregarResumo();
+        } catch { avisoVinculo.textContent = 'Não foi possível vincular a conversa. Confira a sessão e tente novamente.'; }
+        finally { vincular.disabled = !selecionar.value; }
+      });
+      fetch('/api/historico', {cache:'no-store'}).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(conversas => {
+        for (const conversa of conversas) { const option=element('option', `${conversa.clienteNome || 'Cliente'} · conversa #${conversa.id}`); option.value=conversa.id; selecionar.append(option); }
+      }).catch(() => { avisoVinculo.textContent = 'Não foi possível carregar as conversas.'; });
+      card.append(resumo, selecionar, vincular, avisoVinculo); carregarResumo();
       list.append(card);
     }
   }
