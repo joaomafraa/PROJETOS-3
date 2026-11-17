@@ -125,6 +125,25 @@ public class Conversa {
         return mensagem;
     }
 
+
+    public void identificarCliente(Cliente identificado) {
+        verificarAberta();
+        Objects.requireNonNull(identificado, "O cliente identificado e obrigatorio.");
+        if (status != Status.EM_ATENDIMENTO_AUTOMATICO) {
+            throw new IllegalStateException("A conversa deve estar em atendimento automatico.");
+        }
+        if (identificado.getEmpresa() == null || !identificado.getEmpresa().getId().equals(empresa.getId())) {
+            throw new IllegalArgumentException("O cliente pertence a outra empresa.");
+        }
+        if (identificado.getNumeroTelefone() == null) {
+            throw new IllegalArgumentException("O cliente identificado precisa ter telefone.");
+        }
+        if (cliente.getNumeroTelefone() != null && !cliente.getId().equals(identificado.getId())) {
+            throw new IllegalStateException("A conversa ja possui um cliente identificado.");
+        }
+        cliente = identificado;
+    }
+
     public void solicitarAtendimentoHumano() {
         if (status != Status.EM_ATENDIMENTO_AUTOMATICO) {
             throw new IllegalStateException("A conversa deve estar em atendimento automatico.");

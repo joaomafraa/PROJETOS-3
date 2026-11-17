@@ -208,4 +208,53 @@ class ConversaTests {
                 () -> conversa.adicionarMensagem(1L, "Oi", Mensagem.TipoRemetente.ATENDENTE, externo));
         assertTrue(conversa.getMensagens().isEmpty());
     }
+
+    @Test
+    void identificarClienteSubstituiClienteProvisorioDaMesmaEmpresa() {
+        Cliente provisorio = Cliente.semTelefone(10L);
+        provisorio.vincularEmpresa(empresa);
+        Conversa conversa = new Conversa(10L, provisorio, empresa, chatbot);
+        Cliente identificado = new Cliente(11L, "+5581977770001");
+        identificado.vincularEmpresa(empresa);
+
+        conversa.identificarCliente(identificado);
+
+        assertSame(identificado, conversa.getCliente());
+    }
+
+    @Test
+    void identificarClienteRecusaOutraEmpresaClienteSemTelefoneEConversaJaIdentificada() {
+        Cliente provisorio = Cliente.semTelefone(10L);
+        provisorio.vincularEmpresa(empresa);
+        Conversa conversa = new Conversa(10L, provisorio, empresa, chatbot);
+        Cliente deOutraEmpresa = new Cliente(12L, "+5581977770002");
+        deOutraEmpresa.vincularEmpresa(new Empresa(2L, "Outra"));
+        Cliente semTelefone = Cliente.semTelefone(13L);
+        semTelefone.vincularEmpresa(empresa);
+
+        assertThrows(IllegalArgumentException.class, () -> conversa.identificarCliente(deOutraEmpresa));
+        assertThrows(IllegalArgumentException.class, () -> conversa.identificarCliente(semTelefone));
+        assertThrows(NullPointerException.class, () -> conversa.identificarCliente(null));
+
+        Cliente identificado = new Cliente(11L, "+5581977770001");
+        identificado.vincularEmpresa(empresa);
+        conversa.identificarCliente(identificado);
+        Cliente outro = new Cliente(14L, "+5581977770003");
+        outro.vincularEmpresa(empresa);
+        assertThrows(IllegalStateException.class, () -> conversa.identificarCliente(outro));
+    }
+
+    @Test
+    void identificarClienteSoNoAtendimentoAutomatico() {
+        Cliente provisorio = Cliente.semTelefone(10L);
+        provisorio.vincularEmpresa(empresa);
+        Conversa conversa = new Conversa(10L, provisorio, empresa, chatbot);
+        conversa.solicitarAtendimentoHumano();
+        Cliente identificado = new Cliente(11L, "+5581977770001");
+        identificado.vincularEmpresa(empresa);
+
+        assertThrows(IllegalStateException.class, () -> conversa.identificarCliente(identificado));
+        conversa.encerrar();
+        assertThrows(IllegalStateException.class, () -> conversa.identificarCliente(identificado));
+    }
 }
