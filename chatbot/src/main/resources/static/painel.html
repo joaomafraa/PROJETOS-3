@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="/tema.js?v=7"></script>
-  <link rel="stylesheet" href="/painel.css?v=12">
+  <link rel="stylesheet" href="/painel.css?v=13">
 </head>
 <body>
   <a class="skip-link" href="#conversas">Ir para a lista de conversas</a>
@@ -174,6 +174,18 @@
       </section>
       <section id="leads" class="settings-view" aria-labelledby="titulo-leads" hidden>
         <div class="settings-heading"><span class="topbar-label">Relacionamento</span><h1 id="titulo-leads" tabindex="-1">Clientes e leads</h1><p>Interessados registrados para sua empresa.</p></div>
+        <section class="lead-form-card" aria-labelledby="titulo-novo-lead">
+          <h2 id="titulo-novo-lead">Registrar interessado</h2>
+          <p>Registre os dados informados durante o atendimento.</p>
+          <form id="form-lead" class="lead-form">
+            <label class="filter-field"><span>Nome (opcional)</span><input name="nome" maxlength="255" autocomplete="name"></label>
+            <label class="filter-field"><span>Telefone ou e-mail</span><input name="contato" maxlength="254" required aria-describedby="dica-contato-lead"><small id="dica-contato-lead">Informe um telefone com DDD ou um e-mail.</small></label>
+            <label class="filter-field"><span>Origem</span><select name="origem" required><option value="">Selecione</option><option value="WHATSAPP">WhatsApp</option><option value="SITE">Site</option><option value="INDICACAO">Indicação</option><option value="EVENTO">Evento</option><option value="OUTRO">Outro</option></select></label>
+            <label class="filter-field lead-necessidade"><span>Necessidade</span><textarea name="necessidade" maxlength="500" rows="3" required></textarea></label>
+            <button class="button primary" type="submit">Registrar lead</button>
+          </form>
+          <p id="aviso-form-lead" class="system-message" role="status" aria-live="polite"></p>
+        </section>
         <div class="leads-toolbar"><label class="search-field"><span class="visually-hidden">Buscar leads</span><input id="busca-leads" type="search" placeholder="Buscar por nome ou contato"></label><button id="atualizar-leads" class="button secondary" type="button">Atualizar</button></div>
         <p id="aviso-leads" class="system-message" role="status" aria-live="polite"></p><div id="lista-leads" class="leads-list" aria-busy="false"></div>
       </section>
@@ -242,7 +254,7 @@
   <script src="/historico.js?v=2" defer></script>
   <script src="/solicitacoes.js?v=1" defer></script>
   <script src="/acoes-solicitacao.js?v=1" defer></script>
-  <script src="/leads.js?v=1" defer></script>
+  <script src="/leads.js?v=2" defer></script>
   <script src="/administracao.js?v=1" defer></script>
 </body>
 </html>
