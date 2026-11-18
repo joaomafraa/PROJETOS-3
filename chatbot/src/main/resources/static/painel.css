@@ -302,3 +302,17 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 .conversa-linha { display:flex; align-items:center; min-width:0; }
 .conversa-linha .conversa { flex:1; min-width:0; }
 .list-tabs { flex-wrap:wrap; }
+/* Fontes das respostas automaticas (HU02.2) */
+.fontes-resposta { margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:11px; }
+.fontes-resposta summary { cursor:pointer; color:var(--muted); font-weight:500; width:fit-content; border-radius:4px; }
+.fontes-resposta summary:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.fontes-resposta[open] summary { color:var(--ink); }
+.fontes-grupo { margin-top:10px; }
+.fontes-resposta .fontes-grupo-titulo { margin:0 0 6px; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.4px; }
+.fontes-lista { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.fontes-lista .fonte-item { display:grid; gap:3px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; background:var(--subtle); animation:none; max-width:none; }
+.fonte-item strong { font-size:11px; font-weight:600; overflow-wrap:anywhere; }
+.fonte-versao { color:var(--muted); font-size:10px; overflow-wrap:anywhere; }
+.fonte-trecho { margin:4px 0 0; padding-left:8px; border-left:2px solid var(--strong); color:var(--ink); font-size:11px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.fontes-resposta .fontes-vazio { margin:8px 0 0; color:var(--muted); }
+.fontes-aviso { display:block; margin-top:6px; color:var(--muted); font-size:10px; font-style:italic; }

@@ -74,6 +74,20 @@ class SecurityHttpTests {
     }
 
     @Test
+    void fontesDasRespostasExigemLoginESoPermitemConsulta() throws Exception {
+        mockMvc.perform(get("/api/historico/1/fontes"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/historico/1/fontes").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/historico/1/fontes").with(user("equipe").roles("ADMINISTRADOR")).with(csrf()))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/fontes.js"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/entrar"));
+        mockMvc.perform(get("/fontes.js").with(httpBasic("atendente@teste.com", "SenhaSegura123!")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void naoExibeJanelaDeAutenticacaoNativa() throws Exception {
         mockMvc.perform(get("/api/tickets/teste"))
                 .andExpect(status().isUnauthorized())
@@ -152,6 +166,11 @@ class SecurityHttpTests {
         @GetMapping("/api/admin/teste")
         public String administrativo() {
             return "Acesso administrativo autorizado";
+        }
+
+        @GetMapping("/api/historico/{id}/fontes")
+        public String fontes() {
+            return "Fontes";
         }
     }
 

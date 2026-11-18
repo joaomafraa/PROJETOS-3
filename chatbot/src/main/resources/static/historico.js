@@ -207,6 +207,7 @@ async function abrir(conversa) {
     if (!historico.length) mostrarEstado(mensagens, 'Sem mensagens', 'Esta conversa ainda não tem mensagens salvas.');
     for (const mensagem of historico) {
       const item = elemento('li', '', 'mensagem');
+      item.dataset.mensagemId = mensagem.id; item.dataset.remetente = mensagem.remetente;
       if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
       if (mensagem.remetente === 'ATENDENTE') item.classList.add('humano');
       item.append(elemento('strong', `${mensagem.autor} · ${tipos[mensagem.remetente] || mensagem.remetente}`));
@@ -234,6 +235,7 @@ async function abrir(conversa) {
       }
       mensagens.append(item);
     }
+    window.fontesResposta?.anexar(mensagens, conversa.id, () => atual === requisicao); // HU02.2
     mensagens.scrollTop = mensagens.scrollHeight;
     if (erroEnvios) informar('Não foi possível verificar a entrega das mensagens.', true);
     else informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
