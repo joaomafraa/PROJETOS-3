@@ -250,6 +250,8 @@
     } else {
       for (const mensagem of ticket.historico) {
         const item = elemento('li', null, 'mensagem');
+        item.dataset.mensagemId = mensagem.id;
+        item.dataset.remetente = mensagem.remetente;
         if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
         if (mensagem.remetente === 'ATENDENTE') item.classList.add('humano');
         item.append(elemento('strong', `${mensagem.autor} · ${remetentes[mensagem.remetente] || mensagem.remetente}`));
@@ -258,6 +260,9 @@
         item.append(hora, elemento('p', mensagem.conteudo));
         mensagens.append(item);
       }
+      // HU02.2: fontes das respostas automaticas da conversa de origem.
+      const numeroPedido = pedidoDetalhe;
+      if (conversa.id) window.fontesResposta?.anexar(mensagens, conversa.id, () => numeroPedido === pedidoDetalhe);
     }
     historico.append(mensagens);
 
