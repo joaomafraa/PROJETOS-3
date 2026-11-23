@@ -1,6 +1,6 @@
 # Documentos oficiais para a IA
 
-O administrador da empresa acessa **Administração → Documentos da IA**, informa um título e cola o conteúdo ou escolhe um arquivo `.txt` codificado em UTF-8. Depois, salva o documento. É possível editar, ativar e desativar. Cada edição de título ou conteúdo incrementa a versão. O armazenamento é no banco da aplicação e pertence à empresa do administrador; não depende do disco do Render.
+O administrador da empresa acessa **Administração → Documentos da IA**, informa um título e cola o conteúdo ou escolhe ou arrasta um arquivo `.txt` ou `.md` codificado em UTF-8. Depois, revisa e salva o documento. É possível editar, ativar e desativar. Cada edição de título ou conteúdo incrementa a versão. O armazenamento é no banco da aplicação e pertence à empresa do administrador; não depende do disco do Render.
 
 O limite é de 200.000 caracteres por documento e 800 KB por arquivo selecionado no navegador. PDF, Word, imagens e OCR não são suportados; exporte ou copie o texto para TXT e revise-o antes do cadastro. O sistema não interpreta o documento como comandos.
 

@@ -34,7 +34,7 @@ public class FilaConversasService {
                 Conversa.Status.AGUARDANDO_ATENDENTE).stream()
                 .map(conversa -> new ConversaResumo(conversa.getId(), conversa.getCliente().getId(),
                         conversa.getCliente().getNome(), conversa.getCliente().getNumeroTelefone(),
-                        conversa.getChatbot().getNome(), conversa.getDataInicio(), conversa.getStatus()))
+                        conversa.getChatbot().getNome(), conversa.getDataInicio(), conversa.getStatus(), conversa.getIntencao()))
                 .toList();
     }
 }

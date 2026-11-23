@@ -22,6 +22,8 @@ import jakarta.persistence.OrderBy;
 @Table(name = "conversas")
 public class Conversa {
 
+    public enum Intencao { INDEFINIDA, SUPORTE, COMERCIAL }
+
     public enum Status {
         EM_ATENDIMENTO_AUTOMATICO,
         AGUARDANDO_ATENDENTE,
@@ -53,6 +55,9 @@ public class Conversa {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(40)")
     private Status status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Intencao intencao = Intencao.INDEFINIDA;
 
     protected Conversa() {
     }
@@ -103,6 +108,13 @@ public class Conversa {
 
     public Status getStatus() {
         return status;
+    }
+
+    public Intencao getIntencao() { return intencao; }
+
+    public void definirIntencao(Intencao intencao) {
+        verificarAberta();
+        this.intencao = Objects.requireNonNull(intencao, "A intenção é obrigatória.");
     }
 
     public List<Mensagem> getMensagens() {

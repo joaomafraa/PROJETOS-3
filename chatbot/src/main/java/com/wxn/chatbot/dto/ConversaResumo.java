@@ -6,5 +6,9 @@ import java.time.Instant;
 
 // Dados da fila prontos para uso, sem depender de uma sessao JPA aberta.
 public record ConversaResumo(Long id, Long clienteId, String clienteNome,
-        String numeroTelefone, String chatbotNome, Instant dataInicio, Conversa.Status status) {
+        String numeroTelefone, String chatbotNome, Instant dataInicio, Conversa.Status status, Conversa.Intencao intencao) {
+    public ConversaResumo(Long id, Long clienteId, String clienteNome, String numeroTelefone, String chatbotNome,
+            Instant dataInicio, Conversa.Status status) {
+        this(id, clienteId, clienteNome, numeroTelefone, chatbotNome, dataInicio, status, Conversa.Intencao.INDEFINIDA);
+    }
 }

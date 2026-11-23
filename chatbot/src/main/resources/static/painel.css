@@ -285,8 +285,47 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 .admin-responsaveis legend { padding:0 6px; font-size:13px; font-weight:600; }
 .admin-responsaveis .opcoes { display:flex; flex-wrap:wrap; gap:8px 18px; margin:8px 0 12px; font-size:12px; }
 .admin-responsaveis label { display:inline-flex; align-items:center; gap:6px; }
+/* Cadastro e base de conhecimento */
+.admin-cadastro,.admin-documentos { padding:clamp(20px,3vw,30px); border-radius:18px; background:var(--surface); }
+.admin-section-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.admin-section-heading h2 { margin-top:5px; font-size:20px; letter-spacing:-.5px; }
+.admin-section-heading p { margin-top:5px; color:var(--muted); font-size:13px; }
+.admin-eyebrow { font-size:10px; letter-spacing:.13em; font-weight:700; color:var(--muted); }
+.admin-section-icon,.document-drop-icon { display:grid; place-items:center; flex:none; width:42px; height:42px; border:1px solid var(--line); border-radius:13px; background:var(--subtle); }
+.admin-section-icon svg,.document-drop-icon svg { width:21px; height:21px; }
+.admin-cadastro .admin-form { grid-template-columns:1fr 1fr; gap:16px; margin-top:24px; }
+.admin-cadastro .filter-field span,.document-field > span { display:block; margin-bottom:7px; color:var(--ink); font-size:13px; font-weight:550; }
+.admin-cadastro .filter-field input,.admin-cadastro .filter-field select,.document-field input,.document-field textarea { width:100%; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--subtle); color:var(--ink); font:inherit; font-size:14px; }
+.admin-cadastro .filter-field input:focus-visible,.admin-cadastro .filter-field select:focus-visible,.document-field input:focus-visible,.document-field textarea:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.admin-cadastro .filter-actions { display:flex; align-items:end; }
+.admin-note { padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--subtle); font-size:13px; }
+.document-form { display:grid; gap:18px; margin-top:24px; }
+.document-field { display:block; min-width:0; }
+.document-field > span { display:flex; justify-content:space-between; gap:10px; }
+.document-field small { color:var(--muted); font-size:12px; font-weight:400; }
+.document-field textarea { display:block; resize:vertical; min-height:150px; line-height:1.6; }
+.document-drop { display:flex; flex-direction:column; align-items:center; gap:5px; padding:22px; border:1px dashed var(--strong); border-radius:14px; background:var(--subtle); text-align:center; transition:border-color 160ms,background 160ms; }
+.document-drop.is-dragging,.document-drop:focus-within { border-color:var(--ink); background:var(--selected); }
+.document-drop-icon { margin-bottom:7px; background:var(--surface); }
+.document-drop strong { font-size:14px; }
+.document-drop > span:not(.document-drop-icon),.document-drop small { color:var(--muted); font-size:12px; }
+.document-file-label { color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.document-file-input { width:100%; max-width:250px; font-size:12px; color:var(--muted); }
+.document-file-input::file-selector-button { padding:6px 9px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); cursor:pointer; }
+.document-file-input:focus-visible { outline:2px solid var(--ink); outline-offset:4px; border-radius:6px; }
+.admin-cadastro .button,.admin-documentos .button { min-height:44px; }
+.admin-cadastro .button:focus-visible,.admin-documentos .button:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+.document-file-info { overflow-wrap:anywhere; }
+.document-actions,.document-item-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.document-list-heading { display:flex; justify-content:space-between; gap:12px; align-items:center; padding-top:24px; margin-top:24px; border-top:1px solid var(--line); }
+.document-list-heading h3 { font-size:14px; }.document-list-heading span { color:var(--muted); font-size:12px; }
+.document-empty { padding:20px 0 2px; color:var(--muted); font-size:13px; }
+.document-item { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:10px; padding:15px; border:1px solid var(--line); border-radius:12px; background:var(--subtle); }
+.document-item-details { min-width:0; overflow-wrap:anywhere; }.document-item-details strong { font-size:14px; }.document-item-details p { color:var(--muted); font-size:12px; margin-top:3px; }
 @media (max-width:700px) {
   .admin-form { grid-template-columns:1fr; }
+  .admin-cadastro .admin-form { grid-template-columns:1fr; }
+  .document-item { align-items:flex-start; flex-direction:column; }
 }
 
 .notificacao-ponto:not([hidden]) { display:inline-block; width:8px; height:8px; flex:none; border-radius:50%; background:var(--ink); margin-left:6px; }

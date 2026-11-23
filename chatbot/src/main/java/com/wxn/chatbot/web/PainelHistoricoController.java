@@ -64,7 +64,7 @@ public class PainelHistoricoController {
         return conversas.findByEmpresaIdAndResponsavelIdAndStatusOrderByDataInicioAscIdAsc(
                 atendente.getEmpresa().getId(), atendente.getId(), com.wxn.chatbot.model.Conversa.Status.EM_ATENDIMENTO_HUMANO)
                 .stream().map(c -> new ConversaResumo(c.getId(), c.getCliente().getId(), c.getCliente().getNome(),
-                        c.getCliente().getNumeroTelefone(), c.getChatbot().getNome(), c.getDataInicio(), c.getStatus())).toList();
+                        c.getCliente().getNumeroTelefone(), c.getChatbot().getNome(), c.getDataInicio(), c.getStatus(), c.getIntencao())).toList();
     }
 
     @GetMapping
@@ -73,7 +73,7 @@ public class PainelHistoricoController {
         return conversas.findTop100ByEmpresaIdOrderByDataInicioDescIdDesc(atendente.getEmpresa().getId())
                 .stream().map(conversa -> new ConversaResumo(conversa.getId(), conversa.getCliente().getId(),
                         conversa.getCliente().getNome(), conversa.getCliente().getNumeroTelefone(),
-                        conversa.getChatbot().getNome(), conversa.getDataInicio(), conversa.getStatus())).toList();
+                        conversa.getChatbot().getNome(), conversa.getDataInicio(), conversa.getStatus(), conversa.getIntencao())).toList();
     }
 
     @GetMapping("/{conversaId}/mensagens")

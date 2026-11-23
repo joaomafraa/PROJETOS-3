@@ -100,6 +100,7 @@
             <div><dt>Cliente</dt><dd data-campo="cliente">Aguardando seleção</dd></div>
             <div><dt>Telefone</dt><dd data-campo="telefone">—</dd></div>
             <div><dt>Chatbot</dt><dd data-campo="chatbot">—</dd></div>
+            <div><dt>Tipo de atendimento</dt><dd data-campo="intencao">—</dd></div>
             <div><dt>Status</dt><dd data-campo="status"><span class="status-badge">Não selecionado</span></dd></div>
           </dl>
           <div class="context-note">
@@ -194,11 +195,11 @@
         <p id="aviso-admin" class="system-message admin-aviso" role="status" aria-live="polite"></p>
 
         <div id="conteudo-admin">
-          <section class="admin-card" aria-labelledby="titulo-novo-atendente">
-            <h2 id="titulo-novo-atendente">Novo atendente</h2>
+          <section class="admin-card admin-cadastro" aria-labelledby="titulo-novo-atendente">
+            <div class="admin-section-heading"><div><span class="admin-eyebrow">EQUIPE</span><h2 id="titulo-novo-atendente">Adicionar atendente</h2><p>Cadastre uma pessoa e defina o acesso ao painel.</p></div><span class="admin-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.5"/><path d="M3 20v-1.5a6 6 0 0 1 12 0V20M18 8v6m-3-3h6"/></svg></span></div>
             <form id="form-novo-atendente" class="admin-form" novalidate>
-              <label class="filter-field"><span>Nome</span><input id="novo-nome" name="nome" type="text" autocomplete="off" required maxlength="120"></label>
-              <label class="filter-field"><span>E-mail</span><input id="novo-email" name="email" type="email" autocomplete="off" required maxlength="160"></label>
+              <label class="filter-field"><span>Nome completo</span><input id="novo-nome" name="nome" type="text" autocomplete="off" placeholder="Nome do atendente" required maxlength="120"></label>
+              <label class="filter-field"><span>E-mail</span><input id="novo-email" name="email" type="email" autocomplete="off" placeholder="nome@empresa.com" required maxlength="160"></label>
               <label class="filter-field"><span>Perfil de acesso</span>
                 <select id="novo-perfil" name="perfil">
                   <option value="ATENDENTE">Atendente</option>
@@ -208,7 +209,7 @@
               </label>
               <div class="filter-actions"><button class="button primary" type="submit">Cadastrar atendente</button></div>
             </form>
-            <p class="admin-dica">O cadastro não cria senha. Depois de cadastrar, use "Definir senha" na lista abaixo para liberar o acesso.</p>
+            <p class="admin-dica admin-note">Após cadastrar, defina uma senha na lista da equipe para liberar o acesso.</p>
           </section>
 
           <section class="admin-card" aria-labelledby="titulo-equipe">
@@ -234,16 +235,22 @@
             </div>
           </section>
 
-          <section class="admin-card" aria-labelledby="titulo-documentos">
-            <h2 id="titulo-documentos">Documentos da IA</h2>
-            <p class="admin-dica">Cadastre informações oficiais da sua empresa. Aceita arquivos TXT em UTF-8 ou texto colado, com até 200.000 caracteres. A consulta pela IA depende da integração da busca.</p>
-            <form id="form-documento" class="admin-form">
-              <label for="documento-titulo">Título</label><input id="documento-titulo" maxlength="200" required>
-              <label for="documento-arquivo">Arquivo TXT (opcional)</label><input id="documento-arquivo" type="file" accept=".txt,text/plain">
-              <label for="documento-conteudo">Conteúdo</label><textarea id="documento-conteudo" rows="8" maxlength="200000" required></textarea>
-              <div><button class="button" type="submit">Salvar documento</button> <button class="button secondary" type="button" id="documento-cancelar">Limpar</button></div>
+          <section class="admin-card admin-documentos" aria-labelledby="titulo-documentos">
+            <div class="admin-section-heading"><div><span class="admin-eyebrow">BASE DE CONHECIMENTO</span><h2 id="titulo-documentos">Documentos da IA</h2><p>Organize as informações oficiais da sua empresa.</p></div><span class="admin-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5h8l4 4V20H6zM14 3.5V8h4M9 12h6m-6 3.5h6"/></svg></span></div>
+            <form id="form-documento" class="document-form">
+              <label class="document-field" for="documento-titulo"><span>Título do documento</span><input id="documento-titulo" maxlength="200" placeholder="Ex.: Guia de atendimento" required></label>
+              <div class="document-drop" id="documento-drop">
+                <span class="document-drop-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m-4 4 4-4 4 4M4 16v3.5h16V16"/></svg></span>
+                <strong>Arraste seu arquivo aqui</strong><span>ou selecione pelo botão abaixo</span>
+                <small>TXT ou MD em UTF-8 · até 800 KB</small>
+                <input id="documento-arquivo" class="document-file-input" type="file" accept=".txt,.md,text/plain,text/markdown" aria-label="Escolher arquivo TXT ou Markdown" aria-describedby="documento-arquivo-info">
+                <span id="documento-arquivo-info" class="document-file-info">Nenhum arquivo selecionado</span>
+              </div>
+              <label class="document-field" for="documento-conteudo"><span>Conteúdo <small id="documento-contagem">0 / 200.000 caracteres</small></span><textarea id="documento-conteudo" rows="8" maxlength="200000" placeholder="Cole o texto aqui ou carregue um arquivo acima." aria-describedby="documento-contagem" required></textarea></label>
+              <div class="document-actions"><button class="button primary" type="submit">Salvar documento</button> <button class="button secondary" type="button" id="documento-cancelar">Limpar</button></div>
             </form>
             <p id="documentos-aviso" class="admin-dica" role="status" aria-live="polite"></p>
+            <div class="document-list-heading"><h3>Documentos cadastrados</h3><span>Gerencie suas fontes</span></div>
             <div id="documentos-lista"></div>
           </section>
           <section class="admin-card" aria-labelledby="titulo-responsaveis">
@@ -300,7 +307,7 @@
   <script src="/acoes-solicitacao.js?v=1" defer></script>
   <script src="/leads.js?v=3" defer></script>
   <script src="/administracao.js?v=2" defer></script>
-  <script src="/documentos.js?v=1" defer></script>
+  <script src="/documentos.js?v=2" defer></script>
   <script src="/configuracao-atendimento.js?v=1" defer></script>
 </body>
 </html>

@@ -13,14 +13,25 @@ public class ProcessarMensagemTelegramService {
     private final TransferenciaTelegramService transferencia;
     private final com.wxn.chatbot.security.ValidacaoClienteService validacao;
     private final CadastroTelegramService cadastro;
+    private final TriagemTelegramService triagem;
 
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
             FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
             com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro) {
+        this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
+            RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
+            FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
+            com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
+            TriagemTelegramService triagem) {
         this.identificacao = identificacao; this.registro = registro; this.resposta = resposta;
         this.fila = fila; this.telegram = telegram; this.transferencia = transferencia; this.validacao = validacao;
         this.cadastro = cadastro;
+        this.triagem = triagem;
     }
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
@@ -68,7 +79,10 @@ public class ProcessarMensagemTelegramService {
             if (etapa.isPresent()) {
                 texto = etapa.get().texto(); teclado = etapa.get().teclado(); preparado = true;
             } else {
-                texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
+                var classificacao = pediuAtendente || triagem == null ? java.util.Optional.<String>empty()
+                        : executar("triagem", () -> triagem.atender(empresaId, conversa, mensagem));
+                if (classificacao.isPresent()) { texto = classificacao.get(); preparado = true; }
+                else texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
             }
         }
         if (texto == null) return false; // conversa com atendente: mensagem já salva

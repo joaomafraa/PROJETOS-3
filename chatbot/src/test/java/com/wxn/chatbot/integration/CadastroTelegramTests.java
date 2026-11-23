@@ -90,6 +90,9 @@ class CadastroTelegramTests {
 
         // Identificado: a conversa segue para a IA.
         assertTrue(enviar("Quero consultar meu plano"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("/suporte"));
+        assertTrue(enviar("/comercial"));
+        assertTrue(enviar("Quero consultar meu plano"));
         verify(telegram).enviarMensagem(USUARIO, "Resposta da IA");
     }
 

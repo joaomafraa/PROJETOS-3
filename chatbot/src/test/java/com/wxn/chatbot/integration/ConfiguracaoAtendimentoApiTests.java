@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -109,7 +110,8 @@ class ConfiguracaoAtendimentoApiTests {
 
     @Test
     void scriptDaTelaExigeLogin() throws Exception {
-        mvc.perform(get("/configuracao-atendimento.js")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/configuracao-atendimento.js")).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/entrar"));
         mvc.perform(get("/configuracao-atendimento.js").with(user(ATENDENTE_A).roles("ATENDENTE")))
                 .andExpect(status().isOk());
     }

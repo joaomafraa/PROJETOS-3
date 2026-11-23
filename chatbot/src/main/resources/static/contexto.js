@@ -52,6 +52,7 @@
     preencher('cliente', 'Aguardando seleção');
     preencher('telefone', '—');
     preencher('chatbot', '—');
+    preencher('intencao', '—');
     preencherStatus('Não selecionado');
   }
 
@@ -65,6 +66,7 @@
     preencher('cliente', conversa.clienteNome);
     preencher('telefone', telefone(conversa.numeroTelefone));
     preencher('chatbot', conversa.chatbotNome);
+    preencher('intencao', ({ SUPORTE: 'Suporte', COMERCIAL: 'Comercial', INDEFINIDA: 'Ainda não definido' })[conversa.intencao] || 'Ainda não definido');
     preencherStatus(conversa.status ? (nomesStatus[conversa.status] || conversa.status) : NAO_DISPONIVEL,
       conversa.status);
   }
