@@ -24,7 +24,19 @@ public class IdentificacaoTelegramService {
         chatbot.verificarPodeAtender(empresa);
         List<?> existentes = em.createNativeQuery("select conversa_id from telegram_contatos where empresa_id = :empresa and usuario_id = :usuario")
             .setParameter("empresa", empresaId).setParameter("usuario", usuarioId).getResultList();
-        if (!existentes.isEmpty()) return ((Number) existentes.get(0)).longValue();
+        if (!existentes.isEmpty()) {
+            long anterior = ((Number) existentes.get(0)).longValue();
+            Conversa conversa = em.find(Conversa.class, anterior, LockModeType.PESSIMISTIC_WRITE);
+            if (conversa.getStatus() != Conversa.Status.ENCERRADA) return anterior;
+            long novoId;
+            do { novoId = ((Number) em.createNativeQuery("select nextval('telegram_conversas_id_seq')").getSingleResult()).longValue(); }
+            while (em.find(Conversa.class, novoId) != null);
+            em.persist(new Conversa(novoId, conversa.getCliente(), empresa, chatbot));
+            em.flush();
+            em.createNativeQuery("update telegram_contatos set conversa_id=:nova where empresa_id=:empresa and usuario_id=:usuario")
+                .setParameter("nova", novoId).setParameter("empresa", empresaId).setParameter("usuario", usuarioId).executeUpdate();
+            return novoId;
+        }
         Long clienteId;
         do { clienteId = clientes.proximoId(); } while (clientes.existsById(clienteId));
         Cliente cliente = Cliente.semTelefone(clienteId);

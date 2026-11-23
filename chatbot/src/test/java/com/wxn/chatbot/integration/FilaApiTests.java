@@ -52,6 +52,24 @@ class FilaApiTests {
 
     @Test
     @WithMockUser(username = "ana@example.com", roles = "ATENDENTE")
+    void arquivarERestaurarSemApagarConversa() throws Exception {
+        criarConversa(1L, empresa, "Marina", Conversa.Status.AGUARDANDO_ATENDENTE);
+        entityManager.flush();
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/arquivo-conversas/1")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())).andExpect(status().isNoContent());
+        mvc.perform(get("/api/arquivo-conversas/itens")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(1));
+        Atendente outro = new Atendente(11L, "Outro", "outro@example.com", empresa, Atendente.PerfilAcesso.ATENDENTE);
+        entityManager.persist(outro); entityManager.flush();
+        mvc.perform(get("/api/arquivo-conversas/itens").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("outro@example.com").roles("ATENDENTE")))
+            .andExpect(status().isOk()).andExpect(content().json("[]"));
+        org.junit.jupiter.api.Assertions.assertNotNull(entityManager.find(Conversa.class, 1L));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/arquivo-conversas/1")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())).andExpect(status().isNoContent());
+        mvc.perform(get("/api/arquivo-conversas/itens")).andExpect(status().isOk()).andExpect(content().json("[]"));
+    }
+
+    @Test
+    @WithMockUser(username = "ana@example.com", roles = "ATENDENTE")
     void retornaContratoJsonComDadosPersistidos() throws Exception {
         Conversa conversa = criarConversa(1L, empresa, "Marina", Conversa.Status.AGUARDANDO_ATENDENTE);
         entityManager.flush();

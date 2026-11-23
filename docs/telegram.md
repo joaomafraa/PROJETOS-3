@@ -17,7 +17,7 @@ No ambiente de demonstração usado localmente, empresa e chatbot têm ID `90000
 
 ## Fluxo e limites
 
-Mensagens privadas são identificadas pelo ID do Telegram, armazenadas por empresa e encaminhadas para a IA. `/atendente` encaminha à fila e interrompe respostas automáticas. O atendente responsável pode assumir e responder pelo painel.
+Mensagens privadas são identificadas pelo ID do Telegram e armazenadas por empresa. Antes da IA, o contato compartilha o próprio telefone pelo botão do bot para ser localizado ou cadastrado (HU07.1/HU07.2, ver `identificacao-cadastro-telegram.md`); depois disso as mensagens são encaminhadas para a IA. `/atendente` encaminha à fila e interrompe respostas automáticas. O atendente responsável pode assumir e responder pelo painel.
 
 Mensagens sem confirmação de entrega são marcadas como `INCERTO`; a aplicação não as reenvia automaticamente porque uma resposta pode ter chegado antes de uma falha de rede. Confira a conversa no Telegram antes de tomar qualquer ação. O atendente responsável pode confirmar manualmente a entrega ou pedir um reenvio após verificar a situação. Uma interrupção durante o reenvio pode deixar o envio pendente para investigação. O processamento e o histórico devem ser testados novamente após alterações em múltiplas instâncias e antes de uso de produção.
 

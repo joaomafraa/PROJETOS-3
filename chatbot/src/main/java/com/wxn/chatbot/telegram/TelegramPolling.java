@@ -30,8 +30,10 @@ public class TelegramPolling {
 
     @Scheduled(fixedDelayString = "${nexus.telegram.polling.intervalo-ms:5000}")
     public void consultar() {
+        String etapa = "consulta";
         try {
             for (Object item : telegram.buscarAtualizacoes(offset)) {
+                etapa = "processamento";
                 if (!(item instanceof Map<?, ?> dados) || !(dados.get("update_id") instanceof Number id))
                     throw new IllegalStateException("Atualização do Telegram inválida.");
                 var mensagem = MensagemTelegram.interpretar(item);
@@ -40,7 +42,11 @@ public class TelegramPolling {
             }
         } catch (RuntimeException erro) {
             // A próxima consulta retoma a mesma atualização; não registrar detalhes ou token.
-            LOG.warn("Não foi possível processar atualização do Telegram; uma nova tentativa será feita.");
+            if (erro instanceof FalhaEtapaTelegramException falha) {
+                LOG.warn("Falha no Telegram (etapa={}, tipo={}); uma nova tentativa será feita.", falha.etapa(), falha.getCause().getClass().getSimpleName());
+            } else {
+                LOG.warn("Falha no Telegram (etapa={}, tipo={}); uma nova tentativa será feita.", etapa, erro.getClass().getSimpleName());
+            }
         }
     }
 }

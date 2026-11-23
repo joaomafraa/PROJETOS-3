@@ -103,6 +103,18 @@ class AdministracaoApiTests {
     }
 
     @Test
+    @WithMockUser(username = ATENDENTE_A, roles = "ADMINISTRADOR")
+    void permissaoAntigaDeAdministradorNaoConcedeAcesso() throws Exception {
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "carla@empresa-a.example", roles = "ADMINISTRADOR")
+    void sessaoDeAtendenteInativoNaoConcedeAcesso() throws Exception {
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(username = ADMIN_A, roles = "ADMINISTRADOR")
     void alteracaoSemCsrfEhRecusada() throws Exception {
         mvc.perform(post("/api/admin/atendentes/302/desativar")).andExpect(status().isForbidden());
@@ -111,13 +123,32 @@ class AdministracaoApiTests {
 
     @Test
     void scriptDaTelaExigeLogin() throws Exception {
-        mvc.perform(get("/administracao.js")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/administracao.js"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/entrar"));
     }
 
     @Test
     @WithMockUser(username = ATENDENTE_A, roles = "ATENDENTE")
     void scriptDaTelaCarregaParaQuemEstaLogado() throws Exception {
         mvc.perform(get("/administracao.js")).andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = ADMIN_A, roles = "ADMINISTRADOR")
+    void removerDesativaEOcultaSemApagar() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/302").with(csrf()))
+            .andExpect(status().isNoContent());
+        entityManager.flush(); entityManager.clear();
+        Atendente removido = entityManager.find(Atendente.class, 302L);
+        org.junit.jupiter.api.Assertions.assertFalse(removido.isAtivo());
+        assertTrue(removido.isRemovido());
+        mvc.perform(get("/api/admin/atendentes")).andExpect(status().isOk())
+            .andExpect(content().string(not(containsString(ATENDENTE_A))));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/301").with(csrf()))
+            .andExpect(status().isBadRequest());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/admin/atendentes/304").with(csrf()))
+            .andExpect(status().isNotFound());
     }
 
     // ---------- Atendentes ----------

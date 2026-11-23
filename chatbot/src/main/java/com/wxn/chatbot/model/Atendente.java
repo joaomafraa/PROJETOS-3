@@ -39,6 +39,8 @@ public class Atendente {
     private PerfilAcesso perfil;
     @Column(nullable = false)
     private boolean ativo;
+    @Column(nullable = false)
+    private boolean removido;
 
     protected Atendente() {
     }
@@ -121,8 +123,19 @@ public class Atendente {
         this.ativo = false;
     }
  
+    public boolean isRemovido() { return removido; }
+
+    public void removerDaEquipe(Atendente solicitante) {
+        verificarAdministradorDaMesmaEmpresa(solicitante);
+        verificarNaoEhOProprioAtendente(solicitante, "Um administrador não pode remover a si mesmo.");
+        if (removido) throw new IllegalStateException("Atendente já removido.");
+        ativo = false;
+        removido = true;
+    }
+
     public void ativar(Atendente solicitante) {
         verificarAdministradorDaMesmaEmpresa(solicitante);
+        if (removido) throw new IllegalStateException("Atendente removido não pode ser reativado por esta operação.");
         if (ativo) {
             throw new IllegalStateException("O atendente já está ativo.");
         }

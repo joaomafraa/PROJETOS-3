@@ -48,27 +48,56 @@ const contador = document.querySelector('#contador-fila');
 let conversasCarregadas = [];
 let abaAtual = 'fila';
 const abaFila = document.querySelector('#tab-fila');
+const abaTodas = document.querySelector('#tab-todas');
 const abaMeus = document.querySelector('#tab-meus');
+const abaArquivo = document.querySelector('#tab-arquivo');
+let arquivadas = new Set();
 function selecionarAba(aba, id = null) {
  abaAtual = aba;
- for (const [botao, ativo] of [[abaFila, aba === 'fila'], [abaMeus, aba === 'meus']]) { botao.classList.toggle('active', ativo); botao.setAttribute('aria-pressed', String(ativo)); }
+ for (const [botao, ativo] of [[abaFila, aba === 'fila'], [abaTodas, aba === 'todas'], [abaMeus, aba === 'meus'], [abaArquivo, aba === 'arquivo']]) { botao.classList.toggle('active', ativo); botao.setAttribute('aria-pressed', String(ativo)); }
  carregar(id);
 }
 abaFila.addEventListener('click', () => selecionarAba('fila'));
+abaTodas.addEventListener('click', () => selecionarAba('todas'));
+abaArquivo.addEventListener('click', () => selecionarAba('arquivo'));
 abaMeus.addEventListener('click', () => selecionarAba('meus'));
 let selecionadaId = null;
 let conversaAtual = null;
 const assumirConversa = document.querySelector('#assumir-conversa');
+const concluirConversa = document.querySelector('#concluir-conversa');
+const pontoMeus = document.querySelector('#notificacao-meus');
+let notificacoes = new Map(), leituras = {}, chaveLeituras = null;
+async function atualizarNotificacoes() {
+ try {
+  const dados = await consultar('/api/historico/notificacoes');
+  const chave = `nexus-leituras-${dados.atendenteId}`;
+  if (chave !== chaveLeituras) { chaveLeituras = chave; try { leituras = JSON.parse(localStorage.getItem(chave) || '{}'); } catch { leituras = {}; } }
+  notificacoes = new Map(dados.conversas.map(c => [c.conversaId, c.ultimaMensagem]));
+  if (selecionadaId && !document.hidden && conversaAtual?.status === 'EM_ATENDIMENTO_HUMANO' && (notificacoes.get(selecionadaId) || 0) > (leituras[selecionadaId] || 0)) await abrir(conversaAtual);
+  pontoMeus.hidden = ![...notificacoes].some(([id, valor]) => !arquivadas.has(id) && valor > (leituras[id] || 0));
+  if (abaAtual === 'meus') desenhar(false);
+ } catch { /* não modificar a lista se a consulta falhar */ }
+}
+function marcarLida(id) { leituras[id] = notificacoes.get(id) || 0; try { if(chaveLeituras) localStorage.setItem(chaveLeituras, JSON.stringify(leituras)); } catch {} }
+concluirConversa.addEventListener('click', async () => {
+ if (!conversaAtual) return;
+ if (!window.confirm('Concluir este atendimento? Uma nova mensagem iniciará outro atendimento automático. O status da solicitação não será alterado.')) return;
+ concluirConversa.disabled = true;
+ try { await postSeguro(`/api/conversas/${conversaAtual.id}/concluir`, {}); informar('Atendimento concluído.'); selecionarAba('meus'); }
+ catch(e) { informar(e.message, true); } finally { concluirConversa.disabled = false; }
+});
+setInterval(atualizarNotificacoes, 10000);
+atualizarNotificacoes();
 const respostaHumana = document.querySelector('#mensagem-resposta');
 const enviarResposta = document.querySelector('#enviar-resposta');
 function controlesConversa() {
   const assumida = conversaAtual?.status === 'EM_ATENDIMENTO_HUMANO';
   assumirConversa.disabled = conversaAtual?.status !== 'AGUARDANDO_ATENDENTE';
-  respostaHumana.disabled = !assumida; enviarResposta.disabled = !assumida;
+  respostaHumana.disabled = !assumida; enviarResposta.disabled = !assumida; concluirConversa.hidden = !assumida;
 }
-async function postSeguro(url, corpo) {
+async function postSeguro(url, corpo, metodo = 'POST') {
  const csrf = await consultar('/csrf-token');
- const resposta = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify(corpo)});
+ const resposta = await fetch(url,{method:metodo,headers:{'Content-Type':'application/json',[csrf.headerName]:csrf.token},body:JSON.stringify(corpo)});
  if (!resposta.ok) throw new Error(resposta.status === 503 ? 'Envio sem confirmação. Confira antes de enviar novamente.' : 'Não foi possível concluir. Verifique suas permissões e tente novamente.');
 }
 assumirConversa.addEventListener('click', async () => {
@@ -107,7 +136,9 @@ function criarItem(conversa) {
   const hora = elemento('time', horario(conversa.dataInicio), 'conversa-hora');
   hora.dateTime = conversa.dataInicio;
   hora.title = conversa.dataInicio ? data(conversa.dataInicio) : '';
-  topo.append(elemento('strong', nome), hora);
+  topo.append(elemento('strong', nome));
+  if (abaAtual === 'meus' && (notificacoes.get(conversa.id) || 0) > (leituras[conversa.id] || 0)) { const ponto=elemento('span','','notificacao-ponto'); ponto.setAttribute('aria-label','Nova mensagem'); topo.append(ponto); }
+  topo.append(hora);
   const rodape = elemento('div', '', 'conversa-rodape');
   const selo = elemento('span', nomesStatus[conversa.status] || conversa.status || 'Sem status', 'status-badge');
   if (conversa.status) selo.dataset.status = conversa.status;
@@ -115,7 +146,17 @@ function criarItem(conversa) {
   botao.append(topo, rodape);
   botao.setAttribute('aria-label', `${nome}, ${selo.textContent}, iniciada ${hora.title || 'em data desconhecida'}`);
   botao.addEventListener('click', () => abrir(conversa));
-  return botao;
+  const linha = elemento('div', '', 'conversa-linha');
+  const lixeira = document.createElement('button'); lixeira.type = 'button'; lixeira.className = 'botao-lixeira';
+  lixeira.setAttribute('aria-label', abaAtual === 'arquivo' ? `Restaurar conversa de ${nome}` : `Arquivar conversa de ${nome}`);
+  lixeira.title = lixeira.getAttribute('aria-label');
+  lixeira.innerHTML = abaAtual === 'arquivo' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16v13H4zM3 4h18v3H3zM9 12h6"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg>';
+  lixeira.addEventListener('click', async () => {
+    lixeira.disabled = true;
+    try { const restaurar = abaAtual === 'arquivo'; await postSeguro(`/api/arquivo-conversas/${conversa.id}`, {}, restaurar ? 'DELETE' : 'POST'); await carregar(null); informar(restaurar ? 'Conversa restaurada.' : 'Conversa arquivada.'); }
+    catch (erro) { informar(erro.message, true); lixeira.disabled = false; }
+  });
+  linha.append(botao, lixeira); return linha;
 }
 // Redesenha a lista a partir dos itens carregados, aplicando a busca por nome.
 function desenhar(animar = true) {
@@ -125,7 +166,7 @@ function desenhar(animar = true) {
     ? conversasCarregadas.filter(conversa => normalizar(conversa.clienteNome).includes(termo))
     : conversasCarregadas;
   if (!conversasCarregadas.length) {
-    mostrarEstado(lista, abaAtual === 'fila' ? 'Nenhuma conversa aguardando' : 'Nenhuma conversa assumida', abaAtual === 'fila' ? 'Novas conversas aguardando atendimento aparecerão aqui.' : 'As conversas que você assumir aparecerão aqui.');
+    mostrarEstado(lista, abaAtual === 'fila' ? 'Nenhuma conversa aguardando' : abaAtual === 'meus' ? 'Nenhuma conversa assumida' : abaAtual === 'arquivo' ? 'Nenhuma conversa arquivada' : 'Nenhuma conversa encontrada', abaAtual === 'fila' ? 'Novas conversas aguardando atendimento aparecerão aqui.' : abaAtual === 'meus' ? 'As conversas que você assumir aparecerão aqui.' : abaAtual === 'arquivo' ? 'As conversas arquivadas aparecerão aqui.' : 'As conversas registradas aparecerão aqui.');
   } else if (!visiveis.length) {
     mostrarEstado(lista, 'Nenhuma conversa encontrada', `Nenhum cliente com “${busca.value.trim()}” no nome. Limpe a busca para ver toda a fila.`);
   } else {
@@ -148,6 +189,7 @@ async function abrir(conversa) {
   const atual = ++requisicao;
   selecionadaId = conversa.id;
   conversaAtual = conversa; controlesConversa();
+
   marcarSelecionada();
   mostrarEstado(mensagens, 'Carregando mensagens…', '', 'carregando');
   detalhes.textContent = `Conversa #${conversa.id} · ${conversa.clienteNome || 'Cliente'} · ${nomesStatus[conversa.status] || conversa.status}`;
@@ -160,10 +202,12 @@ async function abrir(conversa) {
     try { envios = await consultar(`/api/conversas/${encodeURIComponent(conversa.id)}/envios`); }
     catch { erroEnvios = true; }
     if (atual !== requisicao) return;
+    if (conversa.status === 'EM_ATENDIMENTO_HUMANO') { marcarLida(conversa.id); pontoMeus.hidden = ![...notificacoes].some(([id, valor]) => !arquivadas.has(id) && valor > (leituras[id] || 0)); }
     mensagens.replaceChildren();
     if (!historico.length) mostrarEstado(mensagens, 'Sem mensagens', 'Esta conversa ainda não tem mensagens salvas.');
     for (const mensagem of historico) {
       const item = elemento('li', '', 'mensagem');
+      item.dataset.mensagemId = mensagem.id; item.dataset.remetente = mensagem.remetente;
       if (mensagem.remetente === 'CLIENTE') item.classList.add('cliente');
       if (mensagem.remetente === 'ATENDENTE') item.classList.add('humano');
       item.append(elemento('strong', `${mensagem.autor} · ${tipos[mensagem.remetente] || mensagem.remetente}`));
@@ -191,6 +235,7 @@ async function abrir(conversa) {
       }
       mensagens.append(item);
     }
+    window.fontesResposta?.anexar(mensagens, conversa.id, () => atual === requisicao); // HU02.2
     mensagens.scrollTop = mensagens.scrollHeight;
     if (erroEnvios) informar('Não foi possível verificar a entrega das mensagens.', true);
     else informar(historico.length ? `${historico.length} mensagem(ns) no histórico.` : 'Esta conversa ainda não tem mensagens salvas.');
@@ -213,12 +258,17 @@ async function carregar(selecionarId = selecionadaId) {
   informar('Carregando conversas…');
   let manter = null;
   try {
-    conversasCarregadas = await consultar(abaAtual === 'fila' ? '/api/historico/fila' : '/api/historico/meus');
+    const [resultado, idsArquivados] = await Promise.all([
+      consultar(abaAtual === 'fila' ? '/api/historico/fila' : abaAtual === 'meus' ? '/api/historico/meus' : abaAtual === 'arquivo' ? '/api/arquivo-conversas/itens' : '/api/historico'),
+      consultar('/api/arquivo-conversas')
+    ]);
+    arquivadas = new Set(idsArquivados);
+    conversasCarregadas = abaAtual === 'arquivo' ? resultado : resultado.filter(c => !arquivadas.has(c.id));
     manter = conversasCarregadas.find(conversa => conversa.id === selecionarId) || null;
     const saiu = selecionadaId !== null && !manter;
     if (!manter) limparSelecao();
     desenhar();
-    if (!conversasCarregadas.length) informar(abaAtual === 'fila' ? 'A fila está vazia.' : 'Você ainda não tem conversas assumidas.');
+    if (!conversasCarregadas.length) informar(abaAtual === 'fila' ? 'A fila está vazia.' : abaAtual === 'meus' ? 'Você ainda não tem conversas assumidas.' : abaAtual === 'arquivo' ? 'Nenhuma conversa arquivada.' : 'Ainda não há conversas registradas.');
     else if (saiu) informar('A conversa que estava aberta não está mais na fila.');
     else if (!manter) informar(`${conversasCarregadas.length} conversa(s) na fila. Selecione uma conversa.`);
   } catch (erro) {
@@ -251,21 +301,3 @@ lista.addEventListener('keydown', evento => {
 });
 atualizar.addEventListener('click', () => carregar());
 carregar();
-const criarExemplo = document.querySelector('#exemplo');
-criarExemplo.addEventListener('click', async () => {
-  criarExemplo.disabled = true;
-  atualizar.disabled = true;
-  informar('Salvando atendimento de exemplo no banco…');
-  try {
-    const csrfResposta = await fetch('/csrf-token', { cache: 'no-store' });
-    if (!csrfResposta.ok) throw new Error('Não foi possível preparar a solicitação. Atualize a página e tente novamente.');
-    const csrf = await csrfResposta.json();
-    const resposta = await fetch('/api/historico/exemplo', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token }, body: '{}'
-    });
-    if (!resposta.ok) throw new Error('Não foi possível criar o exemplo. Verifique o modo local e se o atendente e os identificadores estão disponíveis.');
-    const resultado = await resposta.json();
-    await carregar(resultado.conversaId);
-  } catch (erro) { informar(erro.message, true); }
-  finally { criarExemplo.disabled = false; atualizar.disabled = false; }
-});

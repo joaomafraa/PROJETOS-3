@@ -39,9 +39,34 @@ public class TelegramCliente {
         throw new IllegalStateException("O Telegram retornou dados inválidos do bot.");
     }
 
+    /** Teclado opcional enviado junto da resposta. */
+    public enum Teclado {
+        NENHUM,
+        /** Botão que envia o contato da própria conta (request_contact). */
+        PEDIR_TELEFONE,
+        /** Retira o botão anterior da tela do usuário. */
+        REMOVER
+    }
+
+    static final String BOTAO_TELEFONE = "Compartilhar meu telefone";
+
     public void enviarMensagem(long chatId, String texto) {
-        if (chatId == 0 || texto == null || texto.isBlank()) throw new IllegalArgumentException("Chat e mensagem são obrigatórios.");
-        executar("sendMessage", Map.of("chat_id", chatId, "text", texto));
+        enviarMensagem(chatId, texto, Teclado.NENHUM);
+    }
+
+    public void enviarMensagem(long chatId, String texto, Teclado teclado) {
+        if (chatId == 0 || texto == null || texto.isBlank() || teclado == null) throw new IllegalArgumentException("Chat e mensagem são obrigatórios.");
+        Map<String, Object> corpo = new java.util.LinkedHashMap<>();
+        corpo.put("chat_id", chatId);
+        corpo.put("text", texto);
+        if (teclado == Teclado.PEDIR_TELEFONE) {
+            corpo.put("reply_markup", Map.of(
+                    "keyboard", List.of(List.of(Map.of("text", BOTAO_TELEFONE, "request_contact", true))),
+                    "resize_keyboard", true, "one_time_keyboard", true));
+        } else if (teclado == Teclado.REMOVER) {
+            corpo.put("reply_markup", Map.of("remove_keyboard", true));
+        }
+        executar("sendMessage", corpo);
     }
 
     /** Consulta atualizações sem confirmá-las; o chamador controla o offset após persistência. */
