@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tickets", "/api/tickets/responsaveis",
                         "/api/tickets/{id}", "/api/historico", "/api/historico/fila",
                         "/api/historico/meus", "/api/historico/notificacoes",
-                        "/api/historico/{id}/mensagens", "/api/historico/{id}/fontes", "/api/leads",
+                        "/api/historico/{id}/mensagens", "/api/historico/{id}/fontes", "/api/leads", "/api/leads/{id}/conversa",
                         "/api/conversas/{id}/envios", "/api/arquivo-conversas", "/api/arquivo-conversas/itens")
                     .authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/tickets/{id}/assumir", "/api/tickets/{id}/concluir",
@@ -52,7 +52,8 @@ public class SecurityConfig {
                         "/api/conversas/{id}/envios/{mensagem}/reenviar", "/api/historico/exemplo", "/api/arquivo-conversas/{id}")
                     .authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/arquivo-conversas/{id}").authenticated()
-                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js", "/solicitacoes.js", "/acoes-solicitacao.js", "/leads.js", "/administracao.js", "/fontes.js")
+                .requestMatchers(HttpMethod.PUT, "/api/leads/{id}/conversa").authenticated()
+                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js", "/solicitacoes.js", "/acoes-solicitacao.js", "/leads.js", "/administracao.js", "/fontes.js", "/documentos.js")
                     .authenticated()
                 .anyRequest()
                     .denyAll()
