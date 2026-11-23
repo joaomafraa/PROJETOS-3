@@ -1,4 +1,3 @@
-
 package com.wxn.chatbot.security;
 
 import org.springframework.context.annotation.Bean;
@@ -39,7 +38,6 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/api/admin/**")
                     .hasRole("ADMINISTRADOR")
-                // Cada nova operacao deve receber uma regra explicita antes de ser exposta.
                 .requestMatchers(HttpMethod.GET, "/api/tickets", "/api/tickets/responsaveis",
                         "/api/tickets/{id}", "/api/historico", "/api/historico/fila",
                         "/api/historico/meus", "/api/historico/notificacoes",
@@ -53,7 +51,7 @@ public class SecurityConfig {
                     .authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/arquivo-conversas/{id}").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/leads/{id}/conversa").authenticated()
-                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js", "/solicitacoes.js", "/acoes-solicitacao.js", "/leads.js", "/administracao.js", "/fontes.js", "/documentos.js")
+                .requestMatchers("/painel", "/painel.html", "/painel.css", "/tema.js", "/historico.js", "/contexto.js", "/solicitacoes.js", "/acoes-solicitacao.js", "/leads.js", "/administracao.js", "/fontes.js", "/documentos.js", "/configuracao-atendimento.js")
                     .authenticated()
                 .anyRequest()
                     .denyAll()

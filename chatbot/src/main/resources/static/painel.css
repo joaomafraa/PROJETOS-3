@@ -316,3 +316,23 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
 .fonte-trecho { margin:4px 0 0; padding-left:8px; border-left:2px solid var(--strong); color:var(--ink); font-size:11px; white-space:pre-wrap; overflow-wrap:anywhere; }
 .fontes-resposta .fontes-vazio { margin:8px 0 0; color:var(--muted); }
 .fontes-aviso { display:block; margin-top:6px; color:var(--muted); font-size:10px; font-style:italic; }
+
+/* Configuração do atendimento (HU01.3) */
+.config-atendimento { display:grid; gap:14px; margin-top:12px; }
+.config-atendimento textarea { width:100%; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); font:inherit; font-size:12px; resize:vertical; }
+.config-atendimento textarea:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.config-atendimento textarea[aria-invalid="true"] { border-color:var(--danger); }
+.config-fuso { max-width:320px; }
+.config-horarios { border:1px solid var(--line); border-radius:10px; padding:14px; }
+.config-horarios legend { padding:0 6px; font-size:13px; font-weight:600; }
+.config-dias { display:grid; gap:8px; margin-top:8px; }
+.config-dia { display:grid; grid-template-columns:150px 1fr 1fr; gap:10px; align-items:center; font-size:12px; }
+.config-dia label { display:inline-flex; align-items:center; gap:6px; }
+.config-dia input[type="time"] { padding:6px 8px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); font:inherit; font-size:12px; }
+.config-dia input[type="time"]:disabled { opacity:.45; }
+.config-dia input[aria-invalid="true"] { border-color:var(--danger); }
+#situacao-expediente[data-disponivel="false"] { color:var(--muted); }
+@media (max-width:700px) {
+  .config-dia { grid-template-columns:1fr 1fr; }
+  .config-dia > label:first-child { grid-column:1 / -1; }
+}
