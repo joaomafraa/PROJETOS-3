@@ -24,6 +24,9 @@ consultar cliente e conversa.
   não encontrado, sem informar a empresa ou o conteúdo existente.
 - Listagens retornam somente dados do tenant atual. Quando um identificador de
   outra empresa é usado em uma consulta de coleção, o resultado é vazio.
+- Trechos documentais passam por uma barreira de empresa e disponibilidade antes
+  do prompt e precisam ser revalidados antes de salvar a resposta. O contrato e
+  as dependências de integração estão em `docs/seguranca-base-conhecimento.md`.
 
 ## Testes
 
@@ -44,9 +47,10 @@ cd chatbot
 
 ## Pontos que novas frentes devem manter
 
-- CRM, documentos e qualquer outra integração externa devem usar uma chave de
-  escopo por empresa também no provedor externo e nas regras de idempotência.
-  Essas integrações ainda não existem na base atual e não foram simuladas.
+- CRM e qualquer outra integração externa devem usar uma chave de escopo por
+  empresa também no provedor externo e nas regras de idempotência. Para
+  documentos, a barreira de contexto já existe; o adaptador autoritativo depende
+  do modelo documental e da busca das outras partes.
 - O polling atual associa um bot do Telegram a uma empresa por configuração.
   Suporte a vários bots no mesmo processo deve preservar essa associação
   validada, sem aceitar `empresaId` de mensagens recebidas.
