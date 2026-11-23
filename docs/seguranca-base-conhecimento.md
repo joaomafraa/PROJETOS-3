@@ -52,8 +52,12 @@ segurancaConhecimento.revalidar(contexto, disponibilidade);
 `DisponibilidadeDocumentoConhecimento` consulta o banco real por empresa, ID,
 versão e estado ativo. Ela cobre apenas a disponibilidade do documento: não
 verifica a identidade ou o estado do trecho, pois a busca ainda não foi integrada.
-Artur deve combinar essa consulta com a verificação autoritativa do trecho e
-Guilherme deve conectar o adaptador completo ao fluxo da resposta. A integração
+O adaptador `DisponibilidadeFontePersistida` combina essa consulta com o contrato
+`ConsultaTrechoConhecimento`. Enquanto não houver uma implementação do índice,
+o adaptador recusa todas as fontes. Artur deve implementar esse contrato como
+bean Spring, consultando o trecho real por empresa, documento, versão e ID.
+Guilherme deve passar o adaptador para `preparar` e `revalidar` no fluxo da resposta.
+A integração
 final não deve usar um adaptador
 que sempre devolva `true`; os testes podem usar substitutos, mas produção precisa
 consultar o estado persistido criado nas partes de João/Artur.
