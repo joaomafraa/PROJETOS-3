@@ -179,7 +179,7 @@ class FontesRespostaServiceTests {
 
     @Test
     void fonteDeOutraEmpresaEhRecusada() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(SecurityException.class,
                 () -> responderComFontes(1L, 1L, 4L, "Conteúdo [F1].", List.of(EXTERNA)));
         assertEquals(0, repositorio.count());
     }

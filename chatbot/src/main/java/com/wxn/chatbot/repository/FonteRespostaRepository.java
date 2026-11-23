@@ -15,5 +15,5 @@ public interface FonteRespostaRepository extends JpaRepository<FonteResposta, Lo
     List<FonteResposta> findByEmpresaIdAndConversaIdAndMensagemIdAndUsoOrderByOrdemAsc(
             Long empresaId, Long conversaId, Long mensagemId, FonteResposta.Uso uso);
 
-    boolean existsByConversaIdAndMensagemId(Long conversaId, Long mensagemId);
+    boolean existsByEmpresaIdAndConversaIdAndMensagemId(Long empresaId, Long conversaId, Long mensagemId);
 }

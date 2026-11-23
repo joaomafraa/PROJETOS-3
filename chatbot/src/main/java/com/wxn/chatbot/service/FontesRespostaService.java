@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import com.wxn.chatbot.dto.FontesMensagem;
 import com.wxn.chatbot.llm.FonteDisponivel;
 import com.wxn.chatbot.llm.ReferenciasResposta;
+import com.wxn.chatbot.llm.SegurancaContextoConhecimento;
 import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.model.FonteResposta;
@@ -37,12 +38,14 @@ public class FontesRespostaService {
     private final FonteRespostaRepository fontes;
     private final ConversaRepository conversas;
     private final EntityManager entityManager;
+    private final SegurancaContextoConhecimento segurancaConhecimento;
 
     public FontesRespostaService(FonteRespostaRepository fontes, ConversaRepository conversas,
-            EntityManager entityManager) {
+            EntityManager entityManager, SegurancaContextoConhecimento segurancaConhecimento) {
         this.fontes = Objects.requireNonNull(fontes);
         this.conversas = Objects.requireNonNull(conversas);
         this.entityManager = Objects.requireNonNull(entityManager);
+        this.segurancaConhecimento = Objects.requireNonNull(segurancaConhecimento);
     }
 
     /**
@@ -62,7 +65,8 @@ public class FontesRespostaService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Mensagem nao encontrada nesta conversa."));
 
-        List<FonteDisponivel> fornecidas = ReferenciasResposta.numerar(recuperadas);
+        Long empresaId = conversa.getEmpresa().getId();
+        List<FonteDisponivel> fornecidas = segurancaConhecimento.validarPertencimento(empresaId, recuperadas);
         List<ReferenciasResposta.Citacao> referencias = citadas == null ? List.of() : List.copyOf(citadas);
         if (fornecidas.size() > MAXIMO_FONTES_POR_RESPOSTA) {
             throw new IllegalArgumentException(
@@ -81,7 +85,7 @@ public class FontesRespostaService {
                 throw new IllegalArgumentException("Citacoes repetidas na mesma resposta.");
             }
         }
-        if (fontes.existsByConversaIdAndMensagemId(conversa.getId(), mensagemId)) {
+        if (fontes.existsByEmpresaIdAndConversaIdAndMensagemId(empresaId, conversa.getId(), mensagemId)) {
             throw new IllegalStateException("As fontes desta resposta ja foram registradas.");
         }
 
