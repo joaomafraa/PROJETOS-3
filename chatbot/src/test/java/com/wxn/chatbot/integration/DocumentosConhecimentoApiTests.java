@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 class DocumentosConhecimentoApiTests {
     @Autowired WebApplicationContext context;
     @Autowired EntityManager em;
+    @Autowired com.wxn.chatbot.llm.DisponibilidadeDocumentoConhecimento disponibilidade;
     @Test void administraComIsolamentoEValidacao() throws Exception {
         var a = new Empresa(7111L, "A"); var b = new Empresa(7112L, "B"); em.persist(a); em.persist(b);
         em.persist(new Atendente(7111L, "Admin A", "admina@documentos.test", a, Atendente.PerfilAcesso.ADMINISTRADOR));
@@ -35,13 +36,20 @@ class DocumentosConhecimentoApiTests {
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.versao").value(1)).andReturn();
         long id = new ObjectMapper().readTree(resposta.getResponse().getContentAsString()).get("id").asLong();
         em.flush(); em.clear();
+        org.junit.jupiter.api.Assertions.assertTrue(disponibilidade.estaDisponivel(7111L, id, "1"));
+        org.junit.jupiter.api.Assertions.assertFalse(disponibilidade.estaDisponivel(7112L, id, "1"));
         mvc.perform(get("/api/admin/documentos").with(user("adminb@documentos.test").roles("ADMINISTRADOR"))).andExpect(status().isOk()).andExpect(content().json("[]"));
         mvc.perform(patch("/api/admin/documentos/" + id + "/estado").with(user("adminb@documentos.test").roles("ADMINISTRADOR")).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"ativo\":false}")).andExpect(status().isNotFound());
         mvc.perform(put("/api/admin/documentos/" + id).with(user("admina@documentos.test").roles("ADMINISTRADOR")).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"titulo\":\"Manual\",\"conteudo\":\"Novo texto\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.versao").value(2));
+        em.flush();
+        org.junit.jupiter.api.Assertions.assertFalse(disponibilidade.estaDisponivel(7111L, id, "1"));
+        org.junit.jupiter.api.Assertions.assertTrue(disponibilidade.estaDisponivel(7111L, id, "2"));
         mvc.perform(patch("/api/admin/documentos/" + id + "/estado").with(user("admina@documentos.test").roles("ADMINISTRADOR")).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"ativo\":false}")).andExpect(status().isOk()).andExpect(jsonPath("$.ativo").value(false));
+        em.flush();
+        org.junit.jupiter.api.Assertions.assertFalse(disponibilidade.estaDisponivel(7111L, id, "2"));
     }
 }

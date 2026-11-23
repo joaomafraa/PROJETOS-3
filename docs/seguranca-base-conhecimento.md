@@ -49,8 +49,12 @@ segurancaConhecimento.revalidar(contexto, disponibilidade);
 // salvar mensagem e fontes na mesma transação
 ```
 
-Não foi criado adaptador de banco nesta branch porque o modelo de documentos e a
-busca ainda não estão presentes. A integração final não deve usar um adaptador
+`DisponibilidadeDocumentoConhecimento` consulta o banco real por empresa, ID,
+versão e estado ativo. Ela cobre apenas a disponibilidade do documento: não
+verifica a identidade ou o estado do trecho, pois a busca ainda não foi integrada.
+Artur deve combinar essa consulta com a verificação autoritativa do trecho e
+Guilherme deve conectar o adaptador completo ao fluxo da resposta. A integração
+final não deve usar um adaptador
 que sempre devolva `true`; os testes podem usar substitutos, mas produção precisa
 consultar o estado persistido criado nas partes de João/Artur.
 

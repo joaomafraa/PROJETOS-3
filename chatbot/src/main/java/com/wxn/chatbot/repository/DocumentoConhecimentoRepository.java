@@ -9,4 +9,5 @@ public interface DocumentoConhecimentoRepository extends JpaRepository<Documento
     List<DocumentoConhecimento> findByEmpresaIdOrderByIdDesc(Long empresaId);
     List<DocumentoConhecimento> findByEmpresaIdAndAtivoTrueOrderByIdDesc(Long empresaId);
     Optional<DocumentoConhecimento> findByIdAndEmpresaId(Long id, Long empresaId);
+    boolean existsByIdAndEmpresaIdAndVersaoAndAtivoTrue(Long id, Long empresaId, int versao);
 }
