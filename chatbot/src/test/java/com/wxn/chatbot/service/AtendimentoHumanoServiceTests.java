@@ -27,6 +27,11 @@ class AtendimentoHumanoServiceTests {
     @Autowired private PlatformTransactionManager manager;
     @Autowired private ConversaRepository conversas;
     @Autowired private RespostaAutomaticaService respostaReal;
+    @Autowired private com.wxn.chatbot.llm.BuscaConhecimentoService busca;
+    @Autowired private com.wxn.chatbot.llm.SegurancaContextoConhecimento seguranca;
+    @Autowired private com.wxn.chatbot.llm.DisponibilidadeFonteConhecimento disponibilidade;
+    @Autowired private com.wxn.chatbot.llm.PoliticaInsuficiencia politica;
+    @Autowired private FontesRespostaService fontes;
     private TransactionTemplate tx;
     private long id;
 
@@ -53,6 +58,8 @@ class AtendimentoHumanoServiceTests {
             conversa.adicionarMensagem(2L, "Como posso ajudar?", Mensagem.TipoRemetente.CHATBOT);
             em.persist(conversa);
             em.persist(new Ticket(id, "T-" + id, "Suporte", Ticket.TipoSolicitacao.SUPORTE, conversa));
+            em.persist(new com.wxn.chatbot.model.DocumentoConhecimento(empresa, "Atendimento",
+                    "# Ajuda\nPara receber ajuda, descreva o problema e informe o número do pedido."));
         });
     }
 
@@ -102,11 +109,11 @@ class AtendimentoHumanoServiceTests {
     @Test
     void respostaSimuladaEhSalvaETransferenciaDuranteGeracaoDescartaResposta() {
         ProvedorLlm provedor = mock(ProvedorLlm.class);
-        var respostas = new RespostaAutomaticaService(provedor, conversas, manager);
-        when(provedor.responder(anyList())).thenReturn("Posso ajudar.");
+        var respostas = novaResposta(provedor);
+        when(provedor.responder(anyList(), anyList())).thenReturn("Posso ajudar.");
         assertEquals("Posso ajudar.", respostas.responder(id, id, 3L));
         tx.executeWithoutResult(s -> assertEquals(3, em.find(Conversa.class, id).getMensagens().size()));
-        when(provedor.responder(anyList())).thenAnswer(invocacao -> {
+        when(provedor.responder(anyList(), anyList())).thenAnswer(invocacao -> {
             service.solicitar(id, id);
             return "Resposta que chegou tarde";
         });
@@ -121,10 +128,14 @@ class AtendimentoHumanoServiceTests {
     @Test
     void respostaVaziaNaoEhSalva() {
         ProvedorLlm provedor = mock(ProvedorLlm.class);
-        when(provedor.responder(anyList())).thenReturn(" ");
-        var respostas = new RespostaAutomaticaService(provedor, conversas, manager);
+        when(provedor.responder(anyList(), anyList())).thenReturn(" ");
+        var respostas = novaResposta(provedor);
         assertThrows(com.wxn.chatbot.llm.FalhaLlmException.class, () -> respostas.responder(id, id, 3L));
         tx.executeWithoutResult(s -> assertEquals(2, em.find(Conversa.class, id).getMensagens().size()));
+    }
+
+    private RespostaAutomaticaService novaResposta(ProvedorLlm provedor) {
+        return new RespostaAutomaticaService(provedor, conversas, manager, busca, seguranca, disponibilidade, politica, fontes);
     }
 
     private void verificarBotBloqueado() {
