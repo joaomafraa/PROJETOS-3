@@ -143,12 +143,14 @@ class FontesRespostaServiceTests {
     }
 
     @Test
-    void mensagemEnviadaAoTelegramTrazTextoLimpoEFontes() {
+    void mensagemEnviadaAoTelegramNaoExibeFontesMasPainelAsPreserva() {
         responderComFontes(1L, 1L, 4L, "Atendemos das 8h às 18h [F1].", List.of(HORARIO, PRAZO));
 
         String texto = respostaTelegram.respostaExistenteOuPendente(1L, 1L);
 
-        assertEquals("Atendemos das 8h às 18h [1].\n\nFontes:\n[1] Política de atendimento — Seção 2 - Horários", texto);
+        assertEquals("Atendemos das 8h às 18h.", texto);
+        assertEquals("Política de atendimento", fontes.listarPorConversa(1L, atendente(1L))
+                .getFirst().citadas().getFirst().documentoTitulo());
     }
 
     @Test
