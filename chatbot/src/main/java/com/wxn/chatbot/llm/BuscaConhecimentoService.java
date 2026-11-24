@@ -126,6 +126,10 @@ public class BuscaConhecimentoService {
             if (palavra.length() < 2 && !palavra.chars().allMatch(Character::isDigit)) continue;
             termos.add(radical(palavra));
         }
+        // Em "horário de funcionamento", funcionamento qualifica horário e não
+        // deve exigir um segundo termo literal em documentos que dizem apenas
+        // "horário de atendimento". Outros qualificadores seguem obrigatórios.
+        if (termos.contains("horario")) termos.removeIf("funcionamento"::equals);
         return termos;
     }
 

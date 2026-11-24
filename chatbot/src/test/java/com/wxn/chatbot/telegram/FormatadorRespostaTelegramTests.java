@@ -2,7 +2,6 @@ package com.wxn.chatbot.telegram;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -24,49 +23,36 @@ class FormatadorRespostaTelegramTests {
     }
 
     @Test
-    void acrescentaFontesComTituloESecaoSemIdsInternos() {
+    void ocultaFontesEReferenciasNoTelegram() {
         String texto = FormatadorRespostaTelegram.formatar("Atendemos das 8h às 18h [1].",
                 List.of(fonte(1, "Política de atendimento", "Seção 2 - Horários")));
 
-        assertEquals("Atendemos das 8h às 18h [1].\n\nFontes:\n[1] Política de atendimento — Seção 2 - Horários", texto);
+        assertEquals("Atendemos das 8h às 18h.", texto);
         assertFalse(texto.contains("t-1"), "O id do trecho nao deve ir para o cliente.");
         assertFalse(texto.contains("11"), "O id do documento nao deve ir para o cliente.");
     }
 
     @Test
-    void listaNoMaximoCincoFontesEInformaAsRestantes() {
-        List<FontesMensagem.Fonte> citadas = new ArrayList<>();
-        for (int numero = 1; numero <= 7; numero++) citadas.add(fonte(numero, "Documento " + numero, null));
-
-        String texto = FormatadorRespostaTelegram.formatar("Resposta.", citadas);
-
-        assertTrue(texto.contains("[5] Documento 5"));
-        assertFalse(texto.contains("[6] Documento 6"));
-        assertTrue(texto.endsWith("(e mais 2 fontes)"));
+    void preservaNumerosQueNaoSaoReferenciasConhecidas() {
+        String texto = FormatadorRespostaTelegram.formatar("Resposta [1, 2]. Código [42].", List.of(fonte(1, "A", null), fonte(2, "B", null)));
+        assertEquals("Resposta. Código [42].", texto);
     }
 
     @Test
-    void encurtaTitulosLongosEmUmaLinha() {
-        String titulo = "Manual\ncompleto " + "x".repeat(200);
-        String texto = FormatadorRespostaTelegram.formatar("Ok.", List.of(fonte(1, titulo, null)));
-        String linha = texto.substring(texto.indexOf("[1] "));
-
-        assertFalse(linha.contains("\n"));
-        assertTrue(linha.length() <= 4 + 80);
-        assertTrue(linha.endsWith("…"));
+    void naoMostraTituloDoDocumento() {
+        String texto = FormatadorRespostaTelegram.formatar("Ok [1].", List.of(fonte(1, "Manual", null)));
+        assertEquals("Ok.", texto);
     }
 
     @Test
-    void respeitaOLimiteDoTelegramSemCortarAsFontes() {
+    void respeitaOLimiteDoTelegramSemMostrarFontes() {
         String corpo = ("Frase longa sobre o serviço [1]. ").repeat(300);
         String texto = FormatadorRespostaTelegram.formatar(corpo, List.of(fonte(1, "Política", "Seção 1")));
 
         assertTrue(texto.length() <= FormatadorRespostaTelegram.LIMITE_TELEGRAM);
-        assertTrue(texto.endsWith("\n\nFontes:\n[1] Política — Seção 1"));
-        String parteCorpo = texto.substring(0, texto.indexOf("\n\nFontes:"));
-        assertTrue(parteCorpo.endsWith("…"));
-        assertEquals(parteCorpo.chars().filter(c -> c == '[').count(), parteCorpo.chars().filter(c -> c == ']').count(),
-                "Uma referencia [n] nao pode ficar pela metade.");
+        assertFalse(texto.contains("Fontes:"));
+        assertFalse(texto.contains("[1]"));
+        assertTrue(texto.endsWith("…"));
     }
 
     @Test

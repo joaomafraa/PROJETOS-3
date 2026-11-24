@@ -47,6 +47,30 @@ class BuscaConhecimentoServiceTests {
     }
 
     @Test
+    void horarioDeFuncionamentoEncontraHorarioDeAtendimento() {
+        when(documentos.ativosDaEmpresa(EMPRESA)).thenReturn(List.of(new Documento(15L, "Informações fictícias", """
+                # Horário de atendimento
+                A equipe humana atende de segunda a sexta-feira, das 8h às 18h, no horário de Brasília.
+                """, 1, true)));
+        ResultadoBusca resultado = busca.buscar(EMPRESA, "qual o horario de funcionamento?");
+        assertTrue(resultado.encontrou());
+        assertTrue(resultado.fontes().get(0).texto().contains("8h às 18h"));
+        var contexto = new ContextoConhecimentoSeguro(EMPRESA, resultado.fontes());
+        assertEquals(PoliticaInsuficiencia.Evidencia.SUFICIENTE,
+                RespostaAutomaticaService.avaliarEvidencia("qual o horario de funcionamento?", contexto));
+    }
+
+    @Test
+    void horarioDeFuncionamentoNaoDescartaQualificadorDoAssunto() {
+        assertEquals(List.of("horario", "entrega"),
+                BuscaConhecimentoService.termos("horário de funcionamento das entregas"));
+        var apenasSuporte = new ContextoConhecimentoSeguro(EMPRESA, List.of(
+                new FonteDisponivel(EMPRESA, 11L, "1", "Suporte", "t1", null, "Horário: segunda a sexta")));
+        assertEquals(PoliticaInsuficiencia.Evidencia.INSUFICIENTE,
+                RespostaAutomaticaService.avaliarEvidencia("horário de funcionamento das entregas", apenasSuporte));
+    }
+
+    @Test
     void encontraOTrechoDaPerguntaPrimeiroComAIdentificacaoDaFonte() {
         ResultadoBusca resultado = busca.buscar(EMPRESA, "Qual o prazo de entrega?");
 

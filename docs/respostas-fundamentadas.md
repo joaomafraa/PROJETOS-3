@@ -23,7 +23,7 @@ Responsável: Guilherme Guimarães.
    - **Se um atendente assumiu ou a conversa mudou:** a resposta é descartada.
    - **Se um documento foi editado ou desativado:** a resposta também é descartada (`ContextoConhecimentoObsoletoException`).
    - **Se nada mudou:** mensagem e fontes são salvas juntas (`FontesRespostaService.registrar`).
-8. O Telegram envia o texto com a lista "Fontes", pelo formatador que o Pedro já tinha feito.
+8. O Telegram envia o texto sem marcadores ou rodapé de fontes; as fontes continuam disponíveis para consulta no painel.
 
 ## Arquivos alterados
 

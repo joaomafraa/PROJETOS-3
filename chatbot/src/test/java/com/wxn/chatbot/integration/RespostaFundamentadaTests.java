@@ -200,14 +200,14 @@ class RespostaFundamentadaTests {
     }
 
     @Test
-    void telegramRecebeTextoComAListaDeFontes() {
+    void telegramRecebeTextoSemFontesMasElasPermanecemRegistradas() {
         perguntar("Qual o prazo de entrega?");
         when(provedor.responder(anyList(), anyList())).thenReturn("O prazo padrão é de 5 dias úteis [F1].");
 
         String texto = respostaTelegram.gerar(id, id);
 
-        assertTrue(texto.startsWith("O prazo padrão é de 5 dias úteis [1]."));
-        assertTrue(texto.contains("Política de entregas"));
+        assertEquals("O prazo padrão é de 5 dias úteis.", texto);
+        assertEquals(1, fontes.citadas(id, id, 2L).size());
     }
 
     private void perguntar(String texto) {
