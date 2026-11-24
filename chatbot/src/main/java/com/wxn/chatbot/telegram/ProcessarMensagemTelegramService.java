@@ -51,7 +51,14 @@ public class ProcessarMensagemTelegramService {
         String texto;
         TelegramCliente.Teclado teclado = TelegramCliente.Teclado.NENHUM;
         boolean preparado = false;
-        if (entrada.equalsIgnoreCase("/validar")) {
+        if (entrada.equalsIgnoreCase("/menu")) {
+            texto = "Olá! Sou o assistente do NEXUS. Escolha uma opção no teclado abaixo ou escreva sua dúvida.\n\n"
+                    + "/suporte — ajuda técnica\n/comercial — informações comerciais\n"
+                    + "/atendente — solicitar uma pessoa\n/validar — confirmar identidade\n"
+                    + "/solicitacoes — consultar solicitações após validação\n\n"
+                    + "Se estiver iniciando o cadastro, compartilhe seu telefone pelo botão. Para enviar o código recebido, escreva /codigo seguido do código.";
+            teclado = TelegramCliente.Teclado.MENU;
+        } else if (entrada.equalsIgnoreCase("/validar")) {
             try {
                 validacao.solicitar(empresaId, conversa);
             } catch (RuntimeException e) { /* Resposta generica nao revela o estado do cadastro. */ }

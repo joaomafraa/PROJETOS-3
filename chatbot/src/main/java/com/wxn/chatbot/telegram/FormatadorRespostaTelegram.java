@@ -40,6 +40,7 @@ public final class FormatadorRespostaTelegram {
 
     static String normalizar(String texto) {
         return texto.replace("\r\n", "\n").replace('\r', '\n')
+                .replaceAll("\\*\\*([^*\\n]+)\\*\\*", "$1")
                 .replaceAll("[ \\t]+\\n", "\n")
                 .replaceAll("\\n{3,}", "\n\n")
                 .strip();

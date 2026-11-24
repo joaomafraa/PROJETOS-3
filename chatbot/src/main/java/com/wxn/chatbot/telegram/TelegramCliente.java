@@ -44,6 +44,8 @@ public class TelegramCliente {
         NENHUM,
         /** Botão que envia o contato da própria conta (request_contact). */
         PEDIR_TELEFONE,
+        /** Menu clicável com comandos e opção de compartilhar contato. */
+        MENU,
         /** Retira o botão anterior da tela do usuário. */
         REMOVER
     }
@@ -63,6 +65,12 @@ public class TelegramCliente {
             corpo.put("reply_markup", Map.of(
                     "keyboard", List.of(List.of(Map.of("text", BOTAO_TELEFONE, "request_contact", true))),
                     "resize_keyboard", true, "one_time_keyboard", true));
+        } else if (teclado == Teclado.MENU) {
+            corpo.put("reply_markup", Map.of("keyboard", List.of(
+                    List.of(Map.of("text", "/suporte"), Map.of("text", "/comercial")),
+                    List.of(Map.of("text", "/atendente"), Map.of("text", "/solicitacoes")),
+                    List.of(Map.of("text", "/validar"), Map.of("text", BOTAO_TELEFONE, "request_contact", true))),
+                    "resize_keyboard", true, "one_time_keyboard", false));
         } else if (teclado == Teclado.REMOVER) {
             corpo.put("reply_markup", Map.of("remove_keyboard", true));
         }

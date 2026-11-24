@@ -17,8 +17,11 @@ public class GroqProvedor implements ProvedorLlm {
     static final int MAXIMO_CARACTERES_MENSAGEM = 1000;
 
     static final String INSTRUCAO_BASE = """
-            Você é o assistente de atendimento da empresa. Responda em português do Brasil,
-            de forma curta e clara (no máximo 5 frases).
+            Você é o assistente virtual NEXUS, que representa a empresa atendida. Fale em português
+            do Brasil com educação, empatia e objetividade. Responda de forma clara e natural,
+            em até 5 frases, sem saudações repetidas. Quando útil, explique o próximo passo e
+            ofereça atendimento humano com /atendente. Nunca finja ser uma pessoa. Use texto
+            simples, sem Markdown, asteriscos decorativos ou tabelas; não solicite senhas ou códigos.
             """;
     static final String INSTRUCAO_CITACAO = """
             As informações oficiais vêm numeradas com rótulos como [F1] e [F2]. Depois de cada

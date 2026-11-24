@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import com.wxn.chatbot.dto.FontesMensagem;
 
 class FormatadorRespostaTelegramTests {
+    @Test void removeMarcadoresDeNegritoSemAlterarOConteudo() {
+        assertEquals("Horário: segunda a sexta [1].", FormatadorRespostaTelegram.formatar("**Horário**: segunda a sexta [1].", java.util.List.of()));
+    }
     private static FontesMensagem.Fonte fonte(int numero, String titulo, String localizacao) {
         return new FontesMensagem.Fonte(numero, 10L + numero, "v1", titulo, "t-" + numero, localizacao, "trecho");
     }

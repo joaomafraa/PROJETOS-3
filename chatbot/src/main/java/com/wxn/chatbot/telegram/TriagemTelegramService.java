@@ -37,6 +37,8 @@ public class TriagemTelegramService {
             conversa.definirIntencao(suporte ? Conversa.Intencao.SUPORTE : Conversa.Intencao.COMERCIAL);
             return Optional.empty();
         }
+        // Dúvidas gerais não precisam passar por um menu antes da busca documental.
+        if (!suporte) return Optional.empty();
         return preparar(conversa, mensagem, "Para direcionar seu atendimento, envie /suporte para ajuda técnica ou /comercial para informações e propostas. Você também pode pedir /atendente.");
     }
     private Optional<String> preparar(Conversa conversa, MensagemTelegram mensagem, String texto) {

@@ -16,8 +16,9 @@ class TriagemTelegramServiceTests {
         when(repo.buscarParaAtualizar(1L, 1L)).thenReturn(Optional.of(conversa));
         var servico = new TriagemTelegramService(repo, fila);
         var pergunta = new MensagemTelegram(1, 2, 2, "Ana", "Qual o horário?");
-        assertTrue(servico.atender(1, 1, pergunta).orElseThrow().contains("/suporte"));
+        assertTrue(servico.atender(1, 1, pergunta).isEmpty());
         assertEquals(Conversa.Intencao.INDEFINIDA, conversa.getIntencao());
+        assertTrue(servico.atender(1, 1, new MensagemTelegram(5, 2, 2, "Ana", "Tenho um problema e quero orçamento")).orElseThrow().contains("/suporte"));
         assertTrue(servico.atender(1, 1, new MensagemTelegram(2, 2, 2, "Ana", "/comercial")).isPresent());
         assertEquals(Conversa.Intencao.COMERCIAL, conversa.getIntencao());
         assertTrue(servico.atender(1, 1, new MensagemTelegram(3, 2, 2, "Ana", "Tenho um problema")).isEmpty());

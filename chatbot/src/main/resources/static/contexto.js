@@ -8,6 +8,7 @@
   if (!painel || !resumo) return;
 
   const TEXTO_INICIAL = resumo.textContent;
+  let conversaSelecionada = null;
   const nomesStatus = {
     EM_ATENDIMENTO_AUTOMATICO: 'Atendimento automático',
     AGUARDANDO_ATENDENTE: 'Aguardando atendente',
@@ -48,6 +49,7 @@
 
   // Volta ao estado inicial, igual ao layout sem conversa selecionada.
   function limpar() {
+    conversaSelecionada = null;
     resumo.textContent = TEXTO_INICIAL;
     preencher('cliente', 'Aguardando seleção');
     preencher('telefone', '—');
@@ -58,6 +60,7 @@
 
   function mostrar(conversa) {
     if (!conversa) { limpar(); return; }
+    conversaSelecionada = conversa.id;
     const inicio = dataHora(conversa.dataInicio);
     // Resumo factual com dados do banco; nada e inventado.
     resumo.textContent = inicio
@@ -69,6 +72,22 @@
     preencher('intencao', ({ SUPORTE: 'Suporte', COMERCIAL: 'Comercial', INDEFINIDA: 'Ainda não definido' })[conversa.intencao] || 'Ainda não definido');
     preencherStatus(conversa.status ? (nomesStatus[conversa.status] || conversa.status) : NAO_DISPONIVEL,
       conversa.status);
+    carregarResumo(conversa.id);
+  }
+
+  async function carregarResumo(id) {
+    try {
+      const resposta = await fetch(`/api/historico/${encodeURIComponent(id)}/resumo`, { cache: 'no-store' });
+      if (!resposta.ok) throw new Error('Resumo indisponível');
+      const dados = await resposta.json();
+      if (conversaSelecionada !== id) return;
+      const inicial = dados.trechoInicialCliente;
+      resumo.textContent = inicial?.trecho
+        ? `Primeira mensagem do cliente: “${inicial.trecho}”${inicial.truncado ? '…' : ''}`
+        : 'Nenhuma mensagem do cliente disponível no resumo.';
+    } catch {
+      if (conversaSelecionada === id) resumo.textContent = 'Não foi possível carregar o resumo. Consulte o histórico da conversa.';
+    }
   }
 
   window.contextoAtendimento = { mostrar, limpar };

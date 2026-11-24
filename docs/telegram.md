@@ -1,5 +1,9 @@
 # Atendimento Telegram no NEXUS
 
+Envie `/menu` para abrir o teclado de opções: suporte, comercial, atendente, validação de identidade e consulta de solicitações. Durante o cadastro, o menu também mantém o botão para compartilhar o próprio telefone. Na verificação, o código deve ser digitado com `/codigo` seguido do código; não é guardado no histórico. A consulta de solicitações não cria novos chamados.
+
+O assistente se apresenta como NEXUS e responde em português, com empatia e objetividade, sem fingir ser humano. Respostas são enviadas como texto simples, sem depender de Markdown; fontes citadas continuam indicadas no rodapé.
+
 O bot recebe mensagens privadas por polling. O processamento só deve ser ativado em **uma instância** por token: não execute o bot local e no Render ao mesmo tempo. A aplicação deve usar HTTPS para suas páginas; o polling não precisa de URL de webhook.
 
 ## Configuração

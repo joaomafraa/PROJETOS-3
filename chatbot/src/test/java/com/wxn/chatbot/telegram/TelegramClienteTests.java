@@ -9,6 +9,15 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 class TelegramClienteTests {
+    @Test void menuMostraComandosEContatoSemAlterarOTransporte() {
+        RestClient.Builder builder = RestClient.builder().baseUrl("https://api.telegram.org");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo("https://api.telegram.org/botfake/sendMessage"))
+              .andExpect(content().json("{\"chat_id\":5,\"text\":\"Menu\",\"reply_markup\":{\"keyboard\":[[{\"text\":\"/suporte\"},{\"text\":\"/comercial\"}],[{\"text\":\"/atendente\"},{\"text\":\"/solicitacoes\"}],[{\"text\":\"/validar\"},{\"text\":\"Compartilhar meu telefone\",\"request_contact\":true}]]}}"))
+              .andRespond(withSuccess("{\"ok\":true}", MediaType.APPLICATION_JSON));
+        new TelegramCliente("fake", builder.build()).enviarMensagem(5, "Menu", TelegramCliente.Teclado.MENU);
+        server.verify();
+    }
     @Test void consultaAtualizacoesSemConfirmarOffset() {
         RestClient.Builder builder = RestClient.builder().baseUrl("https://api.telegram.org");
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();

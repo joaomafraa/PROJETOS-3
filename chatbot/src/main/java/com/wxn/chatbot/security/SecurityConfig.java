@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tickets", "/api/tickets/responsaveis",
                         "/api/tickets/{id}", "/api/historico", "/api/historico/fila",
                         "/api/historico/meus", "/api/historico/notificacoes",
-                        "/api/historico/{id}/mensagens", "/api/historico/{id}/fontes", "/api/leads", "/api/leads/{id}/conversa",
+                        "/api/historico/{id}/mensagens", "/api/historico/{id}/fontes", "/api/historico/{id}/resumo", "/api/leads", "/api/leads/{id}/conversa",
                         "/api/conversas/{id}/envios", "/api/arquivo-conversas", "/api/arquivo-conversas/itens")
                     .authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/tickets/{id}/assumir", "/api/tickets/{id}/concluir",

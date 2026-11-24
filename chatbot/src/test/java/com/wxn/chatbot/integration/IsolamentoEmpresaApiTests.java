@@ -53,6 +53,15 @@ class IsolamentoEmpresaApiTests {
 
     private MockMvc mvc;
 
+    @Test
+    @WithMockUser(username = ATENDENTE_A, roles = "ATENDENTE")
+    void resumoDeConversaRespeitaEmpresa() throws Exception {
+        mvc.perform(get("/api/historico/" + CONVERSA_A + "/resumo"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.conversaId").value(CONVERSA_A));
+        mvc.perform(get("/api/historico/" + CONVERSA_B + "/resumo"))
+                .andExpect(status().isNotFound());
+    }
+
     @BeforeEach
     void preparar() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
