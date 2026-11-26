@@ -375,3 +375,18 @@ button:not(:disabled):is(:active,[aria-pressed="true"],[aria-selected="true"],.a
   .config-dia { grid-template-columns:1fr 1fr; }
   .config-dia > label:first-child { grid-column:1 / -1; }
 }
+
+/* Notificações de novos chamados (HU05.3) */
+.nav-notificacoes { position:relative; }
+.contador-notificacoes { margin-left:auto; min-width:18px; padding:1px 6px; border-radius:9px; background:var(--ink); color:var(--surface); font-size:10px; font-weight:600; text-align:center; }
+.notificacoes-acoes { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:20px; }
+.lista-notificacoes { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:10px; }
+.notificacao-item { padding:14px 16px; border:1px solid var(--line); border-radius:10px; background:var(--subtle); }
+.notificacao-item[data-lida="false"] { border-left:3px solid var(--strong); }
+.notificacao-topo { display:flex; flex-wrap:wrap; align-items:center; gap:8px; justify-content:space-between; }
+.notificacao-topo strong { font-size:13px; }
+.notificacao-meta { margin-top:4px; color:var(--muted); font-size:11px; }
+.notificacao-descricao { margin:8px 0 0; font-size:12px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.notificacao-item .acoes { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.notificacao-item .button { min-height:30px; font-size:11px; }
+.lista-notificacoes .vazio { color:var(--muted); font-size:12px; padding:18px 0; }

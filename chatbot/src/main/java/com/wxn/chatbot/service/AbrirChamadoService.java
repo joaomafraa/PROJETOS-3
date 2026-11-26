@@ -3,6 +3,7 @@ package com.wxn.chatbot.service;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,13 @@ public class AbrirChamadoService {
 
     private final ConversaRepository conversas;
     private final TicketRepository tickets;
+    private final ApplicationEventPublisher eventos;
 
-    public AbrirChamadoService(ConversaRepository conversas, TicketRepository tickets) {
+    public AbrirChamadoService(ConversaRepository conversas, TicketRepository tickets,
+            ApplicationEventPublisher eventos) {
         this.conversas = Objects.requireNonNull(conversas, "O repositorio de conversas e obrigatorio.");
         this.tickets = Objects.requireNonNull(tickets, "O repositorio de tickets e obrigatorio.");
+        this.eventos = Objects.requireNonNull(eventos, "O publicador de eventos e obrigatorio.");
     }
 
     /**
@@ -41,6 +45,8 @@ public class AbrirChamadoService {
         Ticket ticket = new Ticket(identificacao.id(), identificacao.protocolo(), descricao,
                 Ticket.TipoSolicitacao.SUPORTE, conversa);
         tickets.saveAndFlush(ticket);
+        // HU05.3: os responsaveis so sao avisados depois que esta transacao fizer commit.
+        eventos.publishEvent(new SolicitacaoRegistradaEvento(ticket.getId(), empresaId));
 
         return new TicketAberto(ticket.getId(), ticket.getProtocolo(), ticket.getDescricao(),
                 ticket.getTipo(), ticket.getStatus(), ticket.getDataAbertura(),
