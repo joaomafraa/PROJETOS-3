@@ -63,6 +63,10 @@ class ValidacaoClienteTests {
         String codigo = solicitarCodigo();
         assertTrue(validacao.confirmar(81001L, 81001L, codigo));
         assertFalse(validacao.confirmar(81001L, 81001L, codigo));
+        var contexto = validacao.exigirContextoValidado(81001L, 81001L);
+        assertEquals(81001L, contexto.empresaId());
+        assertEquals(81001L, contexto.clienteId());
+        assertEquals(81001L, contexto.conversaId());
         var itens = validacao.consultarSolicitacoes(81001L, 81001L);
         assertEquals(1, itens.size()); assertEquals("VALIDACAO-1", itens.get(0).protocolo());
         assertEquals(Ticket.TipoSolicitacao.SUPORTE, itens.get(0).tipo());
@@ -106,6 +110,8 @@ class ValidacaoClienteTests {
         em.createNativeQuery("update desafios_cliente set validado_ate=:expira where conversa_id=81001")
                 .setParameter("expira", Instant.now().minusSeconds(1)).executeUpdate();
         em.clear();
+        assertThrows(SecurityException.class,
+                () -> validacao.exigirContextoValidado(81001L, 81001L));
         assertThrows(SecurityException.class, () -> validacao.consultarSolicitacoes(81001L, 81001L));
     }
 

@@ -54,6 +54,9 @@ cd chatbot
 - O polling atual associa um bot do Telegram a uma empresa por configuração.
   Suporte a vários bots no mesmo processo deve preservar essa associação
   validada, sem aceitar `empresaId` de mensagens recebidas.
+- Consultas do Épico 2 devem consumir o contexto autorizado descrito em
+  `docs/seguranca-epico-2.md`; cliente e empresa não podem vir de parâmetros
+  livres do Telegram.
 - O banco permite o mesmo e-mail de atendente em empresas diferentes, enquanto o
   login atual recebe apenas o e-mail. Nessa situação ambígua, a autenticação é
   recusada. Antes de liberar esse cenário, a equipe deve definir um identificador

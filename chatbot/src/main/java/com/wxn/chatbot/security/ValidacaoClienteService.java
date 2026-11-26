@@ -76,18 +76,35 @@ public class ValidacaoClienteService {
 
     public record Solicitacao(String protocolo, Ticket.TipoSolicitacao tipo, Ticket.StatusTicket status) {}
 
+    /**
+     * Escopo derivado exclusivamente da conversa e da validacao temporaria.
+     * Consultas de plano, servico ou solicitacao devem usar estes IDs em vez de
+     * aceitar um cliente informado pelo canal.
+     */
+    public record ContextoClienteValidado(long empresaId, long clienteId, long conversaId) {}
+
     @Transactional
-    public List<Solicitacao> consultarSolicitacoes(long empresaId, long conversaId) {
+    public ContextoClienteValidado exigirContextoValidado(long empresaId, long conversaId) {
         Conversa conversa = conversa(empresaId, conversaId);
         DesafioCliente desafio = em.find(DesafioCliente.class, conversaId);
-        if (!validoPara(desafio, conversa) || !desafio.usado || desafio.validadoAte == null
-                || !Instant.now().isBefore(desafio.validadoAte)) {
+        if (!validacaoVigente(desafio, conversa, Instant.now())) {
             throw new SecurityException("Validacao de identidade necessaria.");
         }
+        return new ContextoClienteValidado(empresaId, conversa.getCliente().getId(), conversaId);
+    }
+
+    @Transactional
+    public List<Solicitacao> consultarSolicitacoes(long empresaId, long conversaId) {
+        ContextoClienteValidado contexto = exigirContextoValidado(empresaId, conversaId);
         return em.createQuery("select t from Ticket t where t.empresa.id = :empresa and t.cliente.id = :cliente order by t.dataAbertura desc, t.id desc", Ticket.class)
-                .setParameter("empresa", empresaId).setParameter("cliente", conversa.getCliente().getId())
+                .setParameter("empresa", contexto.empresaId()).setParameter("cliente", contexto.clienteId())
                 .setMaxResults(20).getResultList().stream()
                 .map(t -> new Solicitacao(t.getProtocolo(), t.getTipo(), t.getStatus())).toList();
+    }
+
+    private boolean validacaoVigente(DesafioCliente desafio, Conversa conversa, Instant agora) {
+        return validoPara(desafio, conversa) && desafio.usado && desafio.validadoAte != null
+                && agora.isBefore(desafio.validadoAte);
     }
 
     private Conversa conversa(long empresaId, long conversaId) {

@@ -7,13 +7,21 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import com.wxn.chatbot.model.*;
 import com.wxn.chatbot.repository.ClienteRepository;
+import com.wxn.chatbot.repository.ConversaRepository;
 
 /** Empresa e chatbot devem vir da configuração confiável do canal. */
 @Service
 public class IdentificacaoTelegramService {
     private final EntityManager em;
     private final ClienteRepository clientes;
-    public IdentificacaoTelegramService(EntityManager em, ClienteRepository clientes) { this.em = em; this.clientes = clientes; }
+    private final ConversaRepository conversas;
+
+    public IdentificacaoTelegramService(EntityManager em, ClienteRepository clientes,
+            ConversaRepository conversas) {
+        this.em = em;
+        this.clientes = clientes;
+        this.conversas = conversas;
+    }
 
     @Transactional
     public Long obterConversa(Long empresaId, Long chatbotId, long usuarioId, String nome) {
@@ -22,11 +30,15 @@ public class IdentificacaoTelegramService {
         Chatbot chatbot = em.find(Chatbot.class, chatbotId);
         if (empresa == null || chatbot == null) throw new IllegalArgumentException("Empresa ou chatbot não encontrado.");
         chatbot.verificarPodeAtender(empresa);
-        List<?> existentes = em.createNativeQuery("select conversa_id from telegram_contatos where empresa_id = :empresa and usuario_id = :usuario")
+        List<?> existentes = em.createNativeQuery("select cliente_id, conversa_id from telegram_contatos where empresa_id = :empresa and usuario_id = :usuario")
             .setParameter("empresa", empresaId).setParameter("usuario", usuarioId).getResultList();
         if (!existentes.isEmpty()) {
-            long anterior = ((Number) existentes.get(0)).longValue();
-            Conversa conversa = em.find(Conversa.class, anterior, LockModeType.PESSIMISTIC_WRITE);
+            Object[] vinculo = (Object[]) existentes.get(0);
+            long clienteAnterior = ((Number) vinculo[0]).longValue();
+            long anterior = ((Number) vinculo[1]).longValue();
+            Conversa conversa = conversas.buscarParaAtualizar(anterior, empresaId)
+                    .orElseThrow(() -> new SecurityException("Canal indisponivel."));
+            validarVinculoPersistido(conversa, clienteAnterior, empresaId);
             if (conversa.getStatus() != Conversa.Status.ENCERRADA) return anterior;
             long novoId;
             do { novoId = ((Number) em.createNativeQuery("select nextval('telegram_conversas_id_seq')").getSingleResult()).longValue(); }
@@ -51,5 +63,15 @@ public class IdentificacaoTelegramService {
         em.createNativeQuery("insert into telegram_contatos (empresa_id, usuario_id, cliente_id, conversa_id) values (:empresa, :usuario, :cliente, :conversa)")
             .setParameter("empresa", empresaId).setParameter("usuario", usuarioId).setParameter("cliente", clienteId).setParameter("conversa", conversaId).executeUpdate();
         return conversaId;
+    }
+
+    private static void validarVinculoPersistido(Conversa conversa, long clienteId, long empresaId) {
+        if (!conversa.getCliente().getId().equals(clienteId)
+                || conversa.getCliente().getEmpresa() == null
+                || !conversa.getCliente().getEmpresa().getId().equals(empresaId)
+                || !conversa.getEmpresa().getId().equals(empresaId)
+                || !conversa.getChatbot().pertenceA(conversa.getEmpresa())) {
+            throw new SecurityException("Canal indisponivel.");
+        }
     }
 }
