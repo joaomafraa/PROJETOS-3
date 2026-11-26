@@ -224,6 +224,8 @@
     campo(pedido.dados, 'Responsável', ticket.responsavelNome || 'Sem responsável');
     campo(pedido.dados, 'Aberta em', dataHora(ticket.dataAbertura));
     campo(pedido.dados, 'Concluída em', ticket.status === 'CONCLUIDO' ? dataHora(ticket.dataConclusao) : 'Ainda não concluída');
+    // HU06.2: o cliente informou uma preferência; o horário ainda depende da equipe.
+    if (ticket.preferenciaHorario) campo(pedido.dados, 'Preferência de horário (a confirmar)', ticket.preferenciaHorario);
     const descricao = elemento('p', ticket.descricao, 'request-description');
     pedido.secao.append(descricao);
 

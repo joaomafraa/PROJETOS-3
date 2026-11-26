@@ -50,7 +50,8 @@ public class AberturaChamadoTelegramService {
         } else if (texto.startsWith("/") || mensagem.compartilhouContato() || texto.length() < 10 || texto.length() > 2000) {
             resposta = "Informe uma descrição do problema com 10 a 2.000 caracteres ou envie /cancelar.";
         } else {
-            var chamado = chamados.abrir(empresaId, conversaId, texto);
+            // A atualizacao do Telegram e a chave: reprocessar a mesma mensagem devolve o mesmo protocolo.
+            var chamado = chamados.abrir(empresaId, conversaId, texto, "telegram:" + mensagem.atualizacaoId());
             limpar(empresaId, conversaId);
             resposta = "Seu chamado de suporte foi registrado. Protocolo: " + chamado.protocolo()
                     + ". A equipe poderá acompanhar sua solicitação no painel.";
