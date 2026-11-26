@@ -19,6 +19,7 @@ class ProcessarMensagemTelegramServiceTests {
   var validacao=mock(com.wxn.chatbot.security.ValidacaoClienteService.class);
   var mensagem=new MensagemTelegram(11,20,20,"Ana","/codigo 123456");
   when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L);
+  when(r.registrar(eq(1L),eq(2L),any(MensagemTelegram.class))).thenReturn(true);
   when(validacao.confirmar(1L,3L,"123456")).thenReturn(true);
   when(f.marcarIncerteza(1,11)).thenReturn(true); when(f.marcarEnviado(1,11)).thenReturn(true);
   assertTrue(new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),validacao,mock(CadastroTelegramService.class)).processar(1,2,mensagem));
@@ -30,12 +31,21 @@ class ProcessarMensagemTelegramServiceTests {
  @Test void etapaDeCadastroRespondeComTecladoSemPassarPelaIa() {
   var i=mock(IdentificacaoTelegramService.class); var r=mock(RegistrarMensagemTelegramService.class); var ia=mock(RespostaTelegramService.class); var f=mock(FilaEnvioTelegramService.class); var t=mock(TelegramCliente.class);
   var cadastro=mock(CadastroTelegramService.class);
-  var m=new MensagemTelegram(12,20,20,"Ana","Oi"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L);
+  var m=new MensagemTelegram(12,20,20,"Ana","Oi"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true);
   when(cadastro.atender(1L,3L,m)).thenReturn(java.util.Optional.of(new CadastroTelegramService.Resposta("Compartilhe", TelegramCliente.Teclado.PEDIR_TELEFONE)));
   when(f.marcarIncerteza(1,12)).thenReturn(true); when(f.marcarEnviado(1,12)).thenReturn(true);
   assertTrue(new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),mock(com.wxn.chatbot.security.ValidacaoClienteService.class),cadastro).processar(1,2,m));
   verify(t).enviarMensagem(20,"Compartilhe",TelegramCliente.Teclado.PEDIR_TELEFONE);
   verify(f,never()).preparar(anyLong(),anyLong(),anyLong(),anyString());
   verifyNoInteractions(ia);
+ }
+
+ @Test void atualizacaoRepetidaSemResultadoNaoExecutaNegocioNovamente() {
+  var i=mock(IdentificacaoTelegramService.class); var r=mock(RegistrarMensagemTelegramService.class); var ia=mock(RespostaTelegramService.class); var f=mock(FilaEnvioTelegramService.class); var t=mock(TelegramCliente.class);
+  var transferencia=mock(TransferenciaTelegramService.class); var validacao=mock(com.wxn.chatbot.security.ValidacaoClienteService.class); var cadastro=mock(CadastroTelegramService.class);
+  var m=new MensagemTelegram(13,20,20,"Ana","/solicitacoes"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(false);
+  var service=new ProcessarMensagemTelegramService(i,r,ia,f,t,transferencia,validacao,cadastro);
+  assertThrows(IllegalStateException.class,()->service.processar(1,2,m));
+  verify(f).status(1,13); verifyNoInteractions(ia,t,transferencia,validacao,cadastro);
  }
 }

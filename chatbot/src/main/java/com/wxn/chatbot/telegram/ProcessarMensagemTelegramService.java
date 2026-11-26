@@ -32,10 +32,14 @@ public class ProcessarMensagemTelegramService {
         // Codigos nao devem entrar no historico, no painel ou no contexto enviado ao LLM.
         MensagemTelegram registrada = codigo ? new MensagemTelegram(mensagem.atualizacaoId(), mensagem.chatId(),
                 mensagem.usuarioId(), mensagem.nome(), "[codigo de verificacao omitido]") : mensagem;
-        executar("registro", () -> registro.registrar(empresaId, chatbotId, registrada));
+        boolean atualizacaoNova = executar("registro", () -> registro.registrar(empresaId, chatbotId, registrada));
         String estado = executar("consulta_envio", () -> fila.status(empresaId, mensagem.atualizacaoId()));
         if ("ENVIADO".equals(estado) || "INCERTO".equals(estado)) return false;
         if (estado != null) throw new IllegalStateException("Envio pendente requer revisão antes de continuar.");
+        if (!atualizacaoNova) {
+            throw new IllegalStateException(
+                    "Atualizacao repetida sem resultado preparado requer revisao antes de continuar.");
+        }
         boolean pediuAtendente = entrada.equalsIgnoreCase("/atendente");
         String texto;
         TelegramCliente.Teclado teclado = TelegramCliente.Teclado.NENHUM;
