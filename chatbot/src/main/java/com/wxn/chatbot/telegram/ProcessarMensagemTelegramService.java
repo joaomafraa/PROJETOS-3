@@ -88,6 +88,8 @@ public class ProcessarMensagemTelegramService {
                         .collect(java.util.stream.Collectors.joining("\n", "Suas solicitacoes (ate 20):\n", ""));
             } catch (SecurityException e) {
                 texto = "Para consultar suas solicitacoes, valide sua identidade com /validar.";
+            } catch (RuntimeException e) {
+                texto = "Nao foi possivel consultar suas solicitacoes agora. Tente novamente mais tarde ou use /atendente para pedir ajuda.";
             }
         } else {
             // HU07.1/HU07.2: identificacao e cadastro antes da IA; a resposta ja vem preparada na fila.

@@ -65,6 +65,8 @@ class ValidacaoClienteTests {
         assertFalse(validacao.confirmar(81001L, 81001L, codigo));
         var itens = validacao.consultarSolicitacoes(81001L, 81001L);
         assertEquals(1, itens.size()); assertEquals("VALIDACAO-1", itens.get(0).protocolo());
+        assertEquals(Ticket.TipoSolicitacao.SUPORTE, itens.get(0).tipo());
+        assertEquals(em.find(Ticket.class, 81001L).getStatus(), itens.get(0).status());
         assertThrows(SecurityException.class, () -> validacao.consultarSolicitacoes(81001L, 81002L));
         assertThrows(SecurityException.class, () -> validacao.consultarSolicitacoes(81002L, 81001L));
     }
