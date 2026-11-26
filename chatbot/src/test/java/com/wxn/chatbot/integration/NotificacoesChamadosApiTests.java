@@ -104,7 +104,8 @@ class NotificacoesChamadosApiTests {
     void semLoginRecebe401() throws Exception {
         mvc.perform(get(URL)).andExpect(status().isUnauthorized());
         mvc.perform(get(URL + "/contagem")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/notificacoes-chamados.js")).andExpect(status().isUnauthorized());
+        // Paginas e scripts do painel redirecionam para o login, como os demais (SecurityHttpTests).
+        mvc.perform(get("/notificacoes-chamados.js")).andExpect(status().is3xxRedirection());
     }
 
     @Test

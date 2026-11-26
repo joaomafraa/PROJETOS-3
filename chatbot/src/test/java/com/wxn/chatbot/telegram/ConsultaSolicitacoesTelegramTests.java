@@ -25,6 +25,7 @@ class ConsultaSolicitacoesTelegramTests {
     @BeforeEach
     void preparar() {
         when(identificacao.obterConversa(1L, 2L, 20, "Ana")).thenReturn(3L);
+        when(registro.registrar(eq(1L), eq(2L), any())).thenReturn(true);
         when(fila.marcarIncerteza(1, 10)).thenReturn(true);
         when(fila.marcarEnviado(1, 10)).thenReturn(true);
     }

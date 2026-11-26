@@ -15,6 +15,7 @@ public class ProcessarMensagemTelegramService {
     private final CadastroTelegramService cadastro;
     private final TriagemTelegramService triagem;
     private final AberturaChamadoTelegramService aberturaChamado;
+    private final ConsultaServicosTelegramService servicos;
 
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
@@ -31,17 +32,27 @@ public class ProcessarMensagemTelegramService {
         this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, triagem, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
             FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
             com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
             TriagemTelegramService triagem, AberturaChamadoTelegramService aberturaChamado) {
+        this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, triagem, aberturaChamado, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
+            RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
+            FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
+            com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
+            TriagemTelegramService triagem, AberturaChamadoTelegramService aberturaChamado,
+            ConsultaServicosTelegramService servicos) {
         this.identificacao = identificacao; this.registro = registro; this.resposta = resposta;
         this.fila = fila; this.telegram = telegram; this.transferencia = transferencia; this.validacao = validacao;
         this.cadastro = cadastro;
         this.triagem = triagem;
         this.aberturaChamado = aberturaChamado;
+        this.servicos = servicos;
     }
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
@@ -69,7 +80,8 @@ public class ProcessarMensagemTelegramService {
             texto = "Olá! Sou o assistente do NEXUS. Escolha uma opção no teclado abaixo ou escreva sua dúvida.\n\n"
                     + "/suporte — ajuda técnica\n/comercial — informações comerciais\n"
                     + "/atendente — solicitar uma pessoa\n/chamado — abrir chamado de suporte\n/validar — confirmar identidade\n"
-                    + "/solicitacoes — consultar solicitações após validação\n\n"
+                    + "/solicitacoes — consultar solicitações após validação\n"
+                    + "/planos — consultar planos e serviços após validação\n\n"
                     + "Se estiver iniciando o cadastro, compartilhe seu telefone pelo botão. Para enviar o código recebido, escreva /codigo seguido do código.";
             teclado = TelegramCliente.Teclado.MENU;
         } else if (entrada.equalsIgnoreCase("/validar")) {
@@ -82,7 +94,7 @@ public class ProcessarMensagemTelegramService {
             boolean confirmado;
             try { confirmado = validacao.confirmar(empresaId, conversa, informado); }
             catch (RuntimeException e) { confirmado = false; }
-            texto = confirmado ? "Identidade verificada temporariamente. Use /solicitacoes para consultar."
+            texto = confirmado ? "Identidade verificada temporariamente. Use /solicitacoes ou /planos para consultar."
                     : "Codigo invalido ou expirado, ou verificacao indisponivel.";
         } else if (entrada.equalsIgnoreCase("/solicitacoes")) {
             try {
@@ -95,6 +107,8 @@ public class ProcessarMensagemTelegramService {
             } catch (RuntimeException e) {
                 texto = "Nao foi possivel consultar suas solicitacoes agora. Tente novamente mais tarde ou use /atendente para pedir ajuda.";
             }
+        } else if (entrada.equalsIgnoreCase("/planos") && servicos != null) {
+            texto = executar("consulta_planos", () -> servicos.responder(empresaId, conversa));
         } else {
             // HU07.1/HU07.2: identificacao e cadastro antes da IA; a resposta ja vem preparada na fila.
             var etapa = pediuAtendente ? java.util.Optional.<CadastroTelegramService.Resposta>empty()
