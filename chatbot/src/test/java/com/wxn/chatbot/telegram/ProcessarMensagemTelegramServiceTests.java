@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 class ProcessarMensagemTelegramServiceTests {
  @Test void menuOfereceOpcoesSemAvancarCadastroOuChamarIa() {
   var i=mock(IdentificacaoTelegramService.class); var r=mock(RegistrarMensagemTelegramService.class); var ia=mock(RespostaTelegramService.class); var f=mock(FilaEnvioTelegramService.class); var t=mock(TelegramCliente.class); var cadastro=mock(CadastroTelegramService.class);
-  var m=new MensagemTelegram(15,20,20,"Ana","/menu"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L);
+  var m=new MensagemTelegram(15,20,20,"Ana","/menu"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true);
   when(f.marcarIncerteza(1,15)).thenReturn(true); when(f.marcarEnviado(1,15)).thenReturn(true);
   assertTrue(new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),mock(com.wxn.chatbot.security.ValidacaoClienteService.class),cadastro).processar(1,2,m));
   verify(t).enviarMensagem(eq(20L),contains("/atendente"),eq(TelegramCliente.Teclado.MENU));
@@ -55,5 +55,14 @@ class ProcessarMensagemTelegramServiceTests {
   var service=new ProcessarMensagemTelegramService(i,r,ia,f,t,transferencia,validacao,cadastro);
   assertThrows(IllegalStateException.class,()->service.processar(1,2,m));
   verify(f).status(1,13); verifyNoInteractions(ia,t,transferencia,validacao,cadastro);
+ }
+ @Test void planosRespondeComAConsultaSemPassarPelaIaNemCadastro() {
+  var i=mock(IdentificacaoTelegramService.class); var r=mock(RegistrarMensagemTelegramService.class); var ia=mock(RespostaTelegramService.class); var f=mock(FilaEnvioTelegramService.class); var t=mock(TelegramCliente.class);
+  var cadastro=mock(CadastroTelegramService.class); var planos=mock(ConsultaServicosTelegramService.class);
+  var m=new MensagemTelegram(14,20,20,"Ana","/planos"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true);
+  when(planos.responder(1L,3L)).thenReturn("Seus planos"); when(f.marcarIncerteza(1,14)).thenReturn(true); when(f.marcarEnviado(1,14)).thenReturn(true);
+  var service=new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),mock(com.wxn.chatbot.security.ValidacaoClienteService.class),cadastro,null,null,planos);
+  assertTrue(service.processar(1,2,m));
+  verify(f).preparar(1L,14L,20L,"Seus planos"); verify(t).enviarMensagem(20,"Seus planos"); verifyNoInteractions(ia,cadastro);
  }
 }

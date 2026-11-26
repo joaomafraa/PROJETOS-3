@@ -13,7 +13,7 @@ pelos IDs de empresa e cliente do `ContextoClienteValidado`.
 
 ## Proteções persistentes
 
-A migração `V19__integridade_escopo_empresa.sql` adiciona chaves estrangeiras
+A migração `V25__integridade_escopo_empresa.sql` adiciona chaves estrangeiras
 compostas. Elas impedem combinações cruzadas de empresa em contatos e
 atualizações do Telegram, conversas, chatbots, responsáveis e tickets. A
 migração não corrige nem apaga dados: se já houver um vínculo inconsistente, a

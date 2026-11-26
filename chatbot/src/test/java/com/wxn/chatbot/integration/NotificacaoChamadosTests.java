@@ -158,7 +158,7 @@ class NotificacaoChamadosTests {
     void semResponsavelOChamadoContinuaSalvoENinguemEhAvisado() {
         TicketAberto chamado = abrirChamado.abrir(63L, 6003L, "Dúvida sobre fatura");
 
-        assertTrue(transacao.execute(s -> tickets.findById(chamado.id()).isPresent()));
+        assertEquals(Boolean.TRUE, transacao.execute(s -> tickets.findById(chamado.id()).isPresent()));
         assertTrue(destinatariosDo(chamado.id()).isEmpty());
         assertTrue(servico.notificarNovoChamado(chamado.id()).semResponsaveis());
     }
