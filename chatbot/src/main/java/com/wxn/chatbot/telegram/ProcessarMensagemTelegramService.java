@@ -14,6 +14,7 @@ public class ProcessarMensagemTelegramService {
     private final com.wxn.chatbot.security.ValidacaoClienteService validacao;
     private final CadastroTelegramService cadastro;
     private final TriagemTelegramService triagem;
+    private final AberturaChamadoTelegramService aberturaChamado;
 
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
@@ -22,16 +23,25 @@ public class ProcessarMensagemTelegramService {
         this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
             FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
             com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
             TriagemTelegramService triagem) {
+        this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, triagem, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
+            RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
+            FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
+            com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
+            TriagemTelegramService triagem, AberturaChamadoTelegramService aberturaChamado) {
         this.identificacao = identificacao; this.registro = registro; this.resposta = resposta;
         this.fila = fila; this.telegram = telegram; this.transferencia = transferencia; this.validacao = validacao;
         this.cadastro = cadastro;
         this.triagem = triagem;
+        this.aberturaChamado = aberturaChamado;
     }
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
@@ -54,7 +64,7 @@ public class ProcessarMensagemTelegramService {
         if (entrada.equalsIgnoreCase("/menu")) {
             texto = "Olá! Sou o assistente do NEXUS. Escolha uma opção no teclado abaixo ou escreva sua dúvida.\n\n"
                     + "/suporte — ajuda técnica\n/comercial — informações comerciais\n"
-                    + "/atendente — solicitar uma pessoa\n/validar — confirmar identidade\n"
+                    + "/atendente — solicitar uma pessoa\n/chamado — abrir chamado de suporte\n/validar — confirmar identidade\n"
                     + "/solicitacoes — consultar solicitações após validação\n\n"
                     + "Se estiver iniciando o cadastro, compartilhe seu telefone pelo botão. Para enviar o código recebido, escreva /codigo seguido do código.";
             teclado = TelegramCliente.Teclado.MENU;
@@ -86,10 +96,15 @@ public class ProcessarMensagemTelegramService {
             if (etapa.isPresent()) {
                 texto = etapa.get().texto(); teclado = etapa.get().teclado(); preparado = true;
             } else {
+                var chamado = pediuAtendente || aberturaChamado == null ? java.util.Optional.<String>empty()
+                        : executar("abertura_chamado", () -> aberturaChamado.atender(empresaId, conversa, mensagem));
+                if (chamado.isPresent()) { texto = chamado.get(); preparado = true; }
+                else {
                 var classificacao = pediuAtendente || triagem == null ? java.util.Optional.<String>empty()
                         : executar("triagem", () -> triagem.atender(empresaId, conversa, mensagem));
                 if (classificacao.isPresent()) { texto = classificacao.get(); preparado = true; }
                 else texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
+                }
             }
         }
         if (texto == null) return false; // conversa com atendente: mensagem já salva

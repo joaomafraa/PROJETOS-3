@@ -1,6 +1,8 @@
 # Atendimento Telegram no NEXUS
 
-Envie `/menu` para abrir o teclado de opções: suporte, comercial, atendente, validação de identidade e consulta de solicitações. Durante o cadastro, o menu também mantém o botão para compartilhar o próprio telefone. Na verificação, o código deve ser digitado com `/codigo` seguido do código; não é guardado no histórico. A consulta de solicitações não cria novos chamados.
+Envie `/menu` para abrir o teclado de opções: suporte, comercial, atendente, abertura de chamado, validação de identidade e consulta de solicitações. Após o cadastro, escolha `/chamado` e descreva o problema com 10 a 2.000 caracteres; para desistir, envie `/cancelar`. O protocolo é informado quando o chamado for salvo. Uma mensagem repetida não deve gerar outra solicitação. Durante o cadastro, o menu também mantém o botão para compartilhar o próprio telefone. Na verificação, o código deve ser digitado com `/codigo` seguido do código; não é guardado no histórico. A consulta de solicitações não cria novos chamados.
+
+O fluxo de abertura usa o serviço já existente e salva a etapa, o chamado e a confirmação preparada na fila do Telegram em transação. O reenvio de uma confirmação com entrega incerta continua sujeito à revisão existente. A migração V22 adiciona a etapa de coleta; combinar sua numeração com a equipe antes de integrar outras branches. Testar PostgreSQL isolado e a jornada real no Render antes de considerá-la validada.
 
 O assistente se apresenta como NEXUS e responde em português, com empatia e objetividade, sem fingir ser humano. Respostas são enviadas como texto simples, sem o rodapé de fontes; as fontes permanecem registradas para consulta no painel.
 

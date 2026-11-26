@@ -46,6 +46,27 @@ class CadastroTelegramTests {
 
     private long proximaAtualizacao = 1000;
 
+    @Test
+    void abreChamadoUmaVezEConfirmaProtocolo() {
+        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("/chamado");
+        var descricao = new MensagemTelegram(proximaAtualizacao++, USUARIO, USUARIO, "Ana", "Não consigo acessar o sistema desde ontem.");
+        assertTrue(processamento.processar(EMPRESA, CHATBOT, descricao));
+        assertFalse(processamento.processar(EMPRESA, CHATBOT, descricao));
+        em.flush();
+        assertEquals(1L, numero("select count(*) from tickets where empresa_id = 82001"));
+        String protocolo = (String) em.createNativeQuery("select protocolo from tickets where empresa_id = 82001").getSingleResult();
+        verify(telegram).enviarMensagem(eq(USUARIO), contains(protocolo));
+        assertEquals(82001L, numero("select cliente_id from tickets where empresa_id = 82001"));
+    }
+
+    @Test
+    void cancelarOuDescricaoCurtaNaoAbreChamado() {
+        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("/chamado"); enviar("erro"); enviar("/cancelar");
+        em.flush();
+        assertEquals(0L, numero("select count(*) from tickets where empresa_id = 82001"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("cancelada"));
+    }
+
     @BeforeEach
     void preparar() {
         Empresa empresa = new Empresa(EMPRESA, "Empresa Exemplo");

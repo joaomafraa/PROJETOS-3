@@ -68,7 +68,8 @@ public class TelegramCliente {
         } else if (teclado == Teclado.MENU) {
             corpo.put("reply_markup", Map.of("keyboard", List.of(
                     List.of(Map.of("text", "/suporte"), Map.of("text", "/comercial")),
-                    List.of(Map.of("text", "/atendente"), Map.of("text", "/solicitacoes")),
+                    List.of(Map.of("text", "/atendente"), Map.of("text", "/chamado")),
+                    List.of(Map.of("text", "/solicitacoes")),
                     List.of(Map.of("text", "/validar"), Map.of("text", BOTAO_TELEFONE, "request_contact", true))),
                     "resize_keyboard", true, "one_time_keyboard", false));
         } else if (teclado == Teclado.REMOVER) {
