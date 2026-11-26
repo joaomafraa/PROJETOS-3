@@ -18,7 +18,9 @@ import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Cliente;
 import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.model.Ticket;
+import com.wxn.chatbot.model.PreferenciaAgendamento;
 import com.wxn.chatbot.repository.AtendenteRepository;
+import com.wxn.chatbot.repository.PreferenciaAgendamentoRepository;
 import com.wxn.chatbot.repository.TicketRepository;
 import com.wxn.chatbot.repository.TicketSpecifications;
 
@@ -36,11 +38,21 @@ public class ConsultaTicketsService {
     private final HistoricoConversasService historicoService;
     private final AtendenteRepository atendenteRepository;
 
+    private final PreferenciaAgendamentoRepository preferencias;
+
     public ConsultaTicketsService(TicketRepository ticketRepository,
             HistoricoConversasService historicoService, AtendenteRepository atendenteRepository) {
+        this(ticketRepository, historicoService, atendenteRepository, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ConsultaTicketsService(TicketRepository ticketRepository,
+            HistoricoConversasService historicoService, AtendenteRepository atendenteRepository,
+            PreferenciaAgendamentoRepository preferencias) {
         this.ticketRepository = Objects.requireNonNull(ticketRepository);
         this.historicoService = Objects.requireNonNull(historicoService);
         this.atendenteRepository = Objects.requireNonNull(atendenteRepository);
+        this.preferencias = preferencias;
     }
 
     // Opcoes do filtro por responsavel: atendentes da mesma empresa, inclusive inativos,
@@ -98,7 +110,9 @@ public class ConsultaTicketsService {
                 new TicketDetalhe.ConversaOrigem(conversa.getId(), conversa.getStatus(),
                         conversa.getDataInicio(), conversa.getDataEncerramento(),
                         conversa.getChatbot().getNome()),
-                historicoService.visualizarHistorico(conversa.getId(), atendente));
+                historicoService.visualizarHistorico(conversa.getId(), atendente),
+                preferencias == null ? null : preferencias.findByTicketIdAndEmpresaId(ticket.getId(),
+                        atendente.getEmpresa().getId()).map(PreferenciaAgendamento::getPreferenciaHorario).orElse(null));
     }
 
     private void verificarAtendente(Atendente atendente) {
