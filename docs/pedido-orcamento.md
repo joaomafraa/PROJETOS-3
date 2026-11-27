@@ -69,6 +69,8 @@ Nos detalhes da solicitação aparece "Contato para retorno (orçamento)" (campo
 - `service/PedidoOrcamentoServiceTests`: registro e persistência, contato do cadastro, informado e ausente, validações, repetição, chave nova, chave reutilizada, tentativas simultâneas, falha depois do registro, outra empresa, lista e detalhes no painel e ausência de lead.
 - `integration/PedidoOrcamentoTelegramTests`: fluxo completo e repetição da atualização, necessidade no próprio comando, cancelamento, necessidade curta ou longa, contato ausente, convivência com `/chamado` e pedidos de agendamento, conversa em atendimento humano, `/menu` e isolamento entre duas empresas.
 - `integration/FalhaPedidoOrcamentoTelegramTests`: falha no registro não gera confirmação nem envio preparado.
+- `integration/PedidoOrcamentoPainelApiTests`: `GET /api/tickets/{id}` devolve `contatoOrcamento` à empresa do pedido; atendente de outra empresa e acesso sem login não veem o pedido nem o contato.
+- `integration/NotificacaoPedidoOrcamentoTests`: o pedido avisa só os responsáveis ativos da mesma empresa; repetir a operação ou um pedido inválido não gera novos avisos.
 - `telegram/TelegramClienteTests`: botão `/orcamento` no teclado.
 
 ```powershell
