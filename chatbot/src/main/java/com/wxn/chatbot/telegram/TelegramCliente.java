@@ -69,6 +69,7 @@ public class TelegramCliente {
             corpo.put("reply_markup", Map.of("keyboard", List.of(
                     List.of(Map.of("text", "/suporte"), Map.of("text", "/comercial")),
                     List.of(Map.of("text", "/atendente"), Map.of("text", "/chamado")),
+                    List.of(Map.of("text", "/demonstracao"), Map.of("text", "/reuniao"), Map.of("text", "/visita")),
                     List.of(Map.of("text", "/solicitacoes"), Map.of("text", "/planos")),
                     List.of(Map.of("text", "/validar"), Map.of("text", BOTAO_TELEFONE, "request_contact", true))),
                     "resize_keyboard", true, "one_time_keyboard", false));

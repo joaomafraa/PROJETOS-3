@@ -47,6 +47,28 @@ class CadastroTelegramTests {
     private long proximaAtualizacao = 1000;
 
     @Test
+    void confirmaTresTiposSomenteDepoisDoRegistroSemDuplicar() {
+        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO);
+        for (String comando : java.util.List.of("/demonstracao", "/reuniao", "/visita")) {
+            enviar(comando); enviar("Quero conhecer melhor o serviço.");
+            var horario = new MensagemTelegram(proximaAtualizacao++, USUARIO, USUARIO, "Ana", "Segunda às 14h");
+            assertTrue(processamento.processar(EMPRESA, CHATBOT, horario));
+            assertFalse(processamento.processar(EMPRESA, CHATBOT, horario));
+        }
+        em.flush();
+        assertEquals(3L, numero("select count(*) from tickets where empresa_id = 82001"));
+        assertEquals(3L, numero("select count(*) from preferencias_agendamento"));
+        verify(telegram, times(3)).enviarMensagem(eq(USUARIO), contains("ainda dependem da confirmação da equipe"));
+    }
+
+    @Test
+    void cancelamentoDePedidoNaoRegistraSolicitacao() {
+        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("/reuniao"); enviar("/cancelar");
+        em.flush(); assertEquals(0L, numero("select count(*) from tickets where empresa_id = 82001"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("Nenhuma solicitação foi criada"));
+    }
+
+    @Test
     void abreChamadoUmaVezEConfirmaProtocolo() {
         enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("/chamado");
         var descricao = new MensagemTelegram(proximaAtualizacao++, USUARIO, USUARIO, "Ana", "Não consigo acessar o sistema desde ontem.");
