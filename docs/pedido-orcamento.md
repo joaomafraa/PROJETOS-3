@@ -62,7 +62,7 @@ Nos detalhes da solicitação aparece "Contato para retorno (orçamento)" (campo
 - **Sem notificação própria.** A equipe é avisada pelo mecanismo de HU05.3 (notificações no painel), que já cobre os tipos de pedido.
 - Duas mensagens diferentes pedindo o mesmo orçamento criam dois pedidos: só a **mesma atualização** do Telegram é tratada como repetição.
 - A etapa temporária de um pedido interrompido por `/atendente` é descartada na próxima mensagem da conversa (quando ela já não está em atendimento automático).
-- Testado em H2. A migração `V28` e a concorrência não foram testadas em PostgreSQL isolado.
+- Os testes automáticos rodam em H2. Em 27/11/2026 a migração `V28` e os 44 testes do pedido de orçamento (inclusive as tentativas simultâneas) também passaram em um PostgreSQL 16.9 isolado e descartável, sem usar o banco compartilhado. Essa validação foi feita à parte, com um PostgreSQL embutido (`zonky embedded-postgres`) e a URL de teste trocada temporariamente; ela não faz parte do build.
 
 ## Testes
 
@@ -79,8 +79,9 @@ $env:TESTAR_GROQ_REAL = 'false'
 .\mvnw.cmd '-Dspring.profiles.active=test' '-Dtest=PedidoOrcamentoServiceTests,PedidoOrcamentoTelegramTests,FalhaPedidoOrcamentoTelegramTests' test
 ```
 
-## Antes do deploy
+## Verificações do deploy
 
-- Confirmar com a equipe que `V28` é a próxima migração livre na `main`.
-- Validar a migração em um PostgreSQL isolado, não no banco compartilhado.
-- Após publicar, testar `/orcamento` no ambiente real autorizado: protocolo no painel, contato nos detalhes, cancelamento e repetição. Não ativar polling local com o mesmo token enquanto o Render estiver ativo.
+- Feito: `V28` está na `main` e é a única migração com esse número.
+- Feito: migração validada em PostgreSQL isolado (ver "Limites desta entrega").
+- Feito: o campo "Contato para retorno (orçamento)" foi conferido no painel local, com o contato do cadastro e com um e-mail informado pelo cliente.
+- Pendente: após publicar, testar `/orcamento` no ambiente real autorizado: protocolo no painel, contato nos detalhes, cancelamento e repetição. Não ativar polling local com o mesmo token enquanto o Render estiver ativo.
