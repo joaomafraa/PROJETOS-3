@@ -13,7 +13,7 @@ class TelegramClienteTests {
         RestClient.Builder builder = RestClient.builder().baseUrl("https://api.telegram.org");
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         server.expect(requestTo("https://api.telegram.org/botfake/sendMessage"))
-              .andExpect(content().json("{\"chat_id\":5,\"text\":\"Menu\",\"reply_markup\":{\"keyboard\":[[{\"text\":\"/suporte\"},{\"text\":\"/comercial\"}],[{\"text\":\"/atendente\"},{\"text\":\"/chamado\"}],[{\"text\":\"/demonstracao\"},{\"text\":\"/reuniao\"},{\"text\":\"/visita\"}],[{\"text\":\"/solicitacoes\"},{\"text\":\"/planos\"}],[{\"text\":\"/validar\"},{\"text\":\"Compartilhar meu telefone\",\"request_contact\":true}]]}}"))
+              .andExpect(content().json("{\"chat_id\":5,\"text\":\"Menu\",\"reply_markup\":{\"keyboard\":[[{\"text\":\"/suporte\"},{\"text\":\"/comercial\"}],[{\"text\":\"/atendente\"},{\"text\":\"/chamado\"}],[{\"text\":\"/orcamento\"},{\"text\":\"/demonstracao\"},{\"text\":\"/reuniao\"},{\"text\":\"/visita\"}],[{\"text\":\"/solicitacoes\"},{\"text\":\"/planos\"}],[{\"text\":\"/validar\"},{\"text\":\"Compartilhar meu telefone\",\"request_contact\":true}]]}}"))
               .andRespond(withSuccess("{\"ok\":true}", MediaType.APPLICATION_JSON));
         new TelegramCliente("fake", builder.build()).enviarMensagem(5, "Menu", TelegramCliente.Teclado.MENU);
         server.verify();

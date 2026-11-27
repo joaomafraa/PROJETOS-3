@@ -17,6 +17,7 @@ public class ProcessarMensagemTelegramService {
     private final AberturaChamadoTelegramService aberturaChamado;
     private final ConsultaServicosTelegramService servicos;
     private final PedidoAgendamentoTelegramService agendamento;
+    private final OrcamentoTelegramService orcamento;
 
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
@@ -50,13 +51,24 @@ public class ProcessarMensagemTelegramService {
         this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, triagem, aberturaChamado, servicos, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
             RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
             FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
             com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
             TriagemTelegramService triagem, AberturaChamadoTelegramService aberturaChamado,
             ConsultaServicosTelegramService servicos, PedidoAgendamentoTelegramService agendamento) {
+        this(identificacao, registro, resposta, fila, telegram, transferencia, validacao, cadastro, triagem,
+                aberturaChamado, servicos, agendamento, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProcessarMensagemTelegramService(IdentificacaoTelegramService identificacao,
+            RegistrarMensagemTelegramService registro, RespostaTelegramService resposta,
+            FilaEnvioTelegramService fila, TelegramCliente telegram, TransferenciaTelegramService transferencia,
+            com.wxn.chatbot.security.ValidacaoClienteService validacao, CadastroTelegramService cadastro,
+            TriagemTelegramService triagem, AberturaChamadoTelegramService aberturaChamado,
+            ConsultaServicosTelegramService servicos, PedidoAgendamentoTelegramService agendamento,
+            OrcamentoTelegramService orcamento) {
         this.identificacao = identificacao; this.registro = registro; this.resposta = resposta;
         this.fila = fila; this.telegram = telegram; this.transferencia = transferencia; this.validacao = validacao;
         this.cadastro = cadastro;
@@ -64,6 +76,7 @@ public class ProcessarMensagemTelegramService {
         this.aberturaChamado = aberturaChamado;
         this.servicos = servicos;
         this.agendamento = agendamento;
+        this.orcamento = orcamento;
     }
 
     public boolean processar(long empresaId, long chatbotId, MensagemTelegram mensagem) {
@@ -91,6 +104,7 @@ public class ProcessarMensagemTelegramService {
             texto = "Olá! Sou o assistente do NEXUS. Escolha uma opção no teclado abaixo ou escreva sua dúvida.\n\n"
                     + "/suporte — ajuda técnica\n/comercial — informações comerciais\n"
                     + "/atendente — solicitar uma pessoa\n/chamado — abrir chamado de suporte\n"
+                    + "/orcamento — pedir um orçamento\n"
                     + "/demonstracao, /reuniao ou /visita — fazer um pedido\n/validar — confirmar identidade\n"
                     + "/solicitacoes — consultar solicitações após validação\n"
                     + "/planos — consultar planos e serviços após validação\n\n"
@@ -128,6 +142,11 @@ public class ProcessarMensagemTelegramService {
             if (etapa.isPresent()) {
                 texto = etapa.get().texto(); teclado = etapa.get().teclado(); preparado = true;
             } else {
+                // HU06.1: so intercepta /orcamento ou uma etapa do proprio pedido de orcamento.
+                var pedidoOrcamento = pediuAtendente || orcamento == null ? java.util.Optional.<String>empty()
+                        : executar("pedido_orcamento", () -> orcamento.atender(empresaId, conversa, mensagem));
+                if (pedidoOrcamento.isPresent()) { texto = pedidoOrcamento.get(); preparado = true; }
+                else {
                 var pedido = pediuAtendente || agendamento == null ? java.util.Optional.<String>empty()
                         : executar("pedido_agendamento", () -> agendamento.atender(empresaId, conversa, mensagem));
                 if (pedido.isPresent()) { texto = pedido.get(); preparado = true; }
@@ -140,6 +159,7 @@ public class ProcessarMensagemTelegramService {
                         : executar("triagem", () -> triagem.atender(empresaId, conversa, mensagem));
                 if (classificacao.isPresent()) { texto = classificacao.get(); preparado = true; }
                 else texto = pediuAtendente ? executar("transferencia", () -> transferencia.solicitar(empresaId, conversa)) : executar("historico", () -> resposta.respostaExistenteOuPendente(empresaId, conversa));
+                }
                 }
                 }
             }
