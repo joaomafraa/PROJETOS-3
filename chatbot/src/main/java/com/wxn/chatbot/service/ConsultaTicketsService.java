@@ -18,8 +18,10 @@ import com.wxn.chatbot.model.Atendente;
 import com.wxn.chatbot.model.Cliente;
 import com.wxn.chatbot.model.Conversa;
 import com.wxn.chatbot.model.Ticket;
+import com.wxn.chatbot.model.PedidoOrcamento;
 import com.wxn.chatbot.model.PreferenciaAgendamento;
 import com.wxn.chatbot.repository.AtendenteRepository;
+import com.wxn.chatbot.repository.PedidoOrcamentoRepository;
 import com.wxn.chatbot.repository.PreferenciaAgendamentoRepository;
 import com.wxn.chatbot.repository.TicketRepository;
 import com.wxn.chatbot.repository.TicketSpecifications;
@@ -39,20 +41,28 @@ public class ConsultaTicketsService {
     private final AtendenteRepository atendenteRepository;
 
     private final PreferenciaAgendamentoRepository preferencias;
+    private final PedidoOrcamentoRepository pedidosOrcamento;
 
     public ConsultaTicketsService(TicketRepository ticketRepository,
             HistoricoConversasService historicoService, AtendenteRepository atendenteRepository) {
         this(ticketRepository, historicoService, atendenteRepository, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public ConsultaTicketsService(TicketRepository ticketRepository,
             HistoricoConversasService historicoService, AtendenteRepository atendenteRepository,
             PreferenciaAgendamentoRepository preferencias) {
+        this(ticketRepository, historicoService, atendenteRepository, preferencias, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ConsultaTicketsService(TicketRepository ticketRepository,
+            HistoricoConversasService historicoService, AtendenteRepository atendenteRepository,
+            PreferenciaAgendamentoRepository preferencias, PedidoOrcamentoRepository pedidosOrcamento) {
         this.ticketRepository = Objects.requireNonNull(ticketRepository);
         this.historicoService = Objects.requireNonNull(historicoService);
         this.atendenteRepository = Objects.requireNonNull(atendenteRepository);
         this.preferencias = preferencias;
+        this.pedidosOrcamento = pedidosOrcamento;
     }
 
     // Opcoes do filtro por responsavel: atendentes da mesma empresa, inclusive inativos,
@@ -112,7 +122,10 @@ public class ConsultaTicketsService {
                         conversa.getChatbot().getNome()),
                 historicoService.visualizarHistorico(conversa.getId(), atendente),
                 preferencias == null ? null : preferencias.findByTicketIdAndEmpresaId(ticket.getId(),
-                        atendente.getEmpresa().getId()).map(PreferenciaAgendamento::getPreferenciaHorario).orElse(null));
+                        atendente.getEmpresa().getId()).map(PreferenciaAgendamento::getPreferenciaHorario).orElse(null),
+                // HU06.1: o contato so e lido junto com a empresa do atendente.
+                pedidosOrcamento == null ? null : pedidosOrcamento.findByTicketIdAndEmpresaId(ticket.getId(),
+                        atendente.getEmpresa().getId()).map(PedidoOrcamento::getContato).orElse(null));
     }
 
     private void verificarAtendente(Atendente atendente) {
