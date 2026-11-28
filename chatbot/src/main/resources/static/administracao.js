@@ -79,7 +79,8 @@
     try { dados = await resposta.json(); } catch { /* resposta sem corpo */ }
 
     if (!resposta.ok) {
-      const erro = new Error(dados?.mensagem || 'Não foi possível concluir a operação. Tente novamente.');
+      const mensagem = dados?.mensagem || `Não foi possível concluir a operação (erro ${resposta.status}).`;
+      const erro = new Error(mensagem);
       erro.status = resposta.status;
       throw erro;
     }
