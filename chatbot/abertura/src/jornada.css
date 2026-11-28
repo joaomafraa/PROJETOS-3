@@ -1,0 +1,222 @@
+.jornada-demo {
+  position: relative;
+  height: 250svh;
+  background: radial-gradient(ellipse at 78% 50%, #17191b 0%, #0c0d0e 38%, #050505 75%);
+}
+
+.jornada-palco {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, .78fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 100px);
+  max-width: 1536px;
+  margin-inline: auto;
+  padding: 100px clamp(24px, 4.2vw, 68px) 54px;
+}
+
+.jornada-copy h2 {
+  font-size: clamp(44px, 5vw, 82px);
+  line-height: 1.04;
+  margin: 0 0 30px;
+}
+
+.jornada-copy h2 span {
+  display: block;
+}
+
+.jornada-legendas {
+  display: grid;
+}
+
+.jornada-legenda,
+.jornada-canal,
+.jornada-status > span {
+  grid-area: 1 / 1;
+}
+
+.jornada-legenda p,
+.jornada-etapas li > p {
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #bac4c9;
+  margin: 8px 0 0;
+}
+
+.jornada-legenda .jornada-legenda-titulo,
+.jornada-etapas h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #eef1f3;
+  margin: 0;
+}
+
+.jornada-etapas {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  padding: 0;
+  margin: 0;
+}
+
+.jornada-janela {
+  background: #111315;
+  border: 1px solid #ffffff29;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 30px 85px #0008;
+}
+
+.jornada-barra {
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: #1b1d1f;
+  border-bottom: 1px solid #ffffff1a;
+}
+
+.jornada-canal {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 14px;
+}
+
+.jornada-canal strong,
+.jornada-canal div > span {
+  display: block;
+}
+
+.jornada-canal div > span {
+  font-size: 11px;
+  color: #aab8c0;
+  margin-top: 3px;
+}
+
+.jornada-avatar {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #243844;
+  color: #d2e9f5;
+}
+
+.jornada-avatar-painel {
+  background: #343d43;
+  color: #f1f5f7;
+  font-weight: 700;
+}
+
+.jornada-status {
+  grid-column: 2;
+  display: grid;
+  border: 1px solid #ffffff24;
+  border-radius: 30px;
+  padding: 7px 11px;
+  color: #c2cdd2;
+  text-align: center;
+  font-size: 11px;
+}
+
+.jornada-status .jornada-status-ativo {
+  color: #b2e8d5;
+}
+
+.jornada-chat {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 22px;
+}
+
+.jornada-balao {
+  width: fit-content;
+  max-width: min(92%, 38ch);
+  background: #24282a;
+  border: 1px solid #ffffff15;
+  border-radius: 13px 13px 13px 4px;
+  padding: 10px 14px;
+}
+
+.jornada-balao span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #bccdd7;
+  margin-bottom: 4px;
+}
+
+.jornada-balao p {
+  margin: 0;
+  color: #edf1f3;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.jornada-ia,
+.jornada-humano {
+  justify-self: end;
+  border-radius: 13px 13px 4px 13px;
+  background: #303437;
+}
+
+.jornada-humano {
+  background: #343a3c;
+}
+
+@media (max-width: 850px), (max-height: 620px), (prefers-reduced-motion: reduce) {
+  .jornada-demo {
+    height: auto;
+  }
+
+  .jornada-palco {
+    position: relative;
+    min-height: auto;
+    display: block;
+    max-width: 680px;
+    padding-block: 84px;
+  }
+
+  .jornada-legendas,
+  .jornada-janela {
+    display: none;
+  }
+
+  .jornada-copy h2 span {
+    display: inline;
+  }
+
+  .jornada-etapas {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    display: grid;
+    gap: 20px;
+    list-style: none;
+  }
+
+  .jornada-etapas li {
+    padding: 20px;
+    border: 1px solid #ffffff22;
+    border-radius: 16px;
+    background: #151719;
+  }
+
+  .jornada-etapas .jornada-balao {
+    margin-top: 14px;
+    max-width: 100%;
+  }
+}
