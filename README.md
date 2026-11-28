@@ -1,8 +1,43 @@
-# NEXUS · Chatbot WXN
+<div align="center">
 
-Projeto acadêmico de atendimento que conecta um bot do Telegram a um painel web para a equipe acompanhar conversas e solicitações. A abertura do site apresenta a jornada do cliente e dá acesso ao painel.
+# NEXUS
 
-[Site publicado no Render](https://projetos-3.onrender.com/)
+### Atendimento inteligente que continua com pessoas
+
+Uma plataforma acadêmica que conecta clientes, IA e atendentes em uma mesma jornada de atendimento.
+
+![Fluxo de atendimento: o cliente conversa com a IA pelo Telegram, pede ajuda humana e um atendente assume pela fila.](docs/assets/nexus-fluxo.gif)
+
+[**Acessar o NEXUS**](https://projetos-3.onrender.com/) · [Funcionalidades](#o-que-a-entrega-inclui) · [Como executar](#executar-localmente) · [Documentação](#documentação)
+
+![Java](https://img.shields.io/badge/Java-21-222222?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-222222?style=for-the-badge&logo=springboot&logoColor=6DB33F) ![React](https://img.shields.io/badge/React-19-222222?style=for-the-badge&logo=react&logoColor=61DAFB) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-222222?style=for-the-badge&logo=postgresql&logoColor=white) ![Telegram](https://img.shields.io/badge/Telegram-222222?style=for-the-badge&logo=telegram&logoColor=26A5E4)
+
+</div>
+
+---
+
+## Sobre o projeto
+
+O NEXUS organiza o atendimento desde a primeira mensagem até a conclusão da conversa. O cliente inicia o contato pelo Telegram, o chatbot responde com apoio dos documentos cadastrados e a equipe acompanha a jornada em um painel web.
+
+Quando a conversa precisa de uma pessoa, ela é encaminhada para a fila. O atendente assume a conversa com acesso ao histórico e continua o atendimento pelo painel.
+
+> Projeto acadêmico desenvolvido em Java e Spring Boot, com orientação a objetos, persistência e integração entre camadas.
+
+## A jornada de atendimento
+
+```mermaid
+flowchart LR
+    A[Cliente no Telegram] --> B[Identificação e cadastro]
+    B --> C[Chatbot com IA]
+    C --> D{Precisa de atendente?}
+    D -->|Sim| E[Fila no painel]
+    E --> F[Atendente assume e responde]
+    F --> G[Atendimento concluído]
+    D -->|Não| H[Conversa continua com o chatbot]
+    C --> I[Chamados e solicitações]
+    I --> J[Protocolo e acompanhamento]
+```
 
 ## O que a entrega inclui
 
@@ -28,6 +63,17 @@ Abra a home em `http://localhost:8080/` e use uma conta ativa em `/entrar`. O pa
 
 Para alterar a home em React, execute `npm ci` e `npm run build` em `chatbot/abertura`. O Vite gera os arquivos em `chatbot/src/main/resources/static/abertura`, que o Spring Boot e o Docker usam para servir a página.
 
+## Tecnologias
+
+| Camada | Tecnologias |
+| --- | --- |
+| Backend | Java 21, Spring Boot, Spring Web MVC, Spring Data JPA e Spring Security |
+| Inteligência artificial | Spring AI e API da Groq |
+| Dados | PostgreSQL, Neon e migrações Flyway |
+| Interface | React, Vite, Framer Motion, HTML, CSS e JavaScript |
+| Canal | API do Telegram com recebimento por polling |
+| Testes e publicação | JUnit, Mockito, H2, Maven Wrapper, Docker e Render |
+
 ## Configurar as integrações
 
 - **Telegram**. Configure `TELEGRAM_BOT_TOKEN`, `TELEGRAM_EMPRESA_ID` e `TELEGRAM_CHATBOT_ID`. O chatbot deve estar ativo na empresa informada. Ative `TELEGRAM_POLLING_ENABLED=true` em uma instância por token. [Configuração do Telegram](docs/telegram.md)
@@ -35,6 +81,19 @@ Para alterar a home em React, execute `npm ci` e `npm run build` em `chatbot/abe
 - **Verificação por e-mail**. Configure as variáveis `SMTP_*` e um endereço confiável para testar `/validar` e `/planos`. O comando `/solicitacoes` usa o cadastro concluído e o vínculo com a conta Telegram. [Regras da consulta](docs/consulta-solicitacoes-telegram.md)
 
 O serviço do Render usa o Dockerfile de `chatbot`, aplica migrações Flyway e verifica `/actuator/health`. Forneça as variáveis e os segredos pelo ambiente de execução. Use o perfil padrão na publicação.
+
+## Comandos do Telegram
+
+| Comando | Função |
+| --- | --- |
+| `/menu` | Abre as opções de atendimento. |
+| `/suporte` e `/comercial` | Identificam o tipo de atendimento. |
+| `/atendente` | Solicita atendimento humano. |
+| `/chamado` e `/orcamento` | Iniciam um chamado ou pedido de orçamento. |
+| `/demonstracao`, `/reuniao` e `/visita` | Registram pedidos para a equipe analisar. |
+| `/solicitacoes` e `/planos` | Consultam solicitações e planos disponíveis. |
+| `/validar` e `/codigo` | Iniciam e concluem a validação por e-mail. |
+| `/cancelar` e `/encerrar` | Cancelam um pedido em andamento ou encerram a conversa. |
 
 ## Validação da entrega
 
@@ -60,6 +119,21 @@ A suíte usa H2 e integrações simuladas por padrão. O projeto também possui 
 - `chatbot/src/test` contém os testes de domínio, persistência, API e integração.
 - `docs` contém as decisões e os contratos da equipe, incluindo o [modelo de classes](docs/modelo-de-classes.md) e a [API da fila](docs/api-fila.md).
 
-## Grupo
+## Documentação
 
-João Carlos Mafra, Arthur Almeida, Gabriel Malta, Márcio Rodriguez, Gabriel Mendes, Pedro Martins, Hélio de Moraes e Guilherme Guimarães.
+- [Modelo de classes](docs/modelo-de-classes.md) e [API da fila](docs/api-fila.md)
+- [Atendimento humano](docs/atendimento-humano.md) e [respostas fundamentadas](docs/respostas-fundamentadas.md)
+- [Abertura de chamados](docs/abertura-chamado.md) e [pedido de orçamento](docs/pedido-orcamento.md)
+- [Administração de atendentes](docs/administracao-atendentes.md) e [isolamento por empresa](docs/isolamento-empresa.md)
+- [Guias e decisões da equipe](docs/)
+
+## Equipe
+
+- João Carlos Mafra
+- Arthur Almeida
+- Gabriel Malta
+- Márcio Rodriguez
+- Gabriel Mendes
+- Pedro Martins
+- Hélio de Moraes
+- Guilherme Guimarães
