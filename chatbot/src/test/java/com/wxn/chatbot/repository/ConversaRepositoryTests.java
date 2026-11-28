@@ -29,6 +29,25 @@ class ConversaRepositoryTests {
     private ConversaRepository conversaRepository;
 
     @Test
+    void resumosDoArquivoRespeitamEmpresaEIdsSelecionados() {
+        var cliente = new Cliente(1L, "81999999999");
+        entityManager.persist(cliente);
+        for (long id = 1; id <= 2; id++) {
+            var empresa = new Empresa(id, "Empresa " + id);
+            var bot = new Chatbot(id, "Assistente", empresa, "Ola");
+            entityManager.persist(empresa);
+            entityManager.persist(bot);
+            entityManager.persist(new Conversa(id, cliente, empresa, bot));
+            entityManager.persist(new Conversa(id + 10, cliente, empresa, bot));
+        }
+
+        var resumos = conversaRepository.buscarResumosPorIds(1L, List.of(1L, 2L));
+        assertEquals(1, resumos.size());
+        assertEquals(1L, resumos.getFirst().id());
+        assertEquals("Assistente", resumos.getFirst().chatbotNome());
+    }
+
+    @Test
     void filtraPorEmpresaEStatusEOrdenaPorChegada() {
         Empresa empresa = new Empresa(1L, "WXN");
         Empresa outraEmpresa = new Empresa(2L, "Outra");

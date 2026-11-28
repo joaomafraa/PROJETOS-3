@@ -52,7 +52,8 @@ public class CadastroTelegramService {
     static final String CONTATO_DE_OUTRA_PESSOA = "Envie o seu próprio número pelo botão \""
             + TelegramCliente.BOTAO_TELEFONE + "\".";
     static final String CADASTRO_LOCALIZADO = "Localizei um cadastro associado a este número. "
-            + "Escreva sua dúvida ou abra /menu para ver as opções. Planos e solicitações exigem confirmação de identidade.";
+            + "Escreva sua dúvida ou abra /menu para ver as opções. "
+            + "Use /solicitacoes para consultar seus protocolos. Para consultar planos, valide sua identidade.";
     static final String PEDIR_NOME = "Ainda não encontrei seu cadastro. Como posso chamar você? Envie seu nome completo.";
     static final String NOME_INVALIDO = "Não entendi seu nome. Envie seu nome completo, por exemplo: Marina Costa.";
     static final String EMPRESA_INVALIDA = "Envie o nome da empresa que você representa (até 120 caracteres) ou /pular.";
@@ -85,8 +86,9 @@ public class CadastroTelegramService {
         if (mensagem == null) throw new IllegalArgumentException("Mensagem obrigatória.");
         Etapa etapa = transacao.execute(s -> {
             Etapa atual = etapaAtual(empresaId, mensagem.usuarioId(), false);
-            boolean automatica = conversas.findByIdAndEmpresaId(conversaId, empresaId)
-                    .map(c -> c.getStatus() == Conversa.Status.EM_ATENDIMENTO_AUTOMATICO).orElse(false);
+            if (atual == Etapa.CONCLUIDO) return atual;
+            boolean automatica = conversas.existsByIdAndEmpresaIdAndStatus(
+                    conversaId, empresaId, Conversa.Status.EM_ATENDIMENTO_AUTOMATICO);
             return automatica ? atual : Etapa.CONCLUIDO;
         });
         if (etapa == Etapa.CONCLUIDO) return Optional.empty();

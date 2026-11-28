@@ -110,8 +110,9 @@ public class FontesRespostaService {
             throw new IllegalArgumentException("O id da conversa deve ser positivo.");
         }
         Long empresaId = atendente.getEmpresa().getId();
-        conversas.findByIdAndEmpresaId(conversaId, empresaId)
-                .orElseThrow(() -> new IllegalArgumentException("Conversa nao encontrada nesta empresa."));
+        if (!conversas.existsByIdAndEmpresaId(conversaId, empresaId)) {
+            throw new IllegalArgumentException("Conversa nao encontrada nesta empresa.");
+        }
 
         Map<Long, List<FonteResposta>> porMensagem = new LinkedHashMap<>();
         for (FonteResposta fonte : fontes.findByEmpresaIdAndConversaIdOrderByMensagemIdAscUsoAscOrdemAsc(
@@ -138,7 +139,6 @@ public class FontesRespostaService {
 
     private static List<FontesMensagem.Fonte> filtrar(List<FonteResposta> lista, FonteResposta.Uso uso) {
         return lista.stream().filter(fonte -> fonte.getUso() == uso)
-                .sorted(java.util.Comparator.comparingInt(FonteResposta::getOrdem))
                 .map(FontesMensagem.Fonte::de).toList();
     }
 }

@@ -123,9 +123,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,.message-list:focus-vis
 .context-data dd { margin:5px 0 0; font-size:12px; overflow-wrap:anywhere; }
 .context-data dd.indisponivel { color:var(--muted); font-style:italic; }
 .context-data .status-badge[data-status="AGUARDANDO_ATENDENTE"] { color:var(--ink); border-color:var(--strong); background:var(--subtle); }
-.context-note { padding:14px; border:1px dashed var(--strong); border-radius:8px; }
-.context-note strong { font-size:11px; font-weight:500; }
-.context-note p { font-size:11px; color:var(--muted); margin-top:7px; line-height:1.7; }
 .workspace,.inbox-layout { animation:panel-enter 280ms var(--ease) both; }
 .conversa,.mensagem { animation:item-enter 240ms var(--ease) both; }
 .sem-animacao .conversa { animation:none; }

@@ -1,5 +1,6 @@
 package com.wxn.chatbot.web;
 import java.util.List;
+import com.wxn.chatbot.dto.ConversaResumo;
 import jakarta.persistence.EntityManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,13 +15,31 @@ public class ArquivoConversasController {
  private final EntityManager em; private final ConversaRepository conversas; private final ContextoAcesso contexto;
  public ArquivoConversasController(EntityManager em,ConversaRepository conversas,ContextoAcesso contexto){this.em=em;this.conversas=conversas;this.contexto=contexto;}
  @GetMapping @Transactional(readOnly=true)
- public List<Long> listar(){Atendente a=contexto.atendenteAtual();return em.createNativeQuery("select ar.conversa_id from conversas_arquivadas ar join conversas c on c.id=ar.conversa_id where ar.atendente_id=:atendente and c.empresa_id=:empresa").setParameter("atendente",a.getId()).setParameter("empresa",a.getEmpresa().getId()).getResultList().stream().map(x->((Number)x).longValue()).toList();}
+ public List<Long> listar() {
+     return listarIds(contexto.atendenteAtual());
+ }
+
+ private List<Long> listarIds(Atendente atendente) {
+     List<?> ids = em.createNativeQuery("""
+             select ar.conversa_id from conversas_arquivadas ar
+             join conversas c on c.id = ar.conversa_id
+             where ar.atendente_id = :atendente and c.empresa_id = :empresa
+             order by ar.conversa_id
+             """)
+             .setParameter("atendente", atendente.getId())
+             .setParameter("empresa", atendente.getEmpresa().getId())
+             .getResultList();
+     return ids.stream().map(id -> ((Number) id).longValue()).toList();
+ }
+
  @GetMapping("/itens") @Transactional(readOnly=true)
- public List<com.wxn.chatbot.dto.ConversaResumo> itens() {
-  Atendente a=contexto.atendenteAtual();
-  return listar().stream().map(id -> conversas.findByIdAndEmpresaId(id,a.getEmpresa().getId()))
-   .flatMap(java.util.Optional::stream)
-   .map(c -> new com.wxn.chatbot.dto.ConversaResumo(c.getId(),c.getCliente().getId(),c.getCliente().getNome(),c.getCliente().getNumeroTelefone(),c.getChatbot().getNome(),c.getDataInicio(),c.getStatus())).toList();
+ public List<ConversaResumo> itens() {
+     Atendente atendente = contexto.atendenteAtual();
+     List<Long> ids = listarIds(atendente);
+     if (ids.isEmpty()) {
+         return List.of();
+     }
+     return conversas.buscarResumosPorIds(atendente.getEmpresa().getId(), ids);
  }
  @PostMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional
  public void arquivar(@PathVariable long id){Atendente a=contexto.atendenteAtual();conversas.buscarParaAtualizar(id,a.getEmpresa().getId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Conversa não encontrada."));

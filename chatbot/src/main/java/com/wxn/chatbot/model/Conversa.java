@@ -117,6 +117,10 @@ public class Conversa {
         this.intencao = Objects.requireNonNull(intencao, "A intenção é obrigatória.");
     }
 
+    int quantidadeMensagens() {
+        return mensagens.size();
+    }
+
     public List<Mensagem> getMensagens() {
         return List.copyOf(mensagens);
     }

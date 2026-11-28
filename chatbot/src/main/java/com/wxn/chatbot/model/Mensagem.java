@@ -74,7 +74,7 @@ public class Mensagem {
         this.remetente = Objects.requireNonNull(remetente, "O remetente e obrigatorio.");
 
         conversa.verificarEnvio(remetente, atendente);
-        this.ordem = conversa.getMensagens().size();
+        this.ordem = conversa.quantidadeMensagens();
         this.atendente = atendente;
         this.dataEnvio = Instant.now();
     }
