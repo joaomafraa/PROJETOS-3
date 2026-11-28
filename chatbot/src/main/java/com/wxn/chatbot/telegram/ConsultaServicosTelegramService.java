@@ -13,7 +13,8 @@ import com.wxn.chatbot.service.ConsultaServicosContratadosService.Item;
 @Service
 public class ConsultaServicosTelegramService {
 
-    static final String VALIDACAO_NECESSARIA = "Para consultar seus planos e serviços, valide sua identidade com /validar.";
+    static final String VALIDACAO_NECESSARIA = "Para proteger seus dados, preciso confirmar sua identidade antes de mostrar seus planos e serviços. "
+            + "Toque em /validar e digite os seis números que receber por e-mail.";
     static final String SEM_DADOS = "Não há plano ou serviço disponível para consulta no seu cadastro. Se precisar, use /atendente.";
     static final String INDISPONIVEL = "Não foi possível consultar seus planos e serviços agora. "
             + "Tente novamente mais tarde ou use /atendente para pedir ajuda.";
@@ -33,8 +34,9 @@ public class ConsultaServicosTelegramService {
             case VALIDACAO_NECESSARIA -> VALIDACAO_NECESSARIA;
             case SEM_DADOS -> SEM_DADOS;
             case INDISPONIVEL -> INDISPONIVEL;
-            case ENCONTRADO -> resultado.itens().stream().map(ConsultaServicosTelegramService::item)
-                    .collect(Collectors.joining("\n\n", CABECALHO + "\n\n", ""));
+            case ENCONTRADO -> FormatadorRespostaTelegram.formatar(
+                    resultado.itens().stream().map(ConsultaServicosTelegramService::item)
+                            .collect(Collectors.joining("\n\n", CABECALHO + "\n\n", "")), java.util.List.of());
         };
     }
 

@@ -90,7 +90,8 @@ class ConsultaServicosContratadosTests {
         var resultado = consulta.consultar(EMPRESA, CONVERSA_MARINA);
         assertEquals(Situacao.VALIDACAO_NECESSARIA, resultado.situacao());
         assertTrue(resultado.itens().isEmpty());
-        assertEquals("Para consultar seus planos e serviços, valide sua identidade com /validar.",
+        assertEquals("Para proteger seus dados, preciso confirmar sua identidade antes de mostrar seus planos e serviços. "
+                        + "Toque em /validar e digite os seis números que receber por e-mail.",
                 telegramPlanos.responder(EMPRESA, CONVERSA_MARINA));
     }
 

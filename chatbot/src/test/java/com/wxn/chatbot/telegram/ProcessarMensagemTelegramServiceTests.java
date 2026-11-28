@@ -8,12 +8,12 @@ class ProcessarMensagemTelegramServiceTests {
   var m=new MensagemTelegram(15,20,20,"Ana","/menu"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true);
   when(f.marcarIncerteza(1,15)).thenReturn(true); when(f.marcarEnviado(1,15)).thenReturn(true);
   assertTrue(new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),mock(com.wxn.chatbot.security.ValidacaoClienteService.class),cadastro).processar(1,2,m));
-  verify(t).enviarMensagem(eq(20L),contains("/atendente"),eq(TelegramCliente.Teclado.MENU));
+  verify(t).enviarMensagem(eq(20L),contains("fale com um atendente"),eq(TelegramCliente.Teclado.MENU));
   verifyNoInteractions(cadastro,ia);
  }
  @Test void enviaRespostaESinalizaFalha() {
   var i=mock(IdentificacaoTelegramService.class); var r=mock(RegistrarMensagemTelegramService.class); var ia=mock(RespostaTelegramService.class); var f=mock(FilaEnvioTelegramService.class); var t=mock(TelegramCliente.class);
-  var m=new MensagemTelegram(10,20,20,"Ana","Oi"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true); when(ia.respostaExistenteOuPendente(1L,3L)).thenReturn(""); when(ia.gerar(1L,3L)).thenReturn("Olá"); when(f.marcarIncerteza(1,10)).thenReturn(true); when(f.marcarEnviado(1,10)).thenReturn(true);
+  var m=new MensagemTelegram(10,20,20,"Ana","Qual o prazo de entrega?"); when(i.obterConversa(1L,2L,20,"Ana")).thenReturn(3L); when(r.registrar(1L,2L,m)).thenReturn(true); when(ia.respostaExistenteOuPendente(1L,3L)).thenReturn(""); when(ia.gerar(1L,3L)).thenReturn("Olá"); when(f.marcarIncerteza(1,10)).thenReturn(true); when(f.marcarEnviado(1,10)).thenReturn(true);
   var service=new ProcessarMensagemTelegramService(i,r,ia,f,t,mock(TransferenciaTelegramService.class),mock(com.wxn.chatbot.security.ValidacaoClienteService.class),mock(CadastroTelegramService.class)); assertTrue(service.processar(1,2,m)); verify(t).enviarMensagem(20,"Olá"); verify(f).marcarEnviado(1,10);
   doThrow(new IllegalStateException()).when(t).enviarMensagem(20,"Olá"); assertThrows(FalhaEtapaTelegramException.class,()->service.processar(1,2,m)); verify(f,times(2)).marcarIncerteza(1,10);
  }

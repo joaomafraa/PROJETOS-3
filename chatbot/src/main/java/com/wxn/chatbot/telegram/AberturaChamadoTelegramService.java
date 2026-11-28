@@ -43,7 +43,8 @@ public class AberturaChamadoTelegramService {
                     .setParameter("empresa", empresaId).setParameter("conversa", conversaId).executeUpdate();
             else em.createNativeQuery("update telegram_abertura_chamado set aguardando_descricao = true where empresa_id = :empresa and conversa_id = :conversa")
                     .setParameter("empresa", empresaId).setParameter("conversa", conversaId).executeUpdate();
-            resposta = "Descreva o problema para abrir seu chamado de suporte. Se mudar de ideia, envie /cancelar.";
+            resposta = "Novo chamado de suporte\n\nDescreva o problema para abrir seu chamado. "
+                    + "Se puder, diga quando começou e o que apareceu na tela.\n\nPara sair, use /cancelar.";
         } else if (cancelar) {
             limpar(empresaId, conversaId);
             resposta = "Abertura de chamado cancelada. Nenhuma solicitação foi criada.";
@@ -53,8 +54,8 @@ public class AberturaChamadoTelegramService {
             // A atualizacao do Telegram e a chave: reprocessar a mesma mensagem devolve o mesmo protocolo.
             var chamado = chamados.abrir(empresaId, conversaId, texto, "telegram:" + mensagem.atualizacaoId());
             limpar(empresaId, conversaId);
-            resposta = "Seu chamado de suporte foi registrado. Protocolo: " + chamado.protocolo()
-                    + ". A equipe poderá acompanhar sua solicitação no painel.";
+            resposta = "Chamado de suporte registrado\n\nProtocolo: " + chamado.protocolo()
+                    + "\n\nA equipe vai analisar sua descrição. Acompanhe o andamento em /solicitacoes.";
         }
         long id = Math.addExact(conversa.getMensagens().stream().mapToLong(Mensagem::getId).max().orElse(0), 1);
         conversa.adicionarMensagem(id, resposta, Mensagem.TipoRemetente.CHATBOT);

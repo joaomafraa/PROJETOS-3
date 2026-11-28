@@ -45,13 +45,14 @@ public class CadastroTelegramService {
     public record Resposta(String texto, Teclado teclado) { }
 
     static final String PEDIR_TELEFONE = "Olá! Para localizar seu cadastro, toque em \"" + TelegramCliente.BOTAO_TELEFONE
-            + "\" abaixo. Usamos o número só para identificar seu atendimento.";
+            + "\" abaixo. Usamos o número só para identificar seu atendimento.\n\n"
+            + "Para falar com uma pessoa agora, use /atendente.";
     static final String TELEFONE_DIGITADO = "Por segurança, não usamos número digitado. Toque em \""
             + TelegramCliente.BOTAO_TELEFONE + "\" para enviar o número da sua conta do Telegram.";
     static final String CONTATO_DE_OUTRA_PESSOA = "Envie o seu próprio número pelo botão \""
             + TelegramCliente.BOTAO_TELEFONE + "\".";
     static final String CADASTRO_LOCALIZADO = "Localizei um cadastro associado a este número. "
-            + "Para consultar dados restritos, confirme sua identidade com /validar. Como posso ajudar?";
+            + "Escreva sua dúvida ou abra /menu para ver as opções. Planos e solicitações exigem confirmação de identidade.";
     static final String PEDIR_NOME = "Ainda não encontrei seu cadastro. Como posso chamar você? Envie seu nome completo.";
     static final String NOME_INVALIDO = "Não entendi seu nome. Envie seu nome completo, por exemplo: Marina Costa.";
     static final String EMPRESA_INVALIDA = "Envie o nome da empresa que você representa (até 120 caracteres) ou /pular.";
@@ -147,7 +148,7 @@ public class CadastroTelegramService {
         conversa.getCliente().alterarNome(nome);
         atualizarEtapa(empresaId, mensagem.usuarioId(), Etapa.AGUARDANDO_EMPRESA);
         return new Resposta("Prazer, " + conversa.getCliente().getNome()
-                + "! Qual empresa você representa? Se não representar nenhuma, envie /pular.", Teclado.NENHUM);
+                + "! Se estiver falando em nome de uma empresa, informe o nome dela. Essa etapa é opcional: use /pular para continuar.", Teclado.NENHUM);
     }
 
     private Resposta receberEmpresa(long empresaId, Conversa conversa, MensagemTelegram mensagem, ClienteIdentificado cadastrado) {
@@ -160,7 +161,8 @@ public class CadastroTelegramService {
         }
         vincular(empresaId, mensagem.usuarioId(), conversa, cliente.getId());
         if (!cadastrado.cadastradoAgora()) return new Resposta(CADASTRO_LOCALIZADO, Teclado.NENHUM);
-        return new Resposta("Obrigado, " + cliente.getNome() + "! Seu cadastro foi concluído. Como posso ajudar?", Teclado.NENHUM);
+        return new Resposta("Obrigado, " + cliente.getNome() + "! Seu cadastro foi concluído.\n\n"
+                + "Escreva sua dúvida ou escolha uma opção no teclado.", Teclado.MENU);
     }
 
     // Finaliza pelo servico existente: nome do cliente provisorio + telefone compartilhado.
@@ -205,7 +207,7 @@ public class CadastroTelegramService {
     }
 
     private static boolean nomeValido(String nome) {
-        return nome.length() >= 2 && nome.length() <= NOME_MAXIMO && !nome.startsWith("/")
+        return nome.length() >= 2 && nome.length() <= NOME_MAXIMO && !nome.startsWith("/") && !nome.contains("?")
                 && nome.codePoints().anyMatch(Character::isLetter) && !nome.matches(".*[0-9@].*");
     }
 
@@ -213,7 +215,7 @@ public class CadastroTelegramService {
         if (texto == null) return false;
         String valor = texto.strip();
         if (valor.equalsIgnoreCase("/pular")) return true;
-        return !valor.isEmpty() && valor.length() <= EMPRESA_MAXIMO && !valor.startsWith("/")
+        return !valor.isEmpty() && valor.length() <= EMPRESA_MAXIMO && !valor.startsWith("/") && !valor.contains("?")
                 && !valor.equals(MensagemTelegram.TEXTO_CONTATO);
     }
 }

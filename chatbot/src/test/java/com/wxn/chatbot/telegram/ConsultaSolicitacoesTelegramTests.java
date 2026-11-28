@@ -31,18 +31,30 @@ class ConsultaSolicitacoesTelegramTests {
     }
 
     @Test
+    void validaComInstrucaoClaraEInformaFalhaDeEnvio() {
+        var comando = new MensagemTelegram(10, 20, 20, "Ana", "/validar");
+        processamento.processar(1, 2, comando);
+        verify(telegram).enviarMensagem(eq(20L), contains("digite os seis números aqui"));
+        reset(telegram);
+        doThrow(new IllegalStateException("SMTP")).when(validacao).solicitar(1, 3);
+        processamento.processar(1, 2, comando);
+        verify(telegram).enviarMensagem(eq(20L), startsWith("Não consegui iniciar"));
+        verify(telegram, never()).enviarMensagem(eq(20L), contains("SMTP"));
+    }
+
+    @Test
     void apresentaProtocoloTipoEEstado() {
         when(validacao.consultarSolicitacoes(1, 3)).thenReturn(List.of(
                 new ValidacaoClienteService.Solicitacao("PROTOCOLO-1", Ticket.TipoSolicitacao.SUPORTE, Ticket.StatusTicket.PENDENTE)));
         assertTrue(processamento.processar(1, 2, mensagem));
-        verify(telegram).enviarMensagem(20, "Suas solicitacoes (ate 20):\nPROTOCOLO-1 - SUPORTE - PENDENTE");
+        verify(telegram).enviarMensagem(20, "Suas solicitações mais recentes\n\n• PROTOCOLO-1 — Suporte · Pendente");
     }
 
     @Test
     void distingueListaVaziaDeValidacaoNecessaria() {
         when(validacao.consultarSolicitacoes(1, 3)).thenReturn(List.of());
         processamento.processar(1, 2, mensagem);
-        verify(telegram).enviarMensagem(20, "Nenhuma solicitacao encontrada.");
+        verify(telegram).enviarMensagem(eq(20L), contains("Você ainda não tem solicitações"));
         reset(telegram);
         when(validacao.consultarSolicitacoes(1, 3)).thenThrow(new SecurityException("detalhe privado"));
         processamento.processar(1, 2, mensagem);
@@ -56,7 +68,7 @@ class ConsultaSolicitacoesTelegramTests {
         processamento.processar(1, 2, mensagem);
         verify(telegram).enviarMensagem(eq(20L), contains("/atendente"));
         verify(telegram, never()).enviarMensagem(eq(20L), contains("segredo tecnico"));
-        verify(telegram, never()).enviarMensagem(eq(20L), contains("Nenhuma solicitacao"));
+        verify(telegram, never()).enviarMensagem(eq(20L), contains("Você ainda não tem solicitações"));
         verifyNoInteractions(resposta);
     }
 }

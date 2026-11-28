@@ -276,7 +276,7 @@ class PedidoOrcamentoTelegramTests {
         enviar("/orcamento");
         enviar("/menu");
 
-        verify(telegram).enviarMensagem(eq(USUARIO), contains("/orcamento — pedir um orçamento"), eq(Teclado.MENU));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("solicite orçamento"), eq(Teclado.MENU));
         assertEquals("NECESSIDADE", texto("select etapa from telegram_pedido_orcamento"));
     }
 

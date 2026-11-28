@@ -47,6 +47,26 @@ class CadastroTelegramTests {
     private long proximaAtualizacao = 1000;
 
     @Test
+    void entendeSaudacaoAjudaEEncerramentoAposCadastro() {
+        enviarContato(TELEFONE_CONHECIDO);
+        when(respostas.respostaExistenteOuPendente(anyLong(), anyLong())).thenReturn("");
+
+        assertTrue(enviar("olá!"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("Como posso ajudar?"));
+        assertTrue(enviar("oq voce podee fazer"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("abra um chamado"), eq(Teclado.MENU));
+        var encerramento = new MensagemTelegram(proximaAtualizacao++, USUARIO, USUARIO, "Ana", "finalizar atendimento");
+        assertTrue(processamento.processar(EMPRESA, CHATBOT, encerramento));
+        assertFalse(processamento.processar(EMPRESA, CHATBOT, encerramento));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("Conversa encerrada"), eq(Teclado.REMOVER));
+        assertEquals(Conversa.Status.ENCERRADA, conversa().getStatus());
+        verify(respostas, never()).gerar(anyLong(), anyLong());
+
+        assertTrue(enviar("olá"));
+        assertEquals(Conversa.Status.EM_ATENDIMENTO_AUTOMATICO, conversa().getStatus());
+    }
+
+    @Test
     void confirmaTresTiposSomenteDepoisDoRegistroSemDuplicar() {
         enviar("Oi"); enviarContato(TELEFONE_CONHECIDO);
         for (String comando : java.util.List.of("/demonstracao", "/reuniao", "/visita")) {
@@ -70,7 +90,7 @@ class CadastroTelegramTests {
 
     @Test
     void abreChamadoUmaVezEConfirmaProtocolo() {
-        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("/chamado");
+        enviar("Oi"); enviarContato(TELEFONE_CONHECIDO); enviar("Abrir chamado");
         var descricao = new MensagemTelegram(proximaAtualizacao++, USUARIO, USUARIO, "Ana", "Não consigo acessar o sistema desde ontem.");
         assertTrue(processamento.processar(EMPRESA, CHATBOT, descricao));
         assertFalse(processamento.processar(EMPRESA, CHATBOT, descricao));
@@ -132,7 +152,7 @@ class CadastroTelegramTests {
         assertEquals(1L, numero("select count(*) from clientes where numero_telefone = '" + TELEFONE_CONHECIDO + "'"));
 
         // Identificado: a conversa segue para a IA.
-        assertTrue(enviar("Quero consultar meu plano"));
+        assertTrue(enviar("Qual é o horário de atendimento?"));
         verify(telegram).enviarMensagem(USUARIO, "Resposta da IA");
     }
 
@@ -152,7 +172,7 @@ class CadastroTelegramTests {
         assertEquals("AGUARDANDO_EMPRESA", etapa());
 
         enviar("Empresa Beta");
-        verify(telegram).enviarMensagem(eq(USUARIO), contains("Obrigado, Ana Souza! Seu cadastro foi concluído"));
+        verify(telegram).enviarMensagem(eq(USUARIO), contains("Obrigado, Ana Souza! Seu cadastro foi concluído"), eq(Teclado.MENU));
         Cliente cliente = clienteDaConversa();
         assertEquals("+5581955550003", cliente.getNumeroTelefone());
         assertEquals("Ana Souza", cliente.getNome());
@@ -295,6 +315,7 @@ class CadastroTelegramTests {
 
     private static String textoPedirTelefone() {
         return "Olá! Para localizar seu cadastro, toque em \"Compartilhar meu telefone\" abaixo. "
-                + "Usamos o número só para identificar seu atendimento.";
+                + "Usamos o número só para identificar seu atendimento.\n\n"
+                + "Para falar com uma pessoa agora, use /atendente.";
     }
 }

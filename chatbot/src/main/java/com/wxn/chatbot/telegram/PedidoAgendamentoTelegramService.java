@@ -50,7 +50,8 @@ public class PedidoAgendamentoTelegramService {
             else {
                 em.createNativeQuery("update telegram_pedido_agendamento set necessidade = :necessidade, etapa = 'HORARIO' where empresa_id = :empresa and conversa_id = :conversa")
                         .setParameter("necessidade", texto).setParameter("empresa", empresaId).setParameter("conversa", conversaId).executeUpdate();
-                resposta = "Qual sua preferência de dia e horário? A equipe ainda precisará confirmar a disponibilidade.";
+                resposta = "Qual dia e horário funcionam melhor para você? Por exemplo: terça-feira, depois das 14h.\n\n"
+                        + "A equipe ainda precisará confirmar a disponibilidade. Para sair, use /cancelar.";
             }
         } else if (texto.length() < 3 || texto.length() > 300) {
             resposta = "Informe sua preferência de dia e horário com 3 a 300 caracteres ou envie /cancelar.";
@@ -58,8 +59,9 @@ public class PedidoAgendamentoTelegramService {
             tipo = Ticket.TipoSolicitacao.valueOf((String) estado[0]);
             PedidoAgendamentoRegistrado pedido = pedidos.registrar(empresaId, conversaId, tipo, (String) estado[2], texto, "telegram:" + mensagem.atualizacaoId());
             excluir(empresaId, conversaId);
-            resposta = "Seu pedido de " + nome(pedido.tipo()) + " foi registrado. Protocolo: " + pedido.protocolo()
-                    + ". Sua preferência é: " + pedido.preferenciaHorario() + ". A data e o horário ainda dependem da confirmação da equipe.";
+            resposta = "Seu pedido de " + nome(pedido.tipo()) + " foi registrado.\n\nProtocolo: " + pedido.protocolo()
+                    + "\nPreferência: " + pedido.preferenciaHorario()
+                    + "\n\nA data e o horário ainda dependem da confirmação da equipe. Acompanhe em /solicitacoes.";
         }
         long id = Math.addExact(conversa.getMensagens().stream().mapToLong(Mensagem::getId).max().orElse(0), 1);
         conversa.adicionarMensagem(id, resposta, Mensagem.TipoRemetente.CHATBOT);
