@@ -22,7 +22,7 @@ final class NavegacaoTelegram {
 
             • Suporte e comercial: tire dúvidas, abra um chamado ou fale com um atendente.
             • Pedidos: solicite orçamento, demonstração, reunião ou visita técnica.
-            • Consultas: veja seus planos e solicitações após confirmar sua identidade.
+            • Consultas: veja suas solicitações com o cadastro do Telegram. A consulta de planos exige confirmação de identidade.
 
             Escolha um botão ou escreva o que você precisa.
             """.strip();

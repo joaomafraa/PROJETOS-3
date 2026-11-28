@@ -84,6 +84,22 @@ public class ValidacaoClienteService {
     public record ContextoClienteValidado(long empresaId, long clienteId, long conversaId) {}
 
     @Transactional
+    public List<Solicitacao> consultarSolicitacoesTelegram(long empresaId, long conversaId, long usuarioId) {
+        Conversa conversa = conversa(empresaId, conversaId);
+        var vinculos = em.createNativeQuery("select cliente_id from telegram_contatos where empresa_id = :empresa and conversa_id = :conversa and usuario_id = :usuario and etapa_cadastro = 'CONCLUIDO'")
+                .setParameter("empresa", empresaId).setParameter("conversa", conversaId)
+                .setParameter("usuario", usuarioId).getResultList();
+        if (vinculos.size() != 1 || ((Number) vinculos.get(0)).longValue() != conversa.getCliente().getId()
+                || conversa.getCliente().getNumeroTelefone() == null) {
+            throw new SecurityException("Cadastro do Telegram incompleto.");
+        }
+        return em.createQuery("select t from Ticket t where t.empresa.id = :empresa and t.cliente.id = :cliente order by t.dataAbertura desc, t.id desc", Ticket.class)
+                .setParameter("empresa", empresaId).setParameter("cliente", conversa.getCliente().getId())
+                .setMaxResults(20).getResultList().stream()
+                .map(t -> new Solicitacao(t.getProtocolo(), t.getTipo(), t.getStatus())).toList();
+    }
+
+    @Transactional
     public ContextoClienteValidado exigirContextoValidado(long empresaId, long conversaId) {
         Conversa conversa = conversa(empresaId, conversaId);
         DesafioCliente desafio = em.find(DesafioCliente.class, conversaId);

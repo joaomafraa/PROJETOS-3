@@ -139,13 +139,12 @@ public class ProcessarMensagemTelegramService {
             if (confirmado) teclado = TelegramCliente.Teclado.MENU;
         } else if (entrada.equalsIgnoreCase("/solicitacoes")) {
             try {
-                var itens = validacao.consultarSolicitacoes(empresaId, conversa);
+                var itens = validacao.consultarSolicitacoesTelegram(empresaId, conversa, mensagem.usuarioId());
                 texto = itens.isEmpty() ? "Você ainda não tem solicitações registradas. Se precisar de suporte, use /chamado." : itens.stream()
                         .map(item -> "• " + item.protocolo() + " — " + rotulo(item.tipo()) + " · " + rotulo(item.status()))
                         .collect(java.util.stream.Collectors.joining("\n", "Suas solicitações mais recentes\n\n", ""));
             } catch (SecurityException e) {
-                texto = "Para proteger seus dados, preciso confirmar sua identidade antes de mostrar as solicitações. "
-                        + "Toque em /validar e, quando receber o código por e-mail, digite os seis números aqui.";
+                texto = "Para consultar suas solicitações, conclua seu cadastro compartilhando seu próprio telefone pelo botão do Telegram. Envie /start para continuar.";
             } catch (RuntimeException e) {
                 texto = "Não consegui consultar suas solicitações agora. Tente novamente em alguns minutos ou peça ajuda com /atendente.";
             }

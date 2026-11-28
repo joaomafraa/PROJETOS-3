@@ -127,7 +127,10 @@ class ValidacaoClienteTests {
     void telegramProtegeConsultaEOmiteCodigoDoHistorico() {
         em.createNativeQuery("insert into telegram_contatos (empresa_id, usuario_id, cliente_id, conversa_id) values (81001, 777, 81001, 81001)").executeUpdate();
         assertTrue(processamento.processar(81001, 81001, new MensagemTelegram(11, 777, 777, "Teste", "/solicitacoes")));
-        verify(telegram).enviarMensagem(eq(777L), contains("confirmar sua identidade"));
+        verify(telegram).enviarMensagem(eq(777L), contains("cadastro"));
+        em.createNativeQuery("update telegram_contatos set etapa_cadastro = 'CONCLUIDO' where empresa_id = 81001 and usuario_id = 777").executeUpdate();
+        assertThrows(SecurityException.class, () -> validacao.consultarSolicitacoesTelegram(81001L, 81001L, 778L));
+        assertEquals(1, validacao.consultarSolicitacoesTelegram(81001L, 81001L, 777L).size());
         assertTrue(processamento.processar(81001, 81001, new MensagemTelegram(12, 777, 777, "Teste", "/validar")));
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(email).enviar(eq("cliente@example.test"), captor.capture());

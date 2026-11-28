@@ -44,7 +44,7 @@ class ConsultaSolicitacoesTelegramTests {
 
     @Test
     void apresentaProtocoloTipoEEstado() {
-        when(validacao.consultarSolicitacoes(1, 3)).thenReturn(List.of(
+        when(validacao.consultarSolicitacoesTelegram(1, 3, 20)).thenReturn(List.of(
                 new ValidacaoClienteService.Solicitacao("PROTOCOLO-1", Ticket.TipoSolicitacao.SUPORTE, Ticket.StatusTicket.PENDENTE)));
         assertTrue(processamento.processar(1, 2, mensagem));
         verify(telegram).enviarMensagem(20, "Suas solicitações mais recentes\n\n• PROTOCOLO-1 — Suporte · Pendente");
@@ -52,19 +52,19 @@ class ConsultaSolicitacoesTelegramTests {
 
     @Test
     void distingueListaVaziaDeValidacaoNecessaria() {
-        when(validacao.consultarSolicitacoes(1, 3)).thenReturn(List.of());
+        when(validacao.consultarSolicitacoesTelegram(1, 3, 20)).thenReturn(List.of());
         processamento.processar(1, 2, mensagem);
         verify(telegram).enviarMensagem(eq(20L), contains("Você ainda não tem solicitações"));
         reset(telegram);
-        when(validacao.consultarSolicitacoes(1, 3)).thenThrow(new SecurityException("detalhe privado"));
+        when(validacao.consultarSolicitacoesTelegram(1, 3, 20)).thenThrow(new SecurityException("detalhe privado"));
         processamento.processar(1, 2, mensagem);
-        verify(telegram).enviarMensagem(eq(20L), contains("/validar"));
+        verify(telegram).enviarMensagem(eq(20L), contains("cadastro"));
         verify(telegram, never()).enviarMensagem(eq(20L), contains("detalhe privado"));
     }
 
     @Test
     void falhaApresentaAlternativaSemDetalhesNemResultadoVazio() {
-        when(validacao.consultarSolicitacoes(1, 3)).thenThrow(new IllegalStateException("segredo tecnico"));
+        when(validacao.consultarSolicitacoesTelegram(1, 3, 20)).thenThrow(new IllegalStateException("segredo tecnico"));
         processamento.processar(1, 2, mensagem);
         verify(telegram).enviarMensagem(eq(20L), contains("/atendente"));
         verify(telegram, never()).enviarMensagem(eq(20L), contains("segredo tecnico"));

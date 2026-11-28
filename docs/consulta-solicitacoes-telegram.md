@@ -1,8 +1,8 @@
 # Consulta de solicitações no Telegram
 
-O comando `/solicitacoes` consulta até 20 solicitações persistidas, das mais recentes para as mais antigas. A empresa e a conversa vêm do canal; o serviço exige validação de identidade vigente e filtra pela empresa e pelo cliente da conversa. Cada resultado apresenta protocolo, tipo e estado. Uma lista vazia indica que a consulta foi concluída sem resultados.
+O comando `/solicitacoes` consulta até 20 solicitações persistidas, das mais recentes para as mais antigas. A empresa, a conta e a conversa vêm do canal. O serviço exige cadastro concluído com telefone e verifica o vínculo da conta Telegram com o cliente e a conversa da empresa. Cada resultado apresenta protocolo, tipo e estado.
 
-Sem validação vigente, o bot orienta o uso de `/validar`. Se a consulta falhar, informa que ela está indisponível e oferece `/atendente`; a resposta não inclui detalhes técnicos. A validação depende do e-mail confiável e do envio de código já configurados no ambiente.
+Sem cadastro concluído, o bot orienta compartilhar o próprio telefone. Se a consulta falhar, informa que ela está indisponível e oferece `/atendente`. A consulta de planos mantém a validação adicional por e-mail. A posse de uma conta Telegram e o compartilhamento do telefone não comprovam, por si só, a identidade civil do usuário, inclusive em caso de número reciclado ou conta comprometida.
 
 ## Contrato proposto para a consulta de planos
 
