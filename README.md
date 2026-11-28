@@ -1,188 +1,65 @@
-# Chatbot WXN
+# NEXUS · Chatbot WXN
 
-Projeto acadêmico de atendimento com Java e Spring Boot, organizado em entidades, acesso a dados, serviços de negócio e controladores HTTP.
+Projeto acadêmico de atendimento que conecta um bot do Telegram a um painel web para a equipe acompanhar conversas e solicitações. A abertura do site apresenta a jornada do cliente e dá acesso ao painel.
 
-Endereço de publicação do projeto: https://projetos-3.onrender.com/
+[Site publicado no Render](https://projetos-3.onrender.com/)
 
-## Funcionalidades implementadas
+## O que a entrega inclui
 
-- Entidades Cliente, Atendente, Chatbot, Conversa, Mensagem, Ticket e Empresa, com atributos encapsulados, relacionamentos e validações.
-- Persistência com JPA e migrações SQL com Flyway.
-- Consulta da fila pelo `FilaConversasService`: exige atendente ativo, filtra pela empresa e pelo status `AGUARDANDO_ATENDENTE`, ordenando pela data de início da conversa e pelo ID.
-- Histórico com conteúdo, autor e data das mensagens.
-- Serviço transacional para solicitar e assumir atendimento humano, preservando histórico e tickets. Veja [regras e testes](docs/atendimento-humano.md). A integração com API, autenticação e interface permanece pendente.
-- Serviço transacional para abrir chamados de suporte a partir de uma conversa da empresa, com protocolo único. Veja [abertura de chamados](docs/abertura-chamado.md).
-- Tela local da fila (`GET /api/historico/fila`, que usa o `FilaConversasService`): lista as conversas aguardando atendimento da empresa do atendente, abre o histórico da conversa selecionada e mostra o contexto disponível.
-- Estados da tela: carregamento, fila vazia, erro com botão **Tentar novamente** e histórico sem mensagens. Navegação pelo teclado com Tab, setas, Home e End.
-- Botão local para gravar um atendimento fictício no banco configurado.
-- Persistência de tickets e consultas por empresa com `TicketRepository`. O ticket mantém seu próprio ciclo: pendente, em atendimento e concluído.
-
-Veja o [modelo de classes e suas regras](docs/modelo-de-classes.md).
-
-O contrato de `GET /api/historico/fila`, com campos, erros e exemplos para o frontend,
-está na [documentação da API da fila](docs/api-fila.md).
-
-## Situação das entregas
-
-| Etapa | Situação |
+| Épico | Fluxos disponíveis |
 | --- | --- |
-| Modelagem das entidades em POO | Classes e diagrama disponíveis |
-| Persistência e negócio da fila | Repositório, serviço e testes disponíveis |
-| Tela consumindo o negócio da fila | A lista consulta `GET /api/historico/fila`, que chama o serviço da fila |
+| 1 — Conversas e IA | Cadastro no Telegram, triagem, respostas com documentos da empresa via Spring AI e Groq, histórico, fontes, resumo e transferência para atendimento humano. O painel permite assumir, responder, concluir e arquivar conversas. [Atendimento humano](docs/atendimento-humano.md) · [Respostas fundamentadas](docs/respostas-fundamentadas.md) |
+| 2 — Consultas e solicitações | Consulta de protocolos e de planos fictícios pelo Telegram, abertura de chamados de suporte, notificação da equipe, pedidos de orçamento e pedidos de demonstração, reunião ou visita. A equipe acompanha as solicitações pelo painel. [Guias de solicitações](docs/solicitacoes-idempotentes-e-pedidos.md) · [Pedido de orçamento](docs/pedido-orcamento.md) |
+| 3 — Identificação e operação | Identificação pelo contato compartilhado, validação por código para consulta de planos, acesso por perfil e empresa, administração de atendentes, registro de leads e vínculo explícito com conversas. [Identificação no Telegram](docs/identificacao-cadastro-telegram.md) · [Leads](docs/leads-atendimento.md) |
 
-A lista do painel usa o `FilaConversasService`; a consulta das mensagens passa pelo `HistoricoConversasService`. A rota geral `GET /api/historico` permanece disponível para compatibilidade. A tela não possui filtros por tipo, status e responsável. O exemplo atual fica em atendimento humano, portanto não aparece na fila de espera.
+Telegram é o canal adotado pelo grupo. Planos e serviços usam dados de demonstração e os leads ficam no próprio NEXUS. A configuração de expediente orienta o encaminhamento humano. A lista de assuntos automáticos ainda precisa ser ligada à decisão de responder ou encaminhar.
 
-Ainda não existem busca, assumir conversa, envio de mensagens, **Meus chats**, login, CRM nem o painel completo de solicitações. Esses controles aparecem desativados na tela. Para ver uma conversa na fila, é preciso que exista no banco uma conversa em `AGUARDANDO_ATENDENTE` da empresa do atendente (dados de demonstração em preparação pelo grupo).
+## Executar localmente
 
-A persistência de Ticket inclui `AbrirChamadoService`, `AssumirTicketService` e `ConcluirTicketService`. O serviço de abertura gera o ID por sequência e retorna um protocolo único; os demais fluxos mantêm os IDs já recebidos. Veja as regras e demonstrações de [abrir](docs/abertura-chamado.md), [assumir](docs/assumir-ticket.md) e [concluir](docs/concluir-ticket.md). Ainda não há API ou tela para abrir, assumir ou concluir tickets.
-
-WhatsApp, Spring AI/LLM, documentos oficiais, CRM e demais sistemas externos são integrações planejadas. Autenticação de usuários também não está implementada.
-
-## Tecnologias
-
-- Java 21 e Spring Boot.
-- Spring Web MVC e Spring Data JPA/Hibernate.
-- PostgreSQL (Neon) para o banco da aplicação.
-- Flyway para criar e evoluir as tabelas.
-- H2, JUnit e Mockito para os testes.
-- Maven Wrapper, Docker e configuração de publicação no Render.
-
-## Organização do projeto
-
-```text
-PROJETOS-3/
-├── README.md
-├── docs/modelo-de-classes.md
-├── render.yaml
-└── chatbot/
-    ├── pom.xml
-    ├── Dockerfile
-    ├── .env.example
-    └── src/
-        ├── main/
-        │   ├── java/com/wxn/chatbot/
-        │   │   ├── ChatbotApplication.java
-        │   │   ├── model/        # Entidades e suas regras
-        │   │   ├── repository/   # Consultas e gravação no banco
-        │   │   ├── service/      # Casos de uso e transações
-        │   │   ├── dto/          # Dados devolvidos pelas consultas
-        │   │   ├── web/          # Rotas HTTP do painel local
-        │   │   └── demo/         # Demonstração de POO no terminal
-        │   └── resources/
-        │       ├── static/      # Página HTML e JavaScript
-        │       ├── db/migration/
-        │       └── application*.properties
-        └── test/                # Testes das entidades e integrações
-```
-
-## Executar o painel local (PowerShell)
-
-É necessário Java 21 ou superior. A partir da raiz do repositório:
-
-1. Entre no módulo:
-
-   ```powershell
-   cd chatbot
-   ```
-
-2. Se ainda não existir `.env`, copie `.env.example` para `.env` e preencha os dados do seu banco Neon. Preserve um `.env` que já esteja configurado.
-
-   ```properties
-   DB_URL=jdbc:postgresql://ep-seu-host.sua-regiao.aws.neon.tech/neondb?sslmode=require
-   DB_USER=seu-usuario
-   DB_PASSWORD=sua-senha
-   ```
-
-   Use uma URL JDBC, com apenas um prefixo `jdbc:` e sem credenciais dentro da URL. O arquivo `.env` é ignorado pelo Git.
-
-3. Carregue explicitamente o arquivo e habilite o painel:
-
-   ```powershell
-   $env:SPRING_CONFIG_IMPORT = 'file:.env[.properties]'
-   $env:SPRING_PROFILES_ACTIVE = 'painel-local'
-   .\mvnw.cmd spring-boot:run
-   ```
-
-4. Abra http://localhost:8080/ para ver a fila de conversas.
-
-O perfil `painel-local` escuta apenas em `127.0.0.1` e usa o atendente de ID 1 por padrão. Para usar outro, configure `PAINEL_ATENDENTE_ID` com um ID ativo. Esse atendente fixo serve à apresentação local; não representa login.
-
-O botão **Criar atendimento de exemplo** grava dados fictícios no banco configurado (inclusive no Neon, se ele estiver configurado). Repetir o clique reutiliza o exemplo existente. O exemplo usa o ID `900000001` para empresa, cliente, chatbot e conversa quando necessário, e rejeita as colisões detectadas nos identificadores.
-
-Se a lista retornar erro de atendente inexistente, crie o exemplo ou configure um atendente ativo já cadastrado. Se as consultas retornarem 404, confira se o perfil `painel-local` está ativo. Spring Boot não carrega `.env` automaticamente.
-
-## Estados da tela e teclado
-
-| Situação | O que a tela mostra | O que fazer |
-| --- | --- | --- |
-| Carregando | Indicador na lista (ou no histórico) e aviso “Carregando…” | Aguardar |
-| Fila vazia | “Nenhuma conversa aguardando” | **Atualizar lista** quando houver novas conversas |
-| Erro | Mensagem explicando a causa e botão **Tentar novamente** (o foco vai para ele) | Corrigir a causa, como app parada, atendente inativo ou perfil `painel-local` desligado, e tentar novamente |
-| Conversa sem mensagens | “Sem mensagens” | Escolher outra conversa |
-
-Teclado: `Tab` percorre os controles (o primeiro é o link “Ir para a lista de conversas”); na lista, `↑`/`↓` movem entre as conversas, `Home`/`End` vão à primeira e à última, e `Enter` ou `Espaço` abrem a conversa em foco. A área de mensagens recebe foco com `Tab` e rola com as setas.
-
-## Roteiro de execução e apresentação
-
-1. Na pasta `chatbot`, inicie com o perfil `painel-local` (comandos em [Executar o painel local](#executar-o-painel-local-powershell)).
-2. Abra http://localhost:8080/ e mostre a caixa de entrada e a troca de tema.
-3. Explique que a lista vem de `GET /api/historico/fila`: somente conversas `AGUARDANDO_ATENDENTE` da empresa do atendente ativo.
-4. Selecione uma conversa e mostre o histórico (autor, tipo e horário) e o painel de contexto. Campos que a API não envia aparecem como “Não disponível”.
-5. Percorra a lista com o teclado (`↑`/`↓`, `Enter`).
-6. Clique em **Atualizar lista** para mostrar o carregamento e a fila vazia ou uma nova conversa aguardando.
-7. Opcional: pare a aplicação e clique em **Atualizar lista** para mostrar a mensagem de erro e o botão **Tentar novamente**.
-8. Encerre informando que assumir conversa, envio de mensagens, **Meus chats**, busca e filtros, login, CRM e o painel de solicitações ficam para as próximas etapas e aparecem desativados.
-
-## Demonstração de POO no terminal
-
-Dentro de `chatbot`:
+Requisitos: Java 21, PostgreSQL e acesso ao banco configurado. Da raiz do repositório, entre em `chatbot`, prepare um `.env` local a partir de `.env.example` caso ainda não tenha um e preencha `DB_URL`, `DB_USER` e `DB_PASSWORD`. Para Neon, use uma URL JDBC com `sslmode=require`.
 
 ```powershell
-.\mvnw.cmd compile
-java -cp target/classes com.wxn.chatbot.demo.Demonstracao
+cd chatbot
+$env:SPRING_CONFIG_IMPORT = 'file:.env[.properties]'
+.\mvnw.cmd spring-boot:run
 ```
 
-Essa demonstração cria os objetos em memória e imprime as mensagens e o ciclo do ticket. Ela não grava no banco. Para persistir, o código precisa usar um repositório dentro do contexto da aplicação; as anotações JPA sozinhas não salvam objetos.
+Abra a home em `http://localhost:8080/` e use uma conta ativa em `/entrar`. O painel atende em `/painel`. O perfil padrão usa autenticação. Em um banco sem credenciais, o [bootstrap do administrador](docs/administracao-atendentes.md#primeira-credencial-administrativa) cria a primeira senha para um administrador ativo já cadastrado.
 
-## Banco e migrações
+Para alterar a home em React, execute `npm ci` e `npm run build` em `chatbot/abertura`. O Vite gera os arquivos em `chatbot/src/main/resources/static/abertura`, que o Spring Boot e o Docker usam para servir a página.
 
-| Migração | Conteúdo |
-| --- | --- |
-| V1 | Empresas, clientes, chatbots, atendentes, conversas e índice da fila |
-| V2 | Mensagens, identificação do autor e ordenação do histórico |
-| V3 | Tickets, relacionamentos e restrições de tipo e estado |
-| V4 | Leads locais, sequência e regra de duplicidade |
-| V5 | Sequência de IDs para novos chamados e unicidade do protocolo |
+## Configurar as integrações
 
-Flyway aplica migrações pendentes ao iniciar a aplicação com acesso ao banco. O Hibernate usa `validate` por padrão para conferir o mapeamento; alterações futuras de estrutura devem ser feitas em novas migrações.
+- **Telegram**. Configure `TELEGRAM_BOT_TOKEN`, `TELEGRAM_EMPRESA_ID` e `TELEGRAM_CHATBOT_ID`. O chatbot deve estar ativo na empresa informada. Ative `TELEGRAM_POLLING_ENABLED=true` em uma instância por token. [Configuração do Telegram](docs/telegram.md)
+- **Groq**. Configure `GROQ_API_KEY` e um `GROQ_MODEL` habilitado na conta. Cadastre documentos na base de conhecimento da empresa para testar respostas e fontes. [Documentos de conhecimento](docs/documentos-conhecimento.md)
+- **Verificação por e-mail**. Configure as variáveis `SMTP_*` e um endereço confiável para testar `/validar` e `/planos`. O comando `/solicitacoes` usa o cadastro concluído e o vínculo com a conta Telegram. [Regras da consulta](docs/consulta-solicitacoes-telegram.md)
 
-Tickets referenciam empresa, cliente, conversa de origem e, quando atribuído, um atendente responsável. Salvar um ticket não cria nem remove automaticamente essas entidades relacionadas: elas devem existir no banco.
+O serviço do Render usa o Dockerfile de `chatbot`, aplica migrações Flyway e verifica `/actuator/health`. Forneça as variáveis e os segredos pelo ambiente de execução. Use o perfil padrão na publicação.
 
-## Testes
+## Validação da entrega
 
-Dentro de `chatbot`:
+Em `chatbot`, execute:
 
 ```powershell
-.\mvnw.cmd clean test
+.\mvnw.cmd clean verify
 ```
 
-Os testes usam H2 em memória e aplicam as migrações, sem precisar de credenciais Neon. Verificam regras de domínio, consultas por empresa, tentativas de acesso entre empresas, abertura de chamados, protocolos, fila, histórico, persistência e comportamento do painel local. Eles não substituem uma validação no PostgreSQL real.
+A suíte usa H2 e integrações simuladas por padrão. O projeto também possui testes opt-in que chamam a Groq. Para validar a implantação com dados fictícios em ambiente autorizado:
 
-## Publicação no Render
+1. Entre no painel e confira o perfil e a empresa da conta.
+2. No Telegram, compartilhe o contato, pergunte algo coberto por um documento e confira a fonte no painel.
+3. Peça um atendente, assuma, responda e conclua. Envie nova mensagem para confirmar a volta ao atendimento automático.
+4. Abra um chamado, confira o protocolo no Telegram e a notificação no painel. Teste também orçamento, agendamento e `/solicitacoes`.
+5. Se houver SMTP e e-mail confiável configurados, teste `/validar` e `/planos`.
 
-O `render.yaml` configura o serviço Docker a partir da pasta `chatbot` e solicita `DB_URL`, `DB_USER` e `DB_PASSWORD` como variáveis do ambiente. O Dockerfile usa Java 21, executa os testes no build e inicia a aplicação na porta `PORT`.
+## Estrutura
 
-O endpoint `/actuator/health` verifica a saúde da aplicação, incluindo o banco. O HTML da página inicial é servido em `/`, mas suas rotas de consulta e criação de exemplo só existem com `painel-local`. Portanto, a publicação padrão ainda não disponibiliza um painel funcional de histórico ou fila.
-
-Não habilite o perfil local como solução de publicação: ele usa um atendente fixo e limita a escuta a `127.0.0.1`. O painel publicado será tratado em uma etapa própria, com configuração de acesso adequada.
+- `chatbot/src/main/java/com/wxn/chatbot` contém o domínio, os repositórios, os serviços, as APIs e as integrações com Telegram e Groq.
+- `chatbot/src/main/resources/db/migration` contém as migrações Flyway.
+- `chatbot/src/main/resources/static` contém o painel e os arquivos publicados da home. O código React da home fica em `chatbot/abertura`.
+- `chatbot/src/test` contém os testes de domínio, persistência, API e integração.
+- `docs` contém as decisões e os contratos da equipe, incluindo o [modelo de classes](docs/modelo-de-classes.md) e a [API da fila](docs/api-fila.md).
 
 ## Grupo
 
-- João Carlos Mafra
-- Arthur Almeida
-- Gabriel Malta
-- Márcio Rodriguez
-- Gabriel Mendes
-- Pedro Martins
-- Hélio de Moraes
-- Guilherme Guimarães
+João Carlos Mafra, Arthur Almeida, Gabriel Malta, Márcio Rodriguez, Gabriel Mendes, Pedro Martins, Hélio de Moraes e Guilherme Guimarães.

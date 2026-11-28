@@ -1,6 +1,6 @@
 # Administração de atendentes (HU08.3)
 
-Administração de atendentes, perfis de acesso e responsáveis por notificações: serviços, API (`/api/admin/**`) e tela no painel (menu **Administração**). O envio das notificações ainda não existe.
+Administração de atendentes, perfis de acesso e responsáveis por notificações: serviços, API (`/api/admin/**`) e tela no painel (menu **Administração**). Os responsáveis recebem [notificações no painel](notificacoes-chamados.md).
 
 ## Serviços
 
@@ -59,6 +59,11 @@ Testes: `src/test/java/com/wxn/chatbot/integration/AdministracaoApiTests.java`.
 ## Pendências
 
 - Edição de nome/e-mail pela administração.
-- Envio real das notificações.
 - O mesmo e-mail pode existir em duas empresas, mas `ContextoAcesso` busca o atendente só pelo e-mail; nesse caso o login dos dois falha. Combinar a regra com a frente de autenticação.
 - Quem tem o perfil alterado mantém o papel antigo na sessão aberta até sair e entrar de novo (as operações de admin continuam protegidas, porque os serviços conferem o perfil no banco).
+
+## Primeira credencial administrativa
+
+Em um banco sem credenciais, cadastre primeiro o atendente administrador ativo e, no ambiente da aplicação, defina `AUTH_BOOTSTRAP_ENABLED=true`, `AUTH_BOOTSTRAP_ADMIN_EMAIL` com seu e-mail e `AUTH_BOOTSTRAP_ADMIN_PASSWORD` com uma senha de pelo menos oito caracteres. Reinicie a aplicação e confirme o login em `/entrar`. Em seguida, desabilite o bootstrap e retire a senha inicial das variáveis de ambiente.
+
+O bootstrap exige um único administrador com o e-mail informado. Se o banco já tiver credenciais, o provisionamento usa a administração do painel.
